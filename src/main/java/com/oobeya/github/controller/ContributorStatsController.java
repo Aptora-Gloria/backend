@@ -1,7 +1,7 @@
 package com.oobeya.github.controller;
 
-import com.oobeya.github.dto.ContributorStatsDto;
-import com.oobeya.github.dto.ContributorStatsInitRequest;
+import com.oobeya.github.dto.response.ContributorStatsDto;
+import com.oobeya.github.dto.request.ContributorStatsInitRequest;
 import com.oobeya.github.service.ContributorStatsServiceI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

@@ -1,7 +1,7 @@
 package com.oobeya.github.service.impl;
 
 import com.oobeya.auth.service.AuthService;
-import com.oobeya.github.dto.ContributorStatsDto;
+import com.oobeya.github.dto.response.ContributorStatsDto;
 import com.oobeya.github.entity.ContributorStatsEntity;
 import com.oobeya.github.mapper.StatsMapper;
 import com.oobeya.github.repository.ContributorStatsRepository;

@@ -1,6 +1,6 @@
 package com.oobeya.github.service;
 
-import com.oobeya.github.dto.CommitDto;
+import com.oobeya.github.dto.response.CommitDto;
 
 import java.util.List;
 

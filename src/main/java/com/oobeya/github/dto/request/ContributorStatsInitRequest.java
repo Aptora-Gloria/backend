@@ -1,4 +1,4 @@
-package com.oobeya.github.dto;
+package com.oobeya.github.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,6 +1,6 @@
 package com.oobeya.github.service;
 
-import com.oobeya.github.dto.ContentDto;
+import com.oobeya.github.dto.response.ContentDto;
 import java.util.List;
 
 public interface ContentServiceI {

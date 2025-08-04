@@ -1,7 +1,7 @@
 package com.oobeya.github.controller;
 
-import com.oobeya.github.dto.ContentDto;
-import com.oobeya.github.dto.ContentInitRequest;
+import com.oobeya.github.dto.response.ContentDto;
+import com.oobeya.github.dto.request.ContentInitRequest;
 import com.oobeya.github.service.ContentServiceI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +34,6 @@ public class ContentController {
 
     @GetMapping("/contents")
     public ResponseEntity<List<ContentDto>> getRepoContents(
-            @RequestHeader("Authorization") String authHeader,
             @RequestParam("owner") String owner,
             @RequestParam("repo") String repo,
             @RequestParam(value = "path", required = false, defaultValue = "") String path) {

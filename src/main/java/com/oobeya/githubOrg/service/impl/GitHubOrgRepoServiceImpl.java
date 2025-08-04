@@ -3,7 +3,7 @@ package com.oobeya.githubOrg.service.impl;
 import com.oobeya.auth.entity.User;
 import com.oobeya.auth.repository.UserRepository;
 import com.oobeya.auth.security.jwtservice.JwtService;
-import com.oobeya.github.dto.RepoDto;
+import com.oobeya.github.dto.response.RepoDto;
 import com.oobeya.github.exception.GitHubApiException;
 import com.oobeya.githubOrg.dto.BranchDto;
 import com.oobeya.githubOrg.service.GitHubOrgRepoService;

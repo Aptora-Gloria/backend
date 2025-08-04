@@ -1,7 +1,7 @@
 package com.oobeya.github.mapper;
 
-import com.oobeya.github.dto.LanguageDto;
-import com.oobeya.github.dto.LanguageUiDto;
+import com.oobeya.github.dto.response.LanguageDto;
+import com.oobeya.github.dto.response.LanguageUiDto;
 import com.oobeya.github.entity.LanguageEntity;
 
 import java.util.List;

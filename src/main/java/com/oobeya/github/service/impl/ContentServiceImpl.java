@@ -2,7 +2,7 @@ package com.oobeya.github.service.impl;
 
 
 import com.oobeya.auth.service.AuthService;
-import com.oobeya.github.dto.ContentDto;
+import com.oobeya.github.dto.response.ContentDto;
 import com.oobeya.github.entity.ContentEntity;
 import com.oobeya.github.mapper.ContentMapper;
 import com.oobeya.github.repository.ContentRepository;
@@ -35,7 +35,7 @@ public class ContentServiceImpl implements ContentServiceI {
     public List<ContentDto> getContentFromDb(String author, String repo) {
         return contentRepo.findByRepoName(repo).stream()
                 .map(ContentMapper::toDto)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList());//TODO mapper'a  taşıncak
     }
 
 

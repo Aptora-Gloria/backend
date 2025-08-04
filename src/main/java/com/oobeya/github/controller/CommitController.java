@@ -1,8 +1,8 @@
 package com.oobeya.github.controller;
 
 
-import com.oobeya.github.dto.CommitDto;
-import com.oobeya.github.dto.CommitInitRequest;
+import com.oobeya.github.dto.response.CommitDto;
+import com.oobeya.github.dto.request.CommitInitRequest;
 import com.oobeya.github.service.CommitServiceI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

@@ -1,6 +1,6 @@
 package com.oobeya.github.mapper;
 
-import com.oobeya.github.dto.ContentDto;
+import com.oobeya.github.dto.response.ContentDto;
 import com.oobeya.github.entity.ContentEntity;
 
 import java.util.List;

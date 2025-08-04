@@ -1,6 +1,6 @@
 package com.oobeya.github.service;
 
-import com.oobeya.github.dto.ContributorStatsDto;
+import com.oobeya.github.dto.response.ContributorStatsDto;
 
 import java.util.List;
 

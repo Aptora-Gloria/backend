@@ -1,6 +1,6 @@
 package com.oobeya.github.mapper;
 
-import com.oobeya.github.dto.CommitDto;
+import com.oobeya.github.dto.response.CommitDto;
 import com.oobeya.github.entity.CommitEntity;
 
 import java.util.List;

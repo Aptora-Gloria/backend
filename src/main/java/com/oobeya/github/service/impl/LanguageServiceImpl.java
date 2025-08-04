@@ -1,8 +1,8 @@
 package com.oobeya.github.service.impl;
 
 import com.oobeya.auth.service.AuthService;
-import com.oobeya.github.dto.LanguageDto;
-import com.oobeya.github.dto.LanguageUiDto;
+import com.oobeya.github.dto.response.LanguageDto;
+import com.oobeya.github.dto.response.LanguageUiDto;
 import com.oobeya.github.entity.LanguageEntity;
 import com.oobeya.github.mapper.LanguageMapper;
 import com.oobeya.github.repository.LanguageRepository;
