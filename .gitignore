@@ -1,0 +1,31 @@
+# Java & Maven
+target/
+*.class
+*.jar
+*.war
+*.log
+
+# IDEs
+.idea/
+*.iml
+*.iws
+*.ipr
+.project
+.classpath
+.factorypath
+.settings
+.springBeans
+.sts4-cache
+.apt_generated
+
+# Maven wrapper
+.mvn/wrapper/maven-wrapper.jar
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
+
+# Env
+.env

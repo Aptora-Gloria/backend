@@ -1,0 +1,18 @@
+version: '3.1'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: oobeya-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: oobeya
+      POSTGRES_USER: oobeya_user
+      POSTGRES_PASSWORD: oobeya_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

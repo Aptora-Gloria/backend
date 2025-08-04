@@ -1,0 +1,40 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/oobeya
+    username: oobeya_user
+    password: oobeya_pass
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: Ov23liaxLAQw7NYKfF3f
+            client-secret: 23a9888845f4f77e115a64cdd9f27688643323a8
+            scope:
+              - read:user
+              - user:email
+              - read:org
+              - repo
+            redirect-uri: http://localhost:3000/oauth/callback
+            client-name: GitHub
+
+        provider:
+          github:
+            authorization-uri: https://github.com/login/oauth/authorize
+            token-uri: https://github.com/login/oauth/access_token
+            user-info-uri: https://api.github.com/user
+            user-name-attribute: login
+
+jwt:
+  secret: e1c365c317f94e4abf2040c75a35fc0e
+  expiration-ms: 3600000
