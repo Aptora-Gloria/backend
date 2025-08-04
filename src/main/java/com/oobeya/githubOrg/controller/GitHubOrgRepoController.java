@@ -1,6 +1,6 @@
 package com.oobeya.githubOrg.controller;
 
-import com.oobeya.github.dto.RepoDto;
+import com.oobeya.github.dto.response.RepoDto;
 import com.oobeya.githubOrg.dto.BranchDto;
 import com.oobeya.githubOrg.service.GitHubOrgRepoService;
 import com.oobeya.github.util.TokenUtil;

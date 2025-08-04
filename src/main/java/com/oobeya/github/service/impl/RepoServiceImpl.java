@@ -1,12 +1,12 @@
 package com.oobeya.github.service.impl;
 
 import com.oobeya.auth.service.AuthService;
+import com.oobeya.github.dto.response.RepoDto;
 import com.oobeya.github.entity.RepositoryEntity;
 import com.oobeya.github.mapper.RepoMapper;
 import com.oobeya.github.repository.RepositoryRepository;
 import com.oobeya.github.service.ApiClientI;
 import com.oobeya.github.service.RepoServiceI;
-import com.oobeya.github.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;

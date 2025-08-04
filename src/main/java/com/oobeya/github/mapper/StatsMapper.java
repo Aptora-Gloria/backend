@@ -1,7 +1,7 @@
 package com.oobeya.github.mapper;
 
-import com.oobeya.github.dto.ContributorStatsDto;
-import com.oobeya.github.dto.ContributorStatsDto.Week;
+import com.oobeya.github.dto.response.ContributorStatsDto;
+import com.oobeya.github.dto.response.ContributorStatsDto.Week;
 import com.oobeya.github.entity.ContributorStatsEntity;
 import com.oobeya.github.entity.ContributorWeekStatsEntity;
 import org.springframework.stereotype.Component;

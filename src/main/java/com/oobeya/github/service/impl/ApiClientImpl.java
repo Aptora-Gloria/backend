@@ -2,7 +2,7 @@ package com.oobeya.github.service.impl;
 
 import com.oobeya.github.config.GitHubOAuthProperties;
 import com.oobeya.github.constant.GitHubConstants;
-import com.oobeya.github.dto.*;
+import com.oobeya.github.dto.response.*;
 import com.oobeya.github.exception.GitHubApiException;
 import com.oobeya.github.service.ApiClientI;
 import com.oobeya.github.util.GitHubUtil;

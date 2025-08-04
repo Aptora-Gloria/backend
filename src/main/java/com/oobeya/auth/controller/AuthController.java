@@ -2,7 +2,7 @@ package com.oobeya.auth.controller;
 
 import com.oobeya.auth.dto.AuthRequest;
 import com.oobeya.auth.dto.AuthResponse;
-import com.oobeya.github.dto.GitHubUserDto;
+import com.oobeya.github.dto.response.GitHubUserDto;
 import com.oobeya.auth.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;

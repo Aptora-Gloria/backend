@@ -1,6 +1,6 @@
 package com.oobeya.githubOrg.service;
 
-import com.oobeya.github.dto.RepoDto;
+import com.oobeya.github.dto.response.RepoDto;
 import com.oobeya.githubOrg.dto.BranchDto;
 
 import java.util.List;

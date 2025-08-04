@@ -1,8 +1,8 @@
 package com.oobeya.github.controller;
 
-import com.oobeya.github.dto.LanguageDto;
-import com.oobeya.github.dto.LanguageInitRequest;
-import com.oobeya.github.dto.LanguageUiDto;
+import com.oobeya.github.dto.response.LanguageDto;
+import com.oobeya.github.dto.request.LanguageInitRequest;
+import com.oobeya.github.dto.response.LanguageUiDto;
 import com.oobeya.github.service.LanguageServiceI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

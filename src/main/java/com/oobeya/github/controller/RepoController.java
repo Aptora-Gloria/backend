@@ -1,6 +1,6 @@
 package com.oobeya.github.controller;
 
-import com.oobeya.github.dto.RepoDto;
+import com.oobeya.github.dto.response.RepoDto;
 import com.oobeya.github.service.RepoServiceI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

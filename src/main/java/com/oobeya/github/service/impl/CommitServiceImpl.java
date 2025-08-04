@@ -1,7 +1,7 @@
 package com.oobeya.github.service.impl;
 
 import com.oobeya.auth.service.AuthService;
-import com.oobeya.github.dto.CommitDto;
+import com.oobeya.github.dto.response.CommitDto;
 import com.oobeya.github.entity.CommitEntity;
 import com.oobeya.github.mapper.CommitMapper;
 import com.oobeya.github.repository.CommitRepository;

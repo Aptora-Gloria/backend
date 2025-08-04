@@ -1,8 +1,9 @@
 package com.oobeya.github.service.impl;
 
+import com.oobeya.github.dto.response.GitHubAccessTokenResponse;
+import com.oobeya.github.dto.response.GitHubUserDto;
 import com.oobeya.github.service.ApiClientI;
 import com.oobeya.github.service.GitHubServiceI;
-import com.oobeya.github.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

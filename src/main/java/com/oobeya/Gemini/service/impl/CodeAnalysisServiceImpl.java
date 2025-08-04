@@ -1,7 +1,7 @@
 // src/main/java/com/oobeya/Gemini/service/impl/CodeAnalysisServiceImpl.java
 package com.oobeya.Gemini.service.impl;
 import com.oobeya.Gemini.constant.LanguageExtension;
-import com.oobeya.github.dto.ContentDto;
+import com.oobeya.github.dto.response.ContentDto;
 import com.oobeya.github.exception.GitHubApiException;
 import com.oobeya.Gemini.service.CodeAnalysisService;
 import com.oobeya.github.service.ContentServiceI;

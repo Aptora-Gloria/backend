@@ -1,4 +1,4 @@
-package com.oobeya.github.dto;
+package com.oobeya.github.dto.request;
 
 public record LanguageInitRequest(
         String owner,
