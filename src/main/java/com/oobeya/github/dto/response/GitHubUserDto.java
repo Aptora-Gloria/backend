@@ -16,4 +16,7 @@ public class GitHubUserDto {
 
     @JsonProperty("avatar_url")  
     private String avatarUrl;
+
+    @JsonProperty("type")
+    private String type;
 }

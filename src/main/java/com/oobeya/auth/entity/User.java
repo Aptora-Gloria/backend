@@ -4,9 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 
-/**
- * GitHub'dan gelen kullanıcı bilgilerini temsil eder ve veritabanına kaydedilir.
- */
 @Entity
 @Table(name = "github_users")
 @Getter
@@ -23,11 +20,17 @@ public class User {
     @Column(unique = true, nullable = false)
     private String login;
 
+    @Column(unique = true)
     private String email;
 
     private String avatarUrl;
 
+
     private String accessToken;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OwnerType ownerType;
 
     private LocalDateTime createdAt;
 

@@ -2,6 +2,7 @@ package com.oobeya.auth.service.impl;
 
 import com.oobeya.auth.dto.AuthRequest;
 import com.oobeya.auth.dto.AuthResponse;
+import com.oobeya.auth.entity.OwnerType;
 import com.oobeya.github.dto.response.GitHubAccessTokenResponse;
 import com.oobeya.github.dto.response.GitHubUserDto;
 
@@ -28,7 +29,6 @@ public class AuthServiceImpl  implements AuthService {
 
     @Override
     public AuthResponse login(AuthRequest request) {
-        // 1. Access token al
 
         System.out.println("▶ GITHUB CODE: " + request.code());
         GitHubAccessTokenResponse tokenResponse = githubService.getAccessTokenFromCode(request.code());
@@ -38,7 +38,7 @@ public class AuthServiceImpl  implements AuthService {
 
         System.out.println("▶ TOKEN RESPONSE: " + tokenResponse);
 
-        // 2. GitHub kullanıcı bilgilerini al
+
         GitHubUserDto gitHubUser = githubService.getUserInfo(tokenResponse.accessToken());
 
 
@@ -60,6 +60,7 @@ public class AuthServiceImpl  implements AuthService {
                             .email(gitHubUser.getEmail())
                             .avatarUrl(gitHubUser.getAvatarUrl())
                             .accessToken(accessToken)
+                            .ownerType(OwnerType.fromGitHubType(gitHubUser.getType()))
                             .build();
                     return userRepository.save(newUser);
                 });
@@ -84,7 +85,8 @@ public class AuthServiceImpl  implements AuthService {
                 user.getLogin(),
                 user.getEmail(),
                 user.getLogin(),
-                user.getAvatarUrl()
+                user.getAvatarUrl(),
+                user.getOwnerType().name()
         );
     }
 
