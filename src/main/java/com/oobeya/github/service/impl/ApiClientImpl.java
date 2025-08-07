@@ -129,6 +129,24 @@ public class ApiClientImpl implements ApiClientI {
 
         return new LanguageDto(casted);
     }
+
+    @Override
+    public List<OrganizationDto> getUserOrganizations(String accessToken) {
+        String url = "https://api.github.com/user/orgs";
+
+        return githubWebClient
+                .get()
+                .uri(url)
+                .headers(h -> h.set(HttpHeaders.AUTHORIZATION, GitHubUtil.buildBearerHeader(accessToken)))
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, res ->
+                        res.bodyToMono(String.class).map(body ->
+                                new GitHubApiException("Failed to fetch organizations: " + body)))
+                .bodyToFlux(OrganizationDto.class)
+                .collectList()
+                .block();
+    }
+
     @Override
     public List<ContributorStatsDto> fetchContributorStats(String accessToken, String owner, String repo) {
         String url = "https://api.github.com/repos/" + owner + "/" + repo + "/stats/contributors";

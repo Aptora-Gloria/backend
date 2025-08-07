@@ -12,5 +12,5 @@ public interface ApiClientI {
     List<CommitDto> getCommits(String accessToken, String owner, String repo);
     LanguageDto getRepoLanguages(String accessToken, String owner, String repo);
     List<ContributorStatsDto> fetchContributorStats(String accessToken, String owner, String repo);
-
+    List<OrganizationDto> getUserOrganizations(String accessToken);
 }
