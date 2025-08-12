@@ -6,6 +6,8 @@ public record RepoDto(
         String fullName,
         @JsonProperty("html_url") String htmlUrl,
         String description,
-        boolean fork
+        boolean fork,
+        String login
 ) {}
+
 

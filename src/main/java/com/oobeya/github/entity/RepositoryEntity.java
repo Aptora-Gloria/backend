@@ -1,10 +1,12 @@
 package com.oobeya.github.entity;
 
+import com.oobeya.auth.entity.OwnerType;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "github_repositories")
+@Table(name = "github_repositories",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"htmlUrl"}))
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -21,7 +23,7 @@ public class RepositoryEntity {
     @Column(length = 500)
     private String fullName;
 
-    @Lob
+
     @Column(columnDefinition = "TEXT")
     private String description;
 
@@ -29,5 +31,9 @@ public class RepositoryEntity {
     private String htmlUrl;
 
     private boolean fork;
+
+    @Column(name = "login",nullable = false)
+    private String login;
+
 }
 

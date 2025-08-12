@@ -2,13 +2,11 @@ package com.oobeya.github.service;
 
 import com.oobeya.github.dto.response.RepoDto;
 
+
 import java.util.List;
-//
+
 public interface RepoServiceI {
 
-
-    List<RepoDto> SaveAndFecthRepos(String jwtToken);
-    List<RepoDto> getUserReposFromDb(String login);
-
-
+    List<RepoDto> initUserRepos(String authToken,String ownerLogin);
+    List<RepoDto> getReposFromDb(String ownerLogin);
 }

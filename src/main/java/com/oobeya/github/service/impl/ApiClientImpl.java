@@ -148,6 +148,26 @@ public class ApiClientImpl implements ApiClientI {
     }
 
     @Override
+    public List<RepoDto> getOrgRepos(String accessToken, String orgLogin) {
+        String endpoint = String.format("https://api.github.com/orgs/%s/repos", orgLogin);
+
+        return githubWebClient
+                .get()
+                .uri(endpoint)
+                .headers(h -> h.set(HttpHeaders.AUTHORIZATION, GitHubUtil.buildBearerHeader(accessToken)))
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, res ->
+                        res.bodyToMono(String.class).map(body ->
+                                new GitHubApiException(GitHubConstants.ERROR_REPO_FETCH_FAILED + body)))
+                .bodyToFlux(RepoDto.class)
+                .collectList()
+                .block();
+    }
+
+
+
+
+    @Override
     public List<ContributorStatsDto> fetchContributorStats(String accessToken, String owner, String repo) {
         String url = "https://api.github.com/repos/" + owner + "/" + repo + "/stats/contributors";
 
