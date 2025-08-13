@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface RepositoryRepository extends JpaRepository<RepositoryEntity, Long> {
     List<RepositoryEntity> findByLogin(String login);
     List<RepositoryEntity> findAllByHtmlUrlIn(List<String> htmlUrls);
+    Optional<RepositoryEntity> findByHtmlUrl(String htmlUrl);
 }

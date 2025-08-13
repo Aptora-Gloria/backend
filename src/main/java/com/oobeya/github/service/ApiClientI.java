@@ -14,4 +14,5 @@ public interface ApiClientI {
     List<ContributorStatsDto> fetchContributorStats(String accessToken, String owner, String repo);
     List<OrganizationDto> getUserOrganizations(String accessToken);
     List<RepoDto> getOrgRepos(String accessToken, String orgLogin);
+    List<String> getRepoBranchNames(String accessToken, String ownerLogin, String repoName);
 }

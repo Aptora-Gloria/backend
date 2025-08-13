@@ -86,6 +86,49 @@ public class ApiClientImpl implements ApiClientI {
     }
 
     @Override
+    public List<String> getRepoBranchNames(String accessToken, String ownerLogin, String repoName) {
+        final int perPage = 100;
+        int page = 1;
+        List<String> result = new ArrayList<>();
+
+        while (true) {
+            String endpoint = String.format(
+                    GitHubConstants.REPO_BRANCHES_ENDPOINT_TEMPLATE,
+                    ownerLogin, repoName, perPage, page
+            );
+
+            List<com.oobeya.github.dto.response.BranchDto> pageData = githubWebClient
+                    .get()
+                    .uri(endpoint)
+                    .headers(h -> {
+                        h.set(HttpHeaders.AUTHORIZATION, GitHubUtil.buildBearerHeader(accessToken));
+                        h.set("Accept", "application/vnd.github+json");
+                        h.set("X-GitHub-Api-Version", "2022-11-28");
+                    })
+                    .retrieve()
+                    .onStatus(HttpStatusCode::isError, res ->
+                            res.bodyToMono(String.class).map(body ->
+                                    new GitHubApiException(GitHubConstants.ERROR_REPO_FETCH_FAILED + body)))
+                    .bodyToFlux(com.oobeya.github.dto.response.BranchDto.class)
+                    .collectList()
+                    .block();
+
+            if (pageData == null || pageData.isEmpty()) break;
+
+            for (com.oobeya.github.dto.response.BranchDto b : pageData) {
+                if (b.name() != null && !b.name().isBlank()) result.add(b.name());
+            }
+
+            if (pageData.size() < perPage) break;
+            page++;
+        }
+
+        return result;
+    }
+
+
+
+    @Override
     public List<CommitDto> getCommits(String accessToken, String owner, String repo) {//TODO
         String endpoint = String.format(GitHubConstants.REPO_COMMITS_ENDPOINT_TEMPLATE, owner, repo);
         return githubWebClient

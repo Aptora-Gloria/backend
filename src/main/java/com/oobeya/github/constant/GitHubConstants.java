@@ -13,6 +13,8 @@ public class GitHubConstants {
     public static final String REPO_CONTENTS_ENDPOINT_TEMPLATE = BASE_API_URL + "/repos/%s/%s/contents/%s";
     public static final String USER_ORGS_ENDPOINT = BASE_API_URL + "/user/orgs";
     public static final String TOKEN_ENDPOINT = "/login/oauth/access_token";
+    public static final String REPO_BRANCHES_ENDPOINT_TEMPLATE =
+            "https://api.github.com/repos/%s/%s/branches?per_page=%d&page=%d";
 
     // === Error Messages ===
     public static final String ERROR_USER_NOT_FOUND = "User not found with login: ";
