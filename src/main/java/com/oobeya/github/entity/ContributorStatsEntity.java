@@ -11,6 +11,7 @@ import java.util.List;
 @Setter
 @Table(name = "contributor_stats")
 public class ContributorStatsEntity {
+    //TODO deneme
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
