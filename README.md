@@ -106,7 +106,7 @@ Authorization: Bearer {jwt_token}
 
 - Java 17+
 - Maven 3.8+
-- PostgreSQL
+- cd
 - GitHub OAuth App (Client ID + Secret)
 
 ### Run Locally
