@@ -18,14 +18,14 @@ spring:
       client:
         registration:
           github:
-            client-id: Ov23liaxLAQw7NYKfF3f
-            client-secret: 23a9888845f4f77e115a64cdd9f27688643323a8
+            client-id: Ov23li47zQLpIecBqzmb
+            client-secret: 21f26fe42702591f4e427a380e63e93fe6091d7e
             scope:
               - read:user
               - user:email
               - read:org
               - repo
-            redirect-uri: http://localhost:3000/oauth/callback
+            redirect-uri: http://localhost:3000/auth/callback
             client-name: GitHub
 
         provider:
