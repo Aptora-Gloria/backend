@@ -3,7 +3,7 @@ package com.oobeya.auth.service;
 import com.oobeya.auth.dto.AuthRequest;
 import com.oobeya.auth.dto.AuthResponse;
 import com.oobeya.auth.entity.User;
-import com.oobeya.github.dto.response.GitHubUserDto;
+import com.oobeya.auth.dto.GitHubUserDto;
 
 import java.util.Optional;
 

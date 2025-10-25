@@ -1,4 +1,4 @@
-package com.oobeya.github.dto.response;
+package com.oobeya.auth.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

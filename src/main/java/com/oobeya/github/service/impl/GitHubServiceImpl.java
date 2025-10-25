@@ -1,7 +1,7 @@
 package com.oobeya.github.service.impl;
 
-import com.oobeya.github.dto.response.GitHubAccessTokenResponse;
-import com.oobeya.github.dto.response.GitHubUserDto;
+import com.oobeya.auth.dto.GitHubAccessTokenResponse;
+import com.oobeya.auth.dto.GitHubUserDto;
 import com.oobeya.github.service.ApiClientI;
 import com.oobeya.github.service.GitHubServiceI;
 import lombok.RequiredArgsConstructor;

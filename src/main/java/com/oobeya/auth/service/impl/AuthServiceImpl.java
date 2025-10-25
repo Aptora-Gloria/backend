@@ -3,10 +3,11 @@ package com.oobeya.auth.service.impl;
 import com.oobeya.auth.dto.AuthRequest;
 import com.oobeya.auth.dto.AuthResponse;
 import com.oobeya.auth.entity.OwnerType;
-import com.oobeya.github.dto.response.GitHubAccessTokenResponse;
-import com.oobeya.github.dto.response.GitHubUserDto;
+import com.oobeya.auth.dto.GitHubAccessTokenResponse;
+import com.oobeya.auth.dto.GitHubUserDto;
 
 import com.oobeya.auth.entity.User;
+import com.oobeya.auth.mapper.GitHubUserMapper;
 import com.oobeya.auth.repository.UserRepository;
 import com.oobeya.auth.service.AuthService;
 import com.oobeya.github.exception.GitHubApiException;
@@ -29,49 +30,47 @@ public class AuthServiceImpl  implements AuthService {
 
     @Override
     public AuthResponse login(AuthRequest request) {
-
-        System.out.println("▶ GITHUB CODE: " + request.code());
-        GitHubAccessTokenResponse tokenResponse = githubService.getAccessTokenFromCode(request.code());
+        // 1) GitHub access token al
+        var tokenResponse = githubService.getAccessTokenFromCode(request.code());
         String accessToken = Optional.ofNullable(tokenResponse)
                 .map(GitHubAccessTokenResponse::accessToken)
                 .orElseThrow(() -> new RuntimeException("GitHub access token alınamadı"));
 
-        System.out.println("▶ TOKEN RESPONSE: " + tokenResponse);
+        // 2) Kullanıcı bilgisi çek
+        GitHubUserDto apiUser = githubService.getUserInfo(accessToken);
 
+        // 3) DTO'ya accessToken ekle (record immutable olduğu için yeni örnek)
+        GitHubUserDto dto = new GitHubUserDto(
+                apiUser.id(),
+                apiUser.githubUserId(),
+                apiUser.login(),
+                accessToken,                 // <-- token burada
+                apiUser.name(),
+                apiUser.avatar_url(),
+                apiUser.htmlUrl(),
+                apiUser.ownerType(),
+                apiUser.lastSyncedAt()
+        );
 
-        GitHubUserDto gitHubUser = githubService.getUserInfo(tokenResponse.accessToken());
+        // 4) Upsert: önce githubUserId, yoksa login
+        User entity = userRepository.findByGithubUserId(dto.githubUserId())
+                .orElseGet(() -> userRepository.findByLogin(dto.login()).orElse(null));
 
+        if (entity == null) {
+            entity = GitHubUserMapper.toNewEntity(dto);
+        } else {
+            GitHubUserMapper.updateEntityFromDto(dto, entity);
+            // Mapper set etse de garanti olsun:
+            entity.setAccessToken(accessToken);
+        }
 
-        String login = Optional.ofNullable(gitHubUser)
-                .map(GitHubUserDto::getLogin)
-                .orElseThrow(() -> new RuntimeException("GitHub login bilgisi alınamadı"));
+        userRepository.save(entity);
 
-
-        User user = userRepository.findByLogin(gitHubUser.getLogin())
-                .map(existingUser -> {
-                    // Eğer kullanıcı varsa access token'ı güncelle
-                    existingUser.setAccessToken(accessToken);
-                    return userRepository.save(existingUser);
-                })
-                .orElseGet(() -> {
-                    // Eğer kullanıcı yoksa yeni kayıt oluştur
-                    User newUser = User.builder()
-                            .login(gitHubUser.getLogin())
-                            .email(gitHubUser.getEmail())
-                            .avatarUrl(gitHubUser.getAvatarUrl())
-                            .accessToken(accessToken)
-                            .ownerType(OwnerType.fromGitHubType(gitHubUser.getType()))
-                            .build();
-                    return userRepository.save(newUser);
-                });
-
-
-        // 5. JWT oluştur
-        String jwt = jwtService.createToken(user.getLogin());
-
-        // 6. Token'ı döndür
+        // 5) JWT üret ve dön
+        String jwt = jwtService.createToken(entity.getLogin());
         return new AuthResponse(jwt);
     }
+
 
 
     @Override
@@ -79,16 +78,11 @@ public class AuthServiceImpl  implements AuthService {
         String login = jwtService.getLoginFromToken(token);
 
         User user = userRepository.findByLogin(login)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found for login: " + login));
 
-        return new GitHubUserDto(
-                user.getLogin(),
-                user.getEmail(),
-                user.getLogin(),
-                user.getAvatarUrl(),
-                user.getOwnerType().name()
-        );
+        return GitHubUserMapper.toDto(user);
     }
+
 
     @Override
     public Optional<User> findByLogin(String login) {

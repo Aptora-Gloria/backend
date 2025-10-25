@@ -1,5 +1,8 @@
 package com.oobeya.github.service.impl;
 
+import com.oobeya.auth.dto.GitHubAccessTokenResponse;
+import com.oobeya.auth.dto.GitHubUserDto;
+import com.oobeya.auth.dto.GitHubUserResponse;
 import com.oobeya.github.config.GitHubOAuthProperties;
 import com.oobeya.github.constant.GitHubConstants;
 import com.oobeya.github.dto.response.*;
@@ -42,7 +45,8 @@ public class ApiClientImpl implements ApiClientI {
 
     @Override
     public GitHubUserDto getUserInfo(String accessToken) {
-        return githubWebClient
+        // 1) GitHub API'den response al
+        GitHubUserResponse response = githubWebClient
                 .get()
                 .uri(GitHubConstants.USER_ENDPOINT)
                 .headers(h -> h.set(HttpHeaders.AUTHORIZATION, GitHubUtil.buildBearerHeader(accessToken)))
@@ -50,8 +54,26 @@ public class ApiClientImpl implements ApiClientI {
                 .onStatus(HttpStatusCode::isError, res ->
                         res.bodyToMono(String.class).map(body ->
                                 new GitHubApiException(GitHubConstants.ERROR_USER_INFO_FAILED + body)))
-                .bodyToMono(GitHubUserDto.class)
+                .bodyToMono(GitHubUserResponse.class)  // ← GitHubUserDto yerine GitHubUserResponse
                 .block();
+
+        // 2) Null kontrolü
+        if (response == null) {
+            throw new GitHubApiException("GitHub user info response is null");
+        }
+
+        // 3) GitHubUserResponse → GitHubUserDto'ya map et
+        return new GitHubUserDto(
+                null,                   // id (database id, henüz yok)
+                response.id(),          // githubUserId ← GitHub'dan gelen id
+                response.login(),
+                null,                   // accessToken (AuthService'de set edilecek)
+                response.name(),
+                response.avatar_url(),
+                response.htmlUrl(),
+                response.type(),        // ownerType
+                null                    // lastSyncedAt
+        );
     }
 
     @Override
@@ -69,21 +91,6 @@ public class ApiClientImpl implements ApiClientI {
                 .block();
     }
 
-    @Override
-    public List<ContentDto> getRepoContents(String accessToken, String owner, String repo, String path) {
-        String endpoint = String.format(GitHubConstants.REPO_CONTENTS_ENDPOINT_TEMPLATE, owner, repo, path != null ? path : "");
-        return githubWebClient
-                .get()
-                .uri(endpoint)
-                .headers(h -> h.set(HttpHeaders.AUTHORIZATION, GitHubUtil.buildBearerHeader(accessToken)))
-                .retrieve()
-                .onStatus(HttpStatusCode::isError, res ->
-                        res.bodyToMono(String.class).map(body ->
-                                new GitHubApiException(GitHubConstants.ERROR_REPO_CONTENTS_FAILED + body)))
-                .bodyToFlux(ContentDto.class)
-                .collectList()
-                .block();
-    }
 
     @Override
     public List<String> getRepoBranchNames(String accessToken, String ownerLogin, String repoName) {
@@ -210,40 +217,7 @@ public class ApiClientImpl implements ApiClientI {
 
 
 
-    @Override
-    public List<ContributorStatsDto> fetchContributorStats(String accessToken, String owner, String repo) {
-        String url = "https://api.github.com/repos/" + owner + "/" + repo + "/stats/contributors";
 
-        // 1. Ham JSON metni al
-        String rawJson = githubWebClient.get()
-                .uri(url)
-                .headers(headers -> headers.setBearerAuth(accessToken))
-                .retrieve()
-                .onStatus(HttpStatusCode::isError, res ->
-                        res.bodyToMono(String.class).map(body ->
-                                new GitHubApiException("Commit activity fetch failed: " + body)))
-                .bodyToMono(String.class)
-                .block();
-
-        // 2. null ya da boş kontrolü
-        if (rawJson == null || rawJson.isBlank()) {
-                throw new GitHubApiException("Empty response from GitHub contributor stats");
-        }
-
-        // 3. Eğer { ile başlıyorsa, muhtemelen mesaj içeriyordur (202 gibi)
-        if (rawJson.trim().startsWith("{")) {
-                throw new GitHubApiException("GitHub contributor stats not ready: " + rawJson);
-        }
-
-        try {
-                // 4. JSON string'i ContributorStatsDto dizisine parse et
-                ContributorStatsDto[] stats = new com.fasterxml.jackson.databind.ObjectMapper()
-                        .readValue(rawJson, ContributorStatsDto[].class);
-                return Arrays.asList(stats);
-        } catch (Exception e) {
-                throw new GitHubApiException("JSON parse error for contributor stats: " + e.getMessage());
-        }
-        }
 
 
 

@@ -1,7 +1,7 @@
 package com.oobeya.github.service;
 
-import com.oobeya.github.dto.response.GitHubAccessTokenResponse;
-import com.oobeya.github.dto.response.GitHubUserDto;
+import com.oobeya.auth.dto.GitHubAccessTokenResponse;
+import com.oobeya.auth.dto.GitHubUserDto;
 
 public interface GitHubServiceI {
     GitHubAccessTokenResponse getAccessTokenFromCode(String code);
