@@ -5,6 +5,7 @@ import com.oobeya.auth.dto.GitHubUserDto;
 import com.oobeya.auth.dto.GitHubUserResponse;
 import com.oobeya.github.config.GitHubOAuthProperties;
 import com.oobeya.github.constant.GitHubConstants;
+import com.oobeya.github.dto.request.RepoInitrequest;
 import com.oobeya.github.dto.response.*;
 import com.oobeya.github.exception.GitHubApiException;
 import com.oobeya.github.service.ApiClientI;
@@ -77,7 +78,7 @@ public class ApiClientImpl implements ApiClientI {
     }
 
     @Override
-    public List<RepoDto> getUserRepos(String accessToken) {
+    public List<RepoInitrequest> getUserRepos(String accessToken) {
         return githubWebClient
                 .get()
                 .uri(GitHubConstants.USER_REPOS_ENDPOINT)
@@ -86,7 +87,7 @@ public class ApiClientImpl implements ApiClientI {
                 .onStatus(HttpStatusCode::isError, res ->
                         res.bodyToMono(String.class).map(body ->
                                 new GitHubApiException(GitHubConstants.ERROR_REPO_FETCH_FAILED + body)))
-                .bodyToFlux(RepoDto.class)
+                .bodyToFlux(RepoInitrequest.class)
                 .collectList()
                 .block();
     }

@@ -1,8 +1,22 @@
 package com.oobeya.github.entity;
 
 import com.oobeya.github.util.BranchUid;
-import jakarta.persistence.*;
-import lombok.*;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "github_branches")
@@ -23,7 +37,7 @@ public class BranchEntity {
     private String uid;  //  UID (repo_html_url + branch_name)
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "repo_html_url", referencedColumnName = "htmlUrl", nullable = false)
+    @JoinColumn(name = "repo_html_url", referencedColumnName = "html_url", nullable = false)
     private RepositoryEntity repository;
 
     @PrePersist

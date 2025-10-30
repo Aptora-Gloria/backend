@@ -1,7 +1,8 @@
 package com.oobeya.github.service.impl;
 
-import com.oobeya.auth.entity.OwnerType;
+
 import com.oobeya.auth.service.AuthService;
+import com.oobeya.github.dto.request.RepoInitrequest;
 import com.oobeya.github.dto.response.RepoDto;
 
 import com.oobeya.github.entity.RepositoryEntity;
@@ -22,28 +23,27 @@ public class RepoServiceImpl implements RepoServiceI {
     private final ApiClientI apiClient;
     private final AuthService authService;
 
-
     @Override
-    public List<RepoDto> initUserRepos(String authToken, String ownerLogin) {
+    public List<RepoInitrequest> initUserRepos(String authToken) {
         String accessToken = authService.getAccessTokenFromToken(authToken);
-        List<RepoDto> repos = apiClient.getUserRepos(accessToken);
+        List<RepoInitrequest> repos = apiClient.getUserRepos(accessToken);
 
-        saveRepos(repos,ownerLogin);
+        saveRepos(repos);
         return repos;
     }
 
     @Override
     public List<RepoDto> getReposFromDb(String ownerLogin) {
-        return repositoryRepo.findByLogin(ownerLogin)
+        return repositoryRepo.findAllByOwnerLoginOrderByPushedAtDesc(ownerLogin)
                 .stream()
                 .map(RepoMapper::toDto)
                 .toList();
     }
 
-    private void saveRepos(List<RepoDto> repos, String ownerLogin) {
+    private void saveRepos(List<RepoInitrequest> repos) {
 
         List<String> incomingUrls = repos.stream()
-                .map(RepoDto::htmlUrl)
+                .map(RepoInitrequest::html_url)
                 .toList();
 
         // 2. Veritabanında bu url'lere sahip olanları çek
@@ -53,12 +53,12 @@ public class RepoServiceImpl implements RepoServiceI {
                 .toList();
 
         // 3. Daha önce eklenmemiş olanları filtrele
-        List<RepoDto> newRepos = repos.stream()
-                .filter(repo -> !existingUrls.contains(repo.htmlUrl()))
+        List<RepoInitrequest> newRepos = repos.stream()
+                .filter(repo -> !existingUrls.contains(repo.html_url()))
                 .toList();
 
 
-        List<RepositoryEntity> entitiesToSave = RepoMapper.toEntities(newRepos, ownerLogin);
+        List<RepositoryEntity> entitiesToSave = RepoMapper.toEntities(newRepos);
 
 
         repositoryRepo.saveAll(entitiesToSave);

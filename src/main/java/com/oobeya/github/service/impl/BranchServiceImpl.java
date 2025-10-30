@@ -36,27 +36,14 @@ public class BranchServiceImpl implements BranchServiceI {
         RepositoryEntity repo = repositoryRepository.findByHtmlUrl(repoHtmlUrl)
                 .orElseThrow(() -> new IllegalArgumentException("Repository not found by htmlUrl: " + repoHtmlUrl));
 
-        String owner = resolveOwner(repo); // <<< tek fark burası
+        String owner = repo.getOwnerLogin(); // <<< tek fark burası
         List<String> branchNames = apiClient.getRepoBranchNames(accessToken, owner, repo.getName());
 
         saveBranches(branchNames, repo);
         return getBranchesFromDb(repoHtmlUrl);
     }
 
-    private String resolveOwner(RepositoryEntity repo) {
-        String full = repo.getFullName();
-        if (full != null && full.contains("/")) return full.substring(0, full.indexOf('/'));
-        String url = repo.getHtmlUrl();
-        if (url != null) {
-            String s = url.replace("https://","").replace("http://","")
-                    .replace("git@","").replace("github.com:","github.com/")
-                    .replace(".git","");
-            String[] p = s.split("/");
-            if (p.length >= 3 && p[0].equalsIgnoreCase("github.com")) return p[1];
-        }
 
-        return repo.getLogin();
-    }
 
 
     @Override
