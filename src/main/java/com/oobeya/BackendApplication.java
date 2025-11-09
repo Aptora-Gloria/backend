@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ComponentScan; // Bu satırı ekleyin
 
-import com.oobeya.github.config.GitHubOAuthProperties;
+import com.oobeya.github.infrastructure.core.config.GitHubOAuthProperties;
 
 // @SpringBootApplication altında, taranacak paketleri belirtiyoruz.
 @SpringBootApplication

@@ -1,6 +1,6 @@
 /*package com.oobeya.auth;
 
-import com.oobeya.auth.entity.User;
+import com.oobeya.auth.infrastructure.persistence.entity.User;
 import com.oobeya.auth.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

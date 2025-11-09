@@ -1,6 +1,6 @@
 package com.oobeya.auth.security;
 
-import com.oobeya.auth.security.jwtservice.JwtService;
+import com.oobeya.auth.application.TokenPort;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,7 +20,7 @@ import java.io.IOException;
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtService jwtService;
+    private final TokenPort tokenPort;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -37,7 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = authHeader.substring(7);
         try {
-            String login = jwtService.getLoginFromToken(token);
+            String login = tokenPort.getLoginFromToken(token);
 
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(login, null, null);
