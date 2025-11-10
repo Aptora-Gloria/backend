@@ -3,13 +3,16 @@ package com.oobeya.github.infrastructure.persistence.adapter;
 import com.oobeya.auth.application.AuthServicePort;
 import com.oobeya.github.api.response.LanguageDto;
 import com.oobeya.github.api.response.LanguageUiDto;
-import com.oobeya.github.infrastructure.persistence.entity.LanguageEntity;
-import com.oobeya.github.infrastructure.core.mapper.LanguageMapper;
-import com.oobeya.github.infrastructure.persistence.jpa.LanguageRepository;
 import com.oobeya.github.application.port.ApiClientPort;
 import com.oobeya.github.application.port.LanguageServicePort;
+import com.oobeya.github.infrastructure.core.mapper.LanguageMapper;
+import com.oobeya.github.infrastructure.persistence.entity.LanguageEntity;
+import com.oobeya.github.infrastructure.persistence.entity.RepositoryEntity;
+import com.oobeya.github.infrastructure.persistence.jpa.LanguageRepository;
+import com.oobeya.github.infrastructure.persistence.jpa.RepositoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -19,41 +22,65 @@ public class LanguageServiceAdapter implements LanguageServicePort {
 
     private final ApiClientPort apiClient;
     private final AuthServicePort authServicePort;
-    private final LanguageRepository repository;
+    private final LanguageRepository languageRepository;
+    private final RepositoryRepository repositoryRepository;
 
     /**
-     * 1️⃣ GitHub'dan dilleri çek ve DB'ye kaydet
+     * Fetches languages from GitHub API and saves them to database.
+     * 
+     * @param authHeader Authorization header
+     * @param repositoryId Repository ID
+     * @return LanguageDto from GitHub API
      */
     @Override
-    public LanguageDto getRepoLanguages(String authHeader, String owner, String repo) {
+    @Transactional
+    public LanguageDto getRepoLanguages(String authHeader, Long repositoryId) {
         String accessToken = authServicePort.getAccessTokenFromToken(authHeader);
 
-        // GitHub'dan veriyi çek
-        LanguageDto dto = apiClient.getRepoLanguages(accessToken, owner, repo);
+        // Get repository entity
+        RepositoryEntity repository = repositoryRepository.findById(repositoryId)
+                .orElseThrow(() -> new IllegalArgumentException("Repository not found with id: " + repositoryId));
 
-        // Önce eski veriyi sil
-        repository.deleteByRepoName(repo);
+        // Fetch languages from GitHub API
+        String owner = repository.getOwnerLogin();
+        String repoName = repository.getName();
+        LanguageDto dto = apiClient.getRepoLanguages(accessToken, owner, repoName);
 
-        // Yeni veriyi kaydet
-        List<LanguageEntity> entities = LanguageMapper.toEntities(repo, dto);
-        repository.saveAll(entities);
+        // Delete old languages for this repository
+        languageRepository.deleteByRepository_Id(repositoryId);
+
+        // Save new languages
+        List<LanguageEntity> entities = LanguageMapper.toEntities(dto, repository);
+        if (!entities.isEmpty()) {
+            languageRepository.saveAll(entities);
+        }
 
         return dto;
     }
 
     /**
-     * 2️⃣ DB'den ham Map formatında getir
+     * Gets languages from database by repository ID (raw Map format).
+     * 
+     * @param repositoryId Repository ID
+     * @return LanguageDto
      */
-    public LanguageDto getLanguagesFromDb(String repo) {
-        List<LanguageEntity> entities = repository.findByRepoName(repo);
+    @Override
+    @Transactional(readOnly = true)
+    public LanguageDto getLanguagesFromDb(Long repositoryId) {
+        List<LanguageEntity> entities = languageRepository.findAllByRepository_Id(repositoryId);
         return LanguageMapper.toDto(entities);
     }
 
     /**
-     * 3️⃣ DB'den UI'ye uygun (yüzde + toplam) formatta getir
+     * Gets languages from database by repository ID (UI format with percentages).
+     * 
+     * @param repositoryId Repository ID
+     * @return LanguageUiDto
      */
-    public LanguageUiDto getLanguagesForUi(String repo) {
-        List<LanguageEntity> entities = repository.findByRepoName(repo);
+    @Override
+    @Transactional(readOnly = true)
+    public LanguageUiDto getLanguagesForUi(Long repositoryId) {
+        List<LanguageEntity> entities = languageRepository.findAllByRepository_Id(repositoryId);
         return LanguageMapper.toUiDto(entities);
     }
 }

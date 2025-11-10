@@ -19,20 +19,20 @@ public class BranchController {
     @PostMapping("/branches/init")
     public ResponseEntity<List<BranchDto>> initBranches(
             @RequestHeader("Authorization") String authHeader,
-            @RequestParam("repoHtmlUrl") String repoHtmlUrl
+            @RequestParam("repo_id") long repo_id
     ) {
         return ResponseEntity.ok(
-                branchService.initRepoBranches(authHeader, repoHtmlUrl)
+                branchService.initRepoBranches(authHeader, repo_id)
         );
     }
 
 
     @GetMapping("/branches")
     public ResponseEntity<List<BranchDto>> getBranches(
-            @RequestParam("repoHtmlUrl") String repoHtmlUrl
+            @RequestParam("repo_id") long repo_id
     ) {
         return ResponseEntity.ok(
-                branchService.getBranchesFromDb(repoHtmlUrl)
+                branchService.getBranchesFromDb(repo_id)
         );
     }
 }

@@ -1,7 +1,5 @@
 package com.oobeya.github.infrastructure.persistence.entity;
 
-import com.oobeya.github.infrastructure.util.BranchUid;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -10,8 +8,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,16 +29,10 @@ public class BranchEntity {
     @Column(nullable = false, length = 255)
     private String name;
 
-    @Column(nullable = false, length = 255 ,unique = true)
-    private String uid;  //  UID (repo_html_url + branch_name)
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "repo_html_url", referencedColumnName = "html_url", nullable = false)
+    @JoinColumn(name = "repo_id", referencedColumnName = "id", nullable = false)
     private RepositoryEntity repository;
 
-    @PrePersist
-    @PreUpdate
-    private void generateUid() {
-        this.uid = BranchUid.of(repository.getHtmlUrl(), this.name);
-    }
+
 }

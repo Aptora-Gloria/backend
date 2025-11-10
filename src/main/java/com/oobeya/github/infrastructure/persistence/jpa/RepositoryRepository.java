@@ -9,6 +9,7 @@ import java.util.Optional;
 public interface RepositoryRepository extends JpaRepository<RepositoryEntity, Long> {
 
     List<RepositoryEntity> findAllByOwnerLoginOrderByPushedAtDesc(String ownerLogin);
+    List<RepositoryEntity> findById(int id);
 
     List<RepositoryEntity> findAllByHtmlUrlIn(List<String> htmlUrls);
     List<RepositoryEntity> findByGithubRepoId(Long githubRepoId);

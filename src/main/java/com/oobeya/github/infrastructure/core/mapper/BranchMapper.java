@@ -1,6 +1,5 @@
 package com.oobeya.github.infrastructure.core.mapper;
 
-
 import com.oobeya.github.api.response.BranchDto;
 import com.oobeya.github.infrastructure.persistence.entity.BranchEntity;
 import com.oobeya.github.infrastructure.persistence.entity.RepositoryEntity;
@@ -14,8 +13,7 @@ public final class BranchMapper {
     public static BranchDto toDto(BranchEntity e) {
         return new BranchDto(
                 e.getName(),
-                e.getUid(),
-                e.getRepository().getHtmlUrl()
+                e.getRepository().getId()
         );
     }
 
