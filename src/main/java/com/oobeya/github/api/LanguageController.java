@@ -15,30 +15,28 @@ public class LanguageController {
 
     private final LanguageServicePort languageService;
 
-
     @PostMapping("/languages/init")
     public ResponseEntity<LanguageDto> initLanguages(
             @RequestHeader("Authorization") String authHeader,
-            @RequestBody LanguageInitRequest request) {
-
-        return ResponseEntity.ok(languageService.getRepoLanguages(authHeader, request.owner(), request.repo()));
+            @RequestBody LanguageInitRequest request
+    ) {
+        LanguageDto dto = languageService.getRepoLanguages(authHeader, request.repositoryId());
+        return ResponseEntity.ok(dto);
     }
 
-
-    @GetMapping("/languages/get")
+    @GetMapping("/languages/repository/{repositoryId}")
     public ResponseEntity<LanguageDto> getLanguagesFromDb(
-            @RequestHeader("Authorization") String authHeader,
-            @RequestParam("repo") String repo) {
-
-        return ResponseEntity.ok(languageService.getLanguagesFromDb(repo));
+            @PathVariable("repositoryId") Long repositoryId
+    ) {
+        LanguageDto dto = languageService.getLanguagesFromDb(repositoryId);
+        return ResponseEntity.ok(dto);
     }
 
-
-    @GetMapping("/languages/ui")
+    @GetMapping("/languages/repository/{repositoryId}/ui")
     public ResponseEntity<LanguageUiDto> getLanguagesForUi(
-            @RequestHeader("Authorization") String authHeader,
-            @RequestParam("repo") String repo) {
-
-        return ResponseEntity.ok(languageService.getLanguagesForUi(repo));
+            @PathVariable("repositoryId") Long repositoryId
+    ) {
+        LanguageUiDto uiDto = languageService.getLanguagesForUi(repositoryId);
+        return ResponseEntity.ok(uiDto);
     }
 }

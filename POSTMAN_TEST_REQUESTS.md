@@ -1,4 +1,4 @@
-# Postman Test İstekleri - Branch ve Commit
+# Postman Test İstekleri - Branch, Commit ve Language
 
 ## Base URL
 ```
