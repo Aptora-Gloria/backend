@@ -31,13 +31,29 @@ public class AuthServiceAdapter implements AuthServicePort {
     @Override
     public AuthResponse login(AuthRequest request) {
         // 1) GitHub access token al
-        var tokenResponse = githubService.getAccessTokenFromCode(request.code());
-        String accessToken = Optional.ofNullable(tokenResponse)
-                .map(GitHubAccessTokenResponse::accessToken)
-                .orElseThrow(() -> new RuntimeException("GitHub access token alınamadı"));
+        GitHubAccessTokenResponse tokenResponse;
+        try {
+            tokenResponse = githubService.getAccessTokenFromCode(request.code());
+        } catch (GitHubApiException e) {
+            throw new GitHubApiException("Failed to exchange authorization code for access token: " + e.getMessage(), e);
+        }
+        
+        if (tokenResponse == null) {
+            throw new GitHubApiException("GitHub access token response is null. The authorization code may be invalid or expired.");
+        }
+        
+        String accessToken = tokenResponse.accessToken();
+        if (accessToken == null || accessToken.isEmpty()) {
+            throw new GitHubApiException("GitHub access token is null or empty in the response.");
+        }
 
         // 2) Kullanıcı bilgisi çek
-        GitHubUserDto apiUser = githubService.getUserInfo(accessToken);
+        GitHubUserDto apiUser;
+        try {
+            apiUser = githubService.getUserInfo(accessToken);
+        } catch (GitHubApiException e) {
+            throw new GitHubApiException("Failed to fetch user info from GitHub: " + e.getMessage(), e);
+        }
 
         // 3) DTO'ya accessToken ekle (record immutable olduğu için yeni örnek)
         GitHubUserDto dto = new GitHubUserDto(

@@ -26,8 +26,14 @@ public class AuthController {
 
     // 2. Me (kendi bilgini getir) endpoint'i
     @GetMapping("/me")
-    public ResponseEntity<GitHubUserDto> me(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
+    public ResponseEntity<GitHubUserDto> me(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorizationHeader) {
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(401).build();
+        }
         String token = authorizationHeader.replace("Bearer ", "").trim();
+        if (token.isEmpty()) {
+            return ResponseEntity.status(401).build();
+        }
         GitHubUserDto user = authServicePort.getCurrentUser(token);
         return ResponseEntity.ok(user);
     }

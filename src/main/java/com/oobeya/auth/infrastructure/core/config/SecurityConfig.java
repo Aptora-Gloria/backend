@@ -21,8 +21,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-
-
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
@@ -31,14 +29,19 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login", "/auth/me", "/oauth2/**", "/login/oauth2/**").permitAll()
+                        // Frontend custom OAuth kullandığı için /auth/login ve /auth/me endpoint'leri permitAll
+                        // /auth/me endpoint'inde token kontrolü controller'da manuel olarak yapılıyor
+                        // JwtAuthenticationFilter token'ı parse edip SecurityContext'e set ediyor ama
+                        // authorization kontrolü controller'da yapılıyor
+                        .requestMatchers("/auth/login", "/auth/me").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .oauth2Login(oauth -> oauth
-                        .defaultSuccessUrl("http://localhost:3000/auth/callback", true)
-                        .failureUrl("http://localhost:3000/auth/login?error=true")
-                )
+                // Spring OAuth2 login yapılandırmasını KALDIR - Frontend custom OAuth kullanıyor
+                // .oauth2Login(oauth -> oauth
+                //         .defaultSuccessUrl("http://localhost:5173/auth/callback", true)
+                //         .failureUrl("http://localhost:5173/auth/callback?error=true")
+                // )
                 .formLogin(form -> form.disable())
                 .httpBasic(httpBasic -> httpBasic.disable());
 
@@ -48,14 +51,14 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000"));
+        // Frontend port: 5173 (Vite default)
+        config.setAllowedOrigins(List.of("http://localhost:5173"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
-
         return source;
     }
 }

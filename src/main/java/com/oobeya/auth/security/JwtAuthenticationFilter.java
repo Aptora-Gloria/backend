@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -39,13 +40,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String login = tokenPort.getLoginFromToken(token);
 
+            // Spring Security'nin authenticated() kontrolü için authorities gerekiyor
+            // Boş bir authority listesi ekliyoruz (ROLE_USER gibi bir role de eklenebilir)
             UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(login, null, null);
+                    new UsernamePasswordAuthenticationToken(login, null, List.of());
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } catch (Exception e) {
             log.warn("JWT Authentication failed: {}", e.getMessage());
+            // Token geçersizse SecurityContext'i temizle
+            SecurityContextHolder.clearContext();
         }
 
         filterChain.doFilter(request, response);
