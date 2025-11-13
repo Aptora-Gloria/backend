@@ -25,7 +25,7 @@ spring:
               - user:email
               - read:org
               - repo
-            redirect-uri: http://localhost:3000/auth/callback
+            redirect-uri: http://localhost:5173/auth/callback
             client-name: GitHub
 
         provider:

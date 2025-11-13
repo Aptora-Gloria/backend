@@ -1,0 +1,1161 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "optimetric GitHub Analytics API",
+    "description": "GitHub repository analytics platform API. Provides endpoints for authentication, repository management, branches, commits, and language statistics.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "optimetric API Support"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Local development server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT token obtained from /auth/login endpoint"
+      }
+    },
+    "schemas": {
+      "AuthRequest": {
+        "type": "object",
+        "required": ["code"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "GitHub OAuth authorization code"
+          }
+        }
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "JWT access token"
+          }
+        }
+      },
+      "GitHubUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "githubUserId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "login": {
+            "type": "string"
+          },
+          "accessToken": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "avatar_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "htmlUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "ownerType": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastSyncedAt": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "RepoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "githubRepoId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "htmlUrl": {
+            "type": "string"
+          },
+          "isPrivate": {
+            "type": "boolean"
+          },
+          "isFork": {
+            "type": "boolean"
+          },
+          "stargazersCount": {
+            "type": "integer"
+          },
+          "watchersCount": {
+            "type": "integer"
+          },
+          "forksCount": {
+            "type": "integer"
+          },
+          "openIssuesCount": {
+            "type": "integer"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "language": {
+            "type": "string",
+            "nullable": true
+          },
+          "defaultBranch": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "pushedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ownerLogin": {
+            "type": "string"
+          },
+          "ownerType": {
+            "type": "string",
+            "enum": ["USER", "ORGANIZATION"]
+          },
+          "lastSyncedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "RepoInitRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "node_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "full_name": {
+            "type": "string"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/Owner"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "html_url": {
+            "type": "string"
+          },
+          "private": {
+            "type": "boolean"
+          },
+          "fork": {
+            "type": "boolean"
+          },
+          "stargazers_count": {
+            "type": "integer"
+          },
+          "watchers_count": {
+            "type": "integer"
+          },
+          "forks_count": {
+            "type": "integer"
+          },
+          "open_issues_count": {
+            "type": "integer"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "language": {
+            "type": "string",
+            "nullable": true
+          },
+          "default_branch": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          },
+          "pushed_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "permissions": {
+            "$ref": "#/components/schemas/Permissions"
+          }
+        }
+      },
+      "Owner": {
+        "type": "object",
+        "properties": {
+          "login": {
+            "type": "string"
+          },
+          "node_id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "Permissions": {
+        "type": "object",
+        "properties": {
+          "admin": {
+            "type": "boolean"
+          },
+          "maintain": {
+            "type": "boolean"
+          },
+          "push": {
+            "type": "boolean"
+          },
+          "triage": {
+            "type": "boolean"
+          },
+          "pull": {
+            "type": "boolean"
+          }
+        }
+      },
+      "BranchDto": {
+        "type": "object",
+        "required": ["name", "repo_id"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Branch name"
+          },
+          "repo_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Repository ID"
+          }
+        }
+      },
+      "CommitDto": {
+        "type": "object",
+        "properties": {
+          "sha": {
+            "type": "string",
+            "description": "Commit SHA hash"
+          },
+          "node_id": {
+            "type": "string"
+          },
+          "commit": {
+            "$ref": "#/components/schemas/CommitInfo"
+          },
+          "author": {
+            "$ref": "#/components/schemas/AuthorInfo"
+          },
+          "committer": {
+            "$ref": "#/components/schemas/CommitterInfo"
+          },
+          "parents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParentInfo"
+            }
+          },
+          "html_url": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "description": "API URL"
+          }
+        }
+      },
+      "CommitInfo": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "author": {
+            "$ref": "#/components/schemas/CommitAuthor"
+          },
+          "committer": {
+            "$ref": "#/components/schemas/CommitCommitter"
+          }
+        }
+      },
+      "CommitAuthor": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CommitCommitter": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AuthorInfo": {
+        "type": "object",
+        "properties": {
+          "login": {
+            "type": "string"
+          }
+        }
+      },
+      "CommitterInfo": {
+        "type": "object",
+        "properties": {
+          "login": {
+            "type": "string"
+          }
+        }
+      },
+      "ParentInfo": {
+        "type": "object",
+        "properties": {
+          "sha": {
+            "type": "string"
+          }
+        }
+      },
+      "CommitInitRequest": {
+        "type": "object",
+        "required": ["repositoryId", "branchId"],
+        "properties": {
+          "repositoryId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Repository ID"
+          },
+          "branchId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Branch ID"
+          }
+        }
+      },
+      "LanguageDto": {
+        "type": "object",
+        "properties": {
+          "languages": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64",
+              "description": "Bytes of code for the language"
+            },
+            "description": "Map of language names to byte counts"
+          }
+        }
+      },
+      "LanguageUiDto": {
+        "type": "object",
+        "properties": {
+          "languages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LanguageItem"
+            }
+          },
+          "totalBytes": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "LanguageItem": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "bytes": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "percentage": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "LanguageInitRequest": {
+        "type": "object",
+        "required": ["repositoryId"],
+        "properties": {
+          "repositoryId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Repository ID"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Login with GitHub OAuth code",
+        "description": "Authenticates user with GitHub OAuth authorization code and returns JWT token",
+        "operationId": "login",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthRequest"
+              },
+              "example": {
+                "code": "github_oauth_code_here"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": ["Authentication"],
+        "summary": "Get current user information",
+        "description": "Returns the current authenticated user's information",
+        "operationId": "getCurrentUser",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Bearer JWT token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GitHubUserDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/github/repos/init/user": {
+      "post": {
+        "tags": ["Repositories"],
+        "summary": "Initialize user repositories",
+        "description": "Fetches and saves all repositories for the authenticated user from GitHub",
+        "operationId": "initUserRepos",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Bearer JWT token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of initialized repositories",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RepoInitRequest"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/github/repos": {
+      "get": {
+        "tags": ["Repositories"],
+        "summary": "Get repositories from database",
+        "description": "Retrieves all repositories for a given owner from the database",
+        "operationId": "getReposFromDb",
+        "parameters": [
+          {
+            "name": "ownerLogin",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "GitHub owner login (username or organization name)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of repositories",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RepoDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/github/branches/init": {
+      "post": {
+        "tags": ["Branches"],
+        "summary": "Initialize repository branches",
+        "description": "Fetches and saves all branches for a repository from GitHub",
+        "operationId": "initBranches",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Bearer JWT token"
+          },
+          {
+            "name": "repo_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Repository ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of initialized branches",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BranchDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/github/branches": {
+      "get": {
+        "tags": ["Branches"],
+        "summary": "Get branches from database",
+        "description": "Retrieves all branches for a repository from the database",
+        "operationId": "getBranches",
+        "parameters": [
+          {
+            "name": "repo_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Repository ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of branches",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BranchDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/github/commits/init": {
+      "post": {
+        "tags": ["Commits"],
+        "summary": "Initialize repository commits",
+        "description": "Fetches and saves commits for a repository and branch from GitHub",
+        "operationId": "initCommits",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Bearer JWT token"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommitInitRequest"
+              },
+              "example": {
+                "repositoryId": 1,
+                "branchId": 1
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "List of initialized commits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CommitDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/github/commits/repository/{repositoryId}": {
+      "get": {
+        "tags": ["Commits"],
+        "summary": "Get commits by repository ID",
+        "description": "Retrieves all commits for a repository from the database",
+        "operationId": "getCommitsByRepository",
+        "parameters": [
+          {
+            "name": "repositoryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Repository ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of commits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CommitDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/github/commits/branch/{branchId}": {
+      "get": {
+        "tags": ["Commits"],
+        "summary": "Get commits by branch ID",
+        "description": "Retrieves all commits for a branch from the database",
+        "operationId": "getCommitsByBranch",
+        "parameters": [
+          {
+            "name": "branchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Branch ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of commits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CommitDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/github/commits/repository/{repositoryId}/branch/{branchId}": {
+      "get": {
+        "tags": ["Commits"],
+        "summary": "Get commits by repository and branch ID",
+        "description": "Retrieves all commits for a specific repository and branch from the database",
+        "operationId": "getCommitsByRepositoryAndBranch",
+        "parameters": [
+          {
+            "name": "repositoryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Repository ID"
+          },
+          {
+            "name": "branchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Branch ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of commits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CommitDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/github/languages/init": {
+      "post": {
+        "tags": ["Languages"],
+        "summary": "Initialize repository languages",
+        "description": "Fetches and saves language statistics for a repository from GitHub",
+        "operationId": "initLanguages",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Bearer JWT token"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LanguageInitRequest"
+              },
+              "example": {
+                "repositoryId": 1
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Language statistics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LanguageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/github/languages/repository/{repositoryId}": {
+      "get": {
+        "tags": ["Languages"],
+        "summary": "Get languages from database (Map format)",
+        "description": "Retrieves language statistics for a repository from the database in map format",
+        "operationId": "getLanguagesFromDb",
+        "parameters": [
+          {
+            "name": "repositoryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Repository ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Language statistics in map format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LanguageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/github/languages/repository/{repositoryId}/ui": {
+      "get": {
+        "tags": ["Languages"],
+        "summary": "Get languages for UI (with percentages)",
+        "description": "Retrieves language statistics for a repository from the database in UI-friendly format with percentages",
+        "operationId": "getLanguagesForUi",
+        "parameters": [
+          {
+            "name": "repositoryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Repository ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Language statistics in UI format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LanguageUiDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "Authentication and user management endpoints"
+    },
+    {
+      "name": "Repositories",
+      "description": "Repository management endpoints"
+    },
+    {
+      "name": "Branches",
+      "description": "Branch management endpoints"
+    },
+    {
+      "name": "Commits",
+      "description": "Commit tracking endpoints"
+    },
+    {
+      "name": "Languages",
+      "description": "Language statistics endpoints"
+    }
+  ]
+}
+

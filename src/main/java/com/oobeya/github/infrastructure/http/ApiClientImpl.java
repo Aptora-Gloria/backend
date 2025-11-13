@@ -6,7 +6,6 @@ import com.oobeya.auth.api.dto.GitHubUserResponse;
 import com.oobeya.github.api.response.BranchDto;
 import com.oobeya.github.api.response.CommitDto;
 import com.oobeya.github.api.response.LanguageDto;
-import com.oobeya.github.api.response.RepoDto;
 import com.oobeya.github.application.port.ApiClientPort;
 import com.oobeya.github.infrastructure.core.config.GitHubOAuthProperties;
 import com.oobeya.github.infrastructure.core.constant.GitHubConstants;
@@ -16,7 +15,11 @@ import com.oobeya.github.infrastructure.util.GitHubUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import java.util.*;
 
@@ -29,16 +32,18 @@ public class ApiClientImpl implements ApiClientPort {
 
     @Override
     public GitHubAccessTokenResponse getAccessToken(String code) {
-        var tokenRequest = Map.of(
-                "client_id", properties.getClientId(),
-                "client_secret", properties.getClientSecret(),
-                "code", code
-        );
+        // GitHub OAuth token endpoint requires form-encoded data, not JSON
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+        formData.add("client_id", properties.getClientId());
+        formData.add("client_secret", properties.getClientSecret());
+        formData.add("code", code);
 
         return githubWebClient
                 .post()
                 .uri(GitHubConstants.TOKEN_ENDPOINT)
-                .bodyValue(tokenRequest)
+                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .body(BodyInserters.fromFormData(formData))
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, res ->
                         res.bodyToMono(String.class).map(body ->
