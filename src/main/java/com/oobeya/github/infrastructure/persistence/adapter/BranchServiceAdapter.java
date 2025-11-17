@@ -27,23 +27,23 @@ public class BranchServiceAdapter implements BranchServicePort {
 
     @Override
     @Transactional
-    public List<BranchDto> initRepoBranches(String authToken, String fullName) {
-        String accessToken = authServicePort.getAccessTokenFromToken(authToken);
+    public List<BranchDto> initRepoBranches(String login, String fullName) {
+        String accessToken = authServicePort.getAccessTokenFromLogin(login);
 
-        RepositoryEntity repo = repoServicePort.getByFullNameForCurrentUser(authToken, fullName)
+        RepositoryEntity repo = repoServicePort.getByFullNameForCurrentUser(login, fullName)
                 .orElseThrow(() -> new IllegalArgumentException("Repository not found with fullName: " + fullName));
 
         String owner = repo.getOwnerLogin();
         List<String> branchNames = apiClient.getRepoBranchNames(accessToken, owner, repo.getName());
 
         saveBranches(branchNames, repo);
-        return getBranchesByFullName(authToken, fullName);
+        return getBranchesByFullName(login, fullName);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<BranchDto> getBranchesByFullName(String authToken, String fullName) {
-        RepositoryEntity repo = repoServicePort.getByFullNameForCurrentUser(authToken, fullName)
+    public List<BranchDto> getBranchesByFullName(String login, String fullName) {
+        RepositoryEntity repo = repoServicePort.getByFullNameForCurrentUser(login, fullName)
                 .orElseThrow(() -> new IllegalArgumentException("Repository not found with fullName: " + fullName));
 
         return branchRepository.findByRepository(repo)

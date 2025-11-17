@@ -11,8 +11,8 @@ import java.util.Optional;
 
 public interface RepoServicePort {
 
-    List<RepoInitrequest> initUserRepos(String authToken);
+    List<RepoInitrequest> initUserRepos(String login);
     List<RepoDto> getReposFromDb(String ownerLogin);
-    List<RepoDto> getReposForCurrentUser(String authToken, OwnerType ownerType, String ownerLogin);
-    Optional<RepositoryEntity> getByFullNameForCurrentUser(String authToken, String fullName);
+    List<RepoDto> getRepos(String login, OwnerType ownerType, String ownerLogin);
+    Optional<RepositoryEntity> getByFullNameForCurrentUser(String login, String fullName);
 }

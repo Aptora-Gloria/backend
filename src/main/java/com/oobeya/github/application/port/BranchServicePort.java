@@ -6,6 +6,6 @@ import java.util.List;
 
 public interface BranchServicePort {
 
-    List<BranchDto> initRepoBranches(String authToken, String fullName);
-    List<BranchDto> getBranchesByFullName(String authToken, String fullName);
+    List<BranchDto> initRepoBranches(String login, String fullName);
+    List<BranchDto> getBranchesByFullName(String login, String fullName);
 }

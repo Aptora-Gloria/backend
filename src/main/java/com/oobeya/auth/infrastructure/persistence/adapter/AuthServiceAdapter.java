@@ -121,6 +121,13 @@ public class AuthServiceAdapter implements AuthServicePort {
         return accessToken;
     }
 
+    @Override
+    public String getAccessTokenFromLogin(String login) {
+        User user = findByLogin(login)
+                .orElseThrow(() -> new GitHubApiException("User not found: " + login));
+        return user.getAccessToken();
+    }
+
     public static String extractToken(String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return null;

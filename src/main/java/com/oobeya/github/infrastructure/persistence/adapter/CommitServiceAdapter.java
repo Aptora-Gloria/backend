@@ -32,10 +32,10 @@ public class CommitServiceAdapter implements CommitServicePort {
 
     @Override
     @Transactional
-    public List<CommitDto> fetchAndSaveCommits(String authHeader, String fullName, String branchName, String since) {
-        String accessToken = authServicePort.getAccessTokenFromToken(authHeader);
+    public List<CommitDto> initCommits(String login, String fullName, String branchName, String since) {
+        String accessToken = authServicePort.getAccessTokenFromLogin(login);
 
-        RepositoryEntity repository = repoServicePort.getByFullNameForCurrentUser(authHeader, fullName)
+        RepositoryEntity repository = repoServicePort.getByFullNameForCurrentUser(login, fullName)
                 .orElseThrow(() -> new IllegalArgumentException("Repository not found with fullName: " + fullName));
 
         BranchEntity branch = branchRepository.findByRepositoryAndName(repository, branchName)
@@ -52,8 +52,8 @@ public class CommitServiceAdapter implements CommitServicePort {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CommitDto> getCommitsByFullName(String authHeader, String fullName) {
-        RepositoryEntity repository = repoServicePort.getByFullNameForCurrentUser(authHeader, fullName)
+    public List<CommitDto> getCommitsByFullName(String login, String fullName) {
+        RepositoryEntity repository = repoServicePort.getByFullNameForCurrentUser(login, fullName)
                 .orElseThrow(() -> new IllegalArgumentException("Repository not found with fullName: " + fullName));
 
         return commitRepository.findByRepository(repository)
@@ -64,8 +64,8 @@ public class CommitServiceAdapter implements CommitServicePort {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CommitDto> getCommitsByFullNameAndBranch(String authHeader, String fullName, String branchName) {
-        RepositoryEntity repository = repoServicePort.getByFullNameForCurrentUser(authHeader, fullName)
+    public List<CommitDto> getCommitsByFullNameAndBranch(String login, String fullName, String branchName) {
+        RepositoryEntity repository = repoServicePort.getByFullNameForCurrentUser(login, fullName)
                 .orElseThrow(() -> new IllegalArgumentException("Repository not found with fullName: " + fullName));
 
         BranchEntity branch = branchRepository.findByRepositoryAndName(repository, branchName)

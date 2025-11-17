@@ -6,6 +6,7 @@ import com.oobeya.github.api.response.LanguageUiDto;
 import com.oobeya.github.application.port.LanguageServicePort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,10 +18,10 @@ public class LanguageController {
 
     @PostMapping("/languages/init")
     public ResponseEntity<LanguageDto> initLanguages(
-            @RequestHeader("Authorization") String authHeader,
+            @AuthenticationPrincipal String login,
             @RequestBody LanguageInitRequest request
     ) {
-        LanguageDto dto = languageService.getRepoLanguages(authHeader, request.repositoryId());
+        LanguageDto dto = languageService.getRepoLanguages(login, request.repositoryId());
         return ResponseEntity.ok(dto);
     }
 

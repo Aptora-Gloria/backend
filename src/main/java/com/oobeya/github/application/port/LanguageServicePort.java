@@ -8,11 +8,11 @@ public interface LanguageServicePort {
     /**
      * Fetches languages from GitHub API and saves them to database.
      * 
-     * @param authHeader Authorization header
+     * @param login User login
      * @param repositoryId Repository ID
      * @return LanguageDto from GitHub API
      */
-    LanguageDto getRepoLanguages(String authHeader, Long repositoryId);
+    LanguageDto getRepoLanguages(String login, Long repositoryId);
     
     /**
      * Gets languages from database by repository ID (raw Map format).

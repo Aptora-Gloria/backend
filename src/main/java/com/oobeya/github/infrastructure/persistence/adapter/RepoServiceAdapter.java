@@ -27,10 +27,8 @@ public class RepoServiceAdapter implements RepoServicePort {
     private final AuthServicePort authServicePort;
 
     @Override
-    public List<RepoInitrequest> initUserRepos(String authToken) {
-        String accessToken = authServicePort.getAccessTokenFromToken(authToken);
-        String bearerStripped = authToken != null && authToken.startsWith("Bearer ") ? authToken.substring(7).trim() : authToken;
-        String login = authServicePort.getLoginFromToken(bearerStripped);
+    public List<RepoInitrequest> initUserRepos(String login) {
+        String accessToken = authServicePort.getAccessTokenFromLogin(login);
         User user = authServicePort.findByLogin(login)
                 .orElseThrow(() -> new RuntimeException("User not found: " + login));
 
@@ -48,9 +46,7 @@ public class RepoServiceAdapter implements RepoServicePort {
     }
 
     @Override
-    public List<RepoDto> getReposForCurrentUser(String authToken, OwnerType ownerType, String ownerLogin) {
-        String bearerStripped = authToken != null && authToken.startsWith("Bearer ") ? authToken.substring(7).trim() : authToken;
-        String login = authServicePort.getLoginFromToken(bearerStripped);
+    public List<RepoDto> getRepos(String login, OwnerType ownerType, String ownerLogin) {
         User user = authServicePort.findByLogin(login)
                 .orElseThrow(() -> new RuntimeException("User not found: " + login));
 
@@ -72,9 +68,7 @@ public class RepoServiceAdapter implements RepoServicePort {
     }
 
     @Override
-    public java.util.Optional<RepositoryEntity> getByFullNameForCurrentUser(String authToken, String fullName) {
-        String bearerStripped = authToken != null && authToken.startsWith("Bearer ") ? authToken.substring(7).trim() : authToken;
-        String login = authServicePort.getLoginFromToken(bearerStripped);
+    public java.util.Optional<RepositoryEntity> getByFullNameForCurrentUser(String login, String fullName) {
         User user = authServicePort.findByLogin(login)
                 .orElseThrow(() -> new RuntimeException("User not found: " + login));
         return repositoryRepo.findByFullNameAndUser(fullName, user);

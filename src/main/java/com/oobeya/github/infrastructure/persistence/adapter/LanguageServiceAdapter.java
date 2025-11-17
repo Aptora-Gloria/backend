@@ -28,14 +28,14 @@ public class LanguageServiceAdapter implements LanguageServicePort {
     /**
      * Fetches languages from GitHub API and saves them to database.
      * 
-     * @param authHeader Authorization header
+     * @param login User login
      * @param repositoryId Repository ID
      * @return LanguageDto from GitHub API
      */
     @Override
     @Transactional
-    public LanguageDto getRepoLanguages(String authHeader, Long repositoryId) {
-        String accessToken = authServicePort.getAccessTokenFromToken(authHeader);
+    public LanguageDto getRepoLanguages(String login, Long repositoryId) {
+        String accessToken = authServicePort.getAccessTokenFromLogin(login);
 
         // Get repository entity
         RepositoryEntity repository = repositoryRepository.findById(repositoryId)

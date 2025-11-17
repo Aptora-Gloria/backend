@@ -21,5 +21,7 @@ public interface AuthServicePort {
 
     String getAccessTokenFromToken(String authToken);
 
+    String getAccessTokenFromLogin(String login);
+
 
 }
