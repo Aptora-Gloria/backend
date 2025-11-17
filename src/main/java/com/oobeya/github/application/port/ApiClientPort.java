@@ -5,7 +5,6 @@ import com.oobeya.auth.api.dto.GitHubUserDto;
 import com.oobeya.github.api.request.RepoInitrequest;
 import com.oobeya.github.api.response.CommitDto;
 import com.oobeya.github.api.response.LanguageDto;
-import com.oobeya.github.api.response.RepoDto;
 
 import java.util.List;
 

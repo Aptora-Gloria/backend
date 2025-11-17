@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.oobeya.auth.infrastructure.persistence.entity.OwnerType;
 import com.oobeya.auth.infrastructure.persistence.entity.User;
 import com.oobeya.auth.application.AuthServicePort;
 import com.oobeya.github.api.request.RepoInitrequest;
@@ -42,6 +43,30 @@ public class RepoServiceAdapter implements RepoServicePort {
     public List<RepoDto> getReposFromDb(String ownerLogin) {
         return repositoryRepo.findAllByOwnerLoginOrderByPushedAtDesc(ownerLogin)
                 .stream()
+                .map(RepoMapper::toDto)
+                .toList();
+    }
+
+    @Override
+    public List<RepoDto> getReposForCurrentUser(String authToken, OwnerType ownerType, String ownerLogin) {
+        String bearerStripped = authToken != null && authToken.startsWith("Bearer ") ? authToken.substring(7).trim() : authToken;
+        String login = authServicePort.getLoginFromToken(bearerStripped);
+        User user = authServicePort.findByLogin(login)
+                .orElseThrow(() -> new RuntimeException("User not found: " + login));
+
+        List<RepositoryEntity> entities;
+
+        if (ownerType == null && ownerLogin == null) {
+            entities = repositoryRepo.findByUserOrderByPushedAtDesc(user);
+        } else if (ownerType != null && ownerLogin == null) {
+            entities = repositoryRepo.findByUserAndOwnerTypeOrderByPushedAtDesc(user, ownerType);
+        } else if (ownerType != null && ownerLogin != null) {
+            entities = repositoryRepo.findByUserAndOwnerTypeAndOwnerLoginOrderByPushedAtDesc(user, ownerType, ownerLogin);
+        } else {
+            entities = repositoryRepo.findByUserOrderByPushedAtDesc(user);
+        }
+
+        return entities.stream()
                 .map(RepoMapper::toDto)
                 .toList();
     }

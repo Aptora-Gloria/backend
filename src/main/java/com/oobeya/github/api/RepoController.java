@@ -1,6 +1,7 @@
 package com.oobeya.github.api;
 
 
+import com.oobeya.auth.infrastructure.persistence.entity.OwnerType;
 import com.oobeya.github.api.request.RepoInitrequest;
 import com.oobeya.github.api.response.RepoDto;
 import com.oobeya.github.application.port.RepoServicePort;
@@ -27,10 +28,12 @@ public class RepoController {
     }
 
     @GetMapping
-    public ResponseEntity<List<RepoDto>> getReposFromDb(
-            @RequestParam("ownerLogin") String ownerLogin
+    public ResponseEntity<List<RepoDto>> getRepos(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam(required = false) OwnerType ownerType,
+            @RequestParam(required = false) String ownerLogin
     ) {
-        List<RepoDto> repos = repoService.getReposFromDb(ownerLogin);
+        List<RepoDto> repos = repoService.getReposForCurrentUser(authHeader, ownerType, ownerLogin);
         return ResponseEntity.ok(repos);
     }
 }
