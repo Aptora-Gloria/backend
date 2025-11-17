@@ -20,4 +20,5 @@ public interface RepositoryRepository extends JpaRepository<RepositoryEntity, Lo
     List<RepositoryEntity> findByUserOrderByPushedAtDesc(User user);
     List<RepositoryEntity> findByUserAndOwnerTypeOrderByPushedAtDesc(User user, OwnerType ownerType);
     List<RepositoryEntity> findByUserAndOwnerTypeAndOwnerLoginOrderByPushedAtDesc(User user, OwnerType ownerType, String ownerLogin);
+    Optional<RepositoryEntity> findByFullNameAndUser(String fullName, User user);
 }

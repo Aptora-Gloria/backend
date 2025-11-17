@@ -1,6 +1,7 @@
 package com.oobeya.github.api.request;
 
 public record CommitInitRequest(
-        Long repositoryId,
-        Long branchId
+        String fullName,
+        String branchName,
+        String since
 ) {}

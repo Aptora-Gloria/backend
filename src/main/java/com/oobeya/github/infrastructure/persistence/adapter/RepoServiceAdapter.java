@@ -71,6 +71,15 @@ public class RepoServiceAdapter implements RepoServicePort {
                 .toList();
     }
 
+    @Override
+    public java.util.Optional<RepositoryEntity> getByFullNameForCurrentUser(String authToken, String fullName) {
+        String bearerStripped = authToken != null && authToken.startsWith("Bearer ") ? authToken.substring(7).trim() : authToken;
+        String login = authServicePort.getLoginFromToken(bearerStripped);
+        User user = authServicePort.findByLogin(login)
+                .orElseThrow(() -> new RuntimeException("User not found: " + login));
+        return repositoryRepo.findByFullNameAndUser(fullName, user);
+    }
+
     private void saveRepos(List<RepoInitrequest> repos, User user) {
 
         List<String> incomingUrls = repos.stream()

@@ -12,8 +12,7 @@ public final class BranchMapper {
 
     public static BranchDto toDto(BranchEntity e) {
         return new BranchDto(
-                e.getName(),
-                e.getRepository().getId()
+                e.getName()
         );
     }
 

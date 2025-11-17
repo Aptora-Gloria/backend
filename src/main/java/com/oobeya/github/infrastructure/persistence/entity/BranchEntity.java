@@ -15,7 +15,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "github_branches")
+@Table(
+    name = "github_branches",
+    uniqueConstraints = {
+        @jakarta.persistence.UniqueConstraint(
+            name = "uk_branch_repo_name",
+            columnNames = {"repo_id", "name"}
+        )
+    }
+)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

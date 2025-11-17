@@ -10,47 +10,38 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/github")
+@RequestMapping("/api/github/commits")
 @RequiredArgsConstructor
 public class CommitController {
     
     private final CommitServicePort commitService;
 
-    @PostMapping("/commits/init")
+    @PostMapping("/init")
     public ResponseEntity<List<CommitDto>> initCommits(
             @RequestHeader("Authorization") String authHeader,
             @RequestBody CommitInitRequest request
     ) {
         List<CommitDto> commits = commitService.fetchAndSaveCommits(
                 authHeader,
-                request.repositoryId(),
-                request.branchId()
+                request.fullName(),
+                request.branchName(),
+                request.since()
         );
         return ResponseEntity.ok(commits);
     }
 
-    @GetMapping("/commits/repository/{repositoryId}")
-    public ResponseEntity<List<CommitDto>> getCommitsByRepository(
-            @PathVariable("repositoryId") Long repositoryId
+    @GetMapping
+    public ResponseEntity<List<CommitDto>> getCommits(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam("fullName") String fullName,
+            @RequestParam(required = false) String branchName
     ) {
-        List<CommitDto> commits = commitService.getCommitsByRepositoryId(repositoryId);
-        return ResponseEntity.ok(commits);
-    }
-
-    @GetMapping("/commits/branch/{branchId}")
-    public ResponseEntity<List<CommitDto>> getCommitsByBranch(
-            @PathVariable("branchId") Long branchId
-    ) {
-        List<CommitDto> commits = commitService.getCommitsByBranchId(branchId);
-        return ResponseEntity.ok(commits);
-    }
-
-    @GetMapping("/commits/repository/{repositoryId}/branch/{branchId}")
-    public ResponseEntity<List<CommitDto>> getCommitsByRepositoryAndBranch(
-            @PathVariable("repositoryId") Long repositoryId,
-            @PathVariable("branchId") Long branchId
-    ) {
-        List<CommitDto> commits = commitService.getCommitsByRepositoryAndBranch(repositoryId, branchId);
+        List<CommitDto> commits;
+        if (branchName != null && !branchName.isBlank()) {
+            commits = commitService.getCommitsByFullNameAndBranch(authHeader, fullName, branchName);
+        } else {
+            commits = commitService.getCommitsByFullName(authHeader, fullName);
+        }
         return ResponseEntity.ok(commits);
     }
 }
