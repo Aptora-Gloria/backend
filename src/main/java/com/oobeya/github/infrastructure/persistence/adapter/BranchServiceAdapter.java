@@ -59,14 +59,13 @@ public class BranchServiceAdapter implements BranchServicePort {
 
         var existingBranchNames = existing.stream()
                 .map(BranchEntity::getName)
-                .map(String::toLowerCase)
                 .collect(java.util.stream.Collectors.toSet());
 
         List<BranchEntity> toSave = new ArrayList<>();
         for (String name : branchNames) {
             if (name == null || name.isBlank()) continue;
             
-            if (existingBranchNames.contains(name.toLowerCase())) continue;
+            if (existingBranchNames.contains(name)) continue;
 
             BranchEntity e = BranchEntity.builder()
                     .name(name)

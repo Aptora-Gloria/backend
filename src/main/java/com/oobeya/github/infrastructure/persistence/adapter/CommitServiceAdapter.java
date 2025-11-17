@@ -43,7 +43,7 @@ public class CommitServiceAdapter implements CommitServicePort {
 
         String owner = repository.getOwnerLogin();
         String repoName = repository.getName();
-        List<CommitDto> commits = apiClient.getCommits(accessToken, owner, repoName);
+        List<CommitDto> commits = apiClient.getCommits(accessToken, owner, repoName, branchName, since);
 
         saveCommits(commits, repository, branch);
 

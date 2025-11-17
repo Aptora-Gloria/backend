@@ -21,6 +21,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 import java.util.*;
 
 @Service
@@ -145,11 +146,23 @@ public class ApiClientImpl implements ApiClientPort {
 
 
     @Override
-    public List<CommitDto> getCommits(String accessToken, String owner, String repo) {//TODO
+    public List<CommitDto> getCommits(String accessToken, String owner, String repo, String branch, String since) {
         String endpoint = String.format(GitHubConstants.REPO_COMMITS_ENDPOINT_TEMPLATE, owner, repo);
+        
+        // Query parametrelerini güvenli şekilde oluştur (URI encoding ile)
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(endpoint);
+        
+        if (branch != null && !branch.isBlank()) {
+            uriBuilder.queryParam("sha", branch);
+        }
+        
+        if (since != null && !since.isBlank()) {
+            uriBuilder.queryParam("since", since);
+        }
+        
         return githubWebClient
                 .get()
-                .uri(endpoint)
+                .uri(uriBuilder.build().toUri())
                 .headers(h -> h.set(HttpHeaders.AUTHORIZATION, GitHubUtil.buildBearerHeader(accessToken)))
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, res ->
