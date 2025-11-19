@@ -24,6 +24,12 @@ public class CommitEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pull_request_id")
+    private PullRequestEntity pullRequest;
+
     private Long id;
 
     // 🔹 Git commit hash
