@@ -4,17 +4,17 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.oobeya.auth.infrastructure.persistence.entity.OwnerType;
+import com.oobeya.github.api.request.GetReposRequest;
 import com.oobeya.github.api.request.RepoInitrequest;
 import com.oobeya.github.api.response.RepoDto;
 import com.oobeya.github.application.port.RepoServicePort;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -32,13 +32,12 @@ public class RepoController {
         return ResponseEntity.ok(repos);
     }
 
-    @GetMapping
+    @PostMapping("/query")
     public ResponseEntity<List<RepoDto>> getRepos(
             @AuthenticationPrincipal String login,
-            @RequestParam(required = false) OwnerType ownerType,
-            @RequestParam(required = false) String ownerLogin
+            @RequestBody @Valid GetReposRequest request
     ) {
-        List<RepoDto> repos = repoService.getRepos(login, ownerType, ownerLogin);
+        List<RepoDto> repos = repoService.getRepos(login, request.ownerType(), request.ownerLogin());
         return ResponseEntity.ok(repos);
     }
 }

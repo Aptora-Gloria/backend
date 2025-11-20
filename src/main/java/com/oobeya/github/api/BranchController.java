@@ -6,12 +6,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.oobeya.github.api.request.BranchInitRequest;
 import com.oobeya.github.api.response.BranchDto;
 import com.oobeya.github.application.port.BranchServicePort;
 
@@ -27,14 +25,14 @@ public class BranchController {
     @PostMapping("/init")
     public ResponseEntity<List<BranchDto>> initBranches(
             @AuthenticationPrincipal String login,
-            @RequestBody BranchInitRequest request
+            @RequestParam("fullName") String fullName
     ) {
         return ResponseEntity.ok(
-                branchService.initRepoBranches(login, request.fullName())
+                branchService.initRepoBranches(login, fullName)
         );
     }
 
-    @GetMapping
+    @GetMapping("/query")
     public ResponseEntity<List<BranchDto>> getBranches(
             @AuthenticationPrincipal String login,
             @RequestParam("fullName") String fullName

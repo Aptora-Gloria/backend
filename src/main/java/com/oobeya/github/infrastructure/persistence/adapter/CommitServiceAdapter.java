@@ -57,11 +57,11 @@ public class CommitServiceAdapter implements CommitServicePort {
                 .orElseThrow(() -> new IllegalArgumentException("Repository not found with fullName: " + fullName));
 
         if (branchName == null || branchName.isBlank()) {
-            return commitRepository.findByRepository(repository)
-                    .stream()
-                    .map(CommitMapper::toDto)
-                    .collect(Collectors.toList());
-        }
+        return commitRepository.findByRepository(repository)
+                .stream()
+                .map(CommitMapper::toDto)
+                .collect(Collectors.toList());
+    }
 
         BranchEntity branch = branchRepository.findByRepositoryAndName(repository, branchName)
                 .orElseThrow(() -> new IllegalArgumentException("Branch not found with name: " + branchName + " in repository: " + fullName));
