@@ -1,0 +1,100 @@
+package com.optimetric.github.infrastructure.persistence.adapter;
+
+
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.optimetric.auth.infrastructure.persistence.entity.OwnerType;
+import com.optimetric.auth.infrastructure.persistence.entity.User;
+import com.optimetric.auth.application.AuthServicePort;
+import com.optimetric.github.api.request.RepoInitrequest;
+import com.optimetric.github.api.response.RepoDto;
+import com.optimetric.github.infrastructure.persistence.entity.RepositoryEntity;
+import com.optimetric.github.infrastructure.core.mapper.RepoMapper;
+import com.optimetric.github.infrastructure.persistence.jpa.RepositoryRepository;
+import com.optimetric.github.application.client.RepoClientPort;
+import com.optimetric.github.application.port.RepoServicePort;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class RepoServiceAdapter implements RepoServicePort {
+
+    private final RepositoryRepository repositoryRepo;
+    private final RepoClientPort repoClient;
+    private final AuthServicePort authServicePort;
+
+    @Override
+    public List<RepoInitrequest> initUserRepos(String login) {
+        String accessToken = authServicePort.getAccessTokenFromLogin(login);
+        User user = authServicePort.findByLogin(login)
+                .orElseThrow(() -> new RuntimeException("User not found: " + login));
+
+        List<RepoInitrequest> repos = repoClient.getUserRepos(accessToken);
+        saveRepos(repos, user);
+        return repos;
+    }
+
+    @Override
+    public List<RepoDto> getReposFromDb(String ownerLogin) {
+        return repositoryRepo.findAllByOwnerLoginOrderByPushedAtDesc(ownerLogin)
+                .stream()
+                .map(RepoMapper::toDto)
+                .toList();
+    }
+
+    @Override
+    public List<RepoDto> getRepos(String login, OwnerType ownerType, String ownerLogin) {
+        User user = authServicePort.findByLogin(login)
+                .orElseThrow(() -> new RuntimeException("User not found: " + login));
+
+        List<RepositoryEntity> entities;
+
+        if (ownerType == null && ownerLogin == null) {
+            entities = repositoryRepo.findByUserOrderByPushedAtDesc(user);
+        } else if (ownerType != null && ownerLogin == null) {
+            entities = repositoryRepo.findByUserAndOwnerTypeOrderByPushedAtDesc(user, ownerType);
+        } else if (ownerType != null && ownerLogin != null) {
+            entities = repositoryRepo.findByUserAndOwnerTypeAndOwnerLoginOrderByPushedAtDesc(user, ownerType, ownerLogin);
+        } else {
+            entities = repositoryRepo.findByUserOrderByPushedAtDesc(user);
+        }
+
+        return entities.stream()
+                .map(RepoMapper::toDto)
+                .toList();
+    }
+
+    @Override
+    public java.util.Optional<RepositoryEntity> getByFullNameForCurrentUser(String login, String fullName) {
+        User user = authServicePort.findByLogin(login)
+                .orElseThrow(() -> new RuntimeException("User not found: " + login));
+        return repositoryRepo.findByFullNameAndUser(fullName, user);
+    }
+
+    private void saveRepos(List<RepoInitrequest> repos, User user) {
+
+        List<String> incomingUrls = repos.stream()
+                .map(RepoInitrequest::html_url)
+                .toList();
+
+        // 2. Veritabanında bu url'lere sahip olanları çek
+        List<RepositoryEntity> existingEntities = repositoryRepo.findAllByHtmlUrlIn(incomingUrls);
+        List<String> existingUrls = existingEntities.stream()
+                .map(RepositoryEntity::getHtmlUrl)
+                .toList();
+
+        // 3. Daha önce eklenmemiş olanları filtrele
+        List<RepoInitrequest> newRepos = repos.stream()
+                .filter(repo -> !existingUrls.contains(repo.html_url()))
+                .toList();
+
+
+        List<RepositoryEntity> entitiesToSave = RepoMapper.toEntities(newRepos);
+        entitiesToSave.forEach(e -> e.setUser(user));
+        repositoryRepo.saveAll(entitiesToSave);
+    }
+
+}

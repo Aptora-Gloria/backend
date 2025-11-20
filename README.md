@@ -49,7 +49,7 @@ Provides basic metadata about the GitHub repository.
 ```
 src/
 ├── main/
-│   ├── java/com.oobeya/
+│   ├── java/com.optimetric/
 │   │   ├── auth/               # OAuth GitHub login and JWT logic
 │   │   ├── github/             # GitHub-related modules
 │   │   │   ├── controller/     # REST endpoints
