@@ -1,7 +1,7 @@
-/*package com.oobeya.auth;
+/*package com.optimetric.auth;
 
-import com.oobeya.auth.infrastructure.persistence.entity.User;
-import com.oobeya.auth.repository.UserRepository;
+import com.optimetric.auth.infrastructure.persistence.entity.User;
+import com.optimetric.auth.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;

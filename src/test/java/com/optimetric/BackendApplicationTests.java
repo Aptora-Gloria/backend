@@ -1,4 +1,4 @@
-/* package com.oobeya;
+/* package com.optimetric;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

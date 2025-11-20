@@ -11,10 +11,10 @@ import com.optimetric.github.infrastructure.core.config.GitHubOAuthProperties;
 @SpringBootApplication
 @EnableConfigurationProperties(GitHubOAuthProperties.class)
 @ComponentScan(basePackages = {
-		"com.oobeya.github",
-		"com.oobeya.Gemini",
-		"com.oobeya.auth"
-})
+		"com.optimetric.github",
+		"com.optimetric.Gemini",
+		"com.optimetric.auth"
+	})
 public class BackendApplication {
 
 	public static void main(String[] args) {

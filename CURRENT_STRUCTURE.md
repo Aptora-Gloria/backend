@@ -1,7 +1,7 @@
 # Mevcut Klasör Yapısı
 
 ```
-src/main/java/com/oobeya/
+src/main/java/com/optimetric/
 │
 ├── BackendApplication.java
 │

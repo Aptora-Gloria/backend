@@ -1,6 +1,6 @@
-# 🧠 Oobeya Mini GitHub Analytics Platform
+# 🧠 Optimetric Mini GitHub Analytics Platform
 
-Oobeya Analytics is a modular backend application built with Spring Boot. It provides comprehensive insights for GitHub repositories including contributor stats, commit tracking, repository languages, and content structure.
+Optimetric Analytics is a modular backend application built with Spring Boot. It provides comprehensive insights for GitHub repositories including contributor stats, commit tracking, repository languages, and content structure.
 
 Each functional module is designed with its own:
 - DTO (Data Transfer Object)
@@ -96,7 +96,7 @@ Authorization: Bearer {jwt_token}
 ```
 
 3. Test using Postman collection:
-- `postman/oobeya-api.postman_collection.json`
+- `postman/optimetric-api.postman_collection.json`
 
 ---
 

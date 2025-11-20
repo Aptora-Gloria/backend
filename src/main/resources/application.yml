@@ -3,9 +3,9 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/oobeya
-    username: oobeya_user
-    password: oobeya_pass
+    url: jdbc:postgresql://localhost:5432/optimetric
+    username: optimetric_user
+    password: optimetric_pass
 
   jpa:
     hibernate:
