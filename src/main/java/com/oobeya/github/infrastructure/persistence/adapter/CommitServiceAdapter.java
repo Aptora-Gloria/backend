@@ -52,21 +52,16 @@ public class CommitServiceAdapter implements CommitServicePort {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CommitDto> getCommitsByFullName(String login, String fullName) {
+    public List<CommitDto> getCommits(String login, String fullName, String branchName) {
         RepositoryEntity repository = repoServicePort.getByFullNameForCurrentUser(login, fullName)
                 .orElseThrow(() -> new IllegalArgumentException("Repository not found with fullName: " + fullName));
 
-        return commitRepository.findByRepository(repository)
-                .stream()
-                .map(CommitMapper::toDto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<CommitDto> getCommitsByFullNameAndBranch(String login, String fullName, String branchName) {
-        RepositoryEntity repository = repoServicePort.getByFullNameForCurrentUser(login, fullName)
-                .orElseThrow(() -> new IllegalArgumentException("Repository not found with fullName: " + fullName));
+        if (branchName == null || branchName.isBlank()) {
+            return commitRepository.findByRepository(repository)
+                    .stream()
+                    .map(CommitMapper::toDto)
+                    .collect(Collectors.toList());
+        }
 
         BranchEntity branch = branchRepository.findByRepositoryAndName(repository, branchName)
                 .orElseThrow(() -> new IllegalArgumentException("Branch not found with name: " + branchName + " in repository: " + fullName));

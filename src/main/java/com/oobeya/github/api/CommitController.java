@@ -4,17 +4,17 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.oobeya.github.api.request.CommitInitRequest;
+import com.oobeya.github.api.request.GetCommitsRequest;
 import com.oobeya.github.api.response.CommitDto;
 import com.oobeya.github.application.port.CommitServicePort;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -27,7 +27,7 @@ public class CommitController {
     @PostMapping("/init")
     public ResponseEntity<List<CommitDto>> initCommits(
             @AuthenticationPrincipal String login,
-            @RequestBody CommitInitRequest request
+            @RequestBody @Valid CommitInitRequest request
     ) {
         List<CommitDto> commits = commitService.initCommits(
                 login,
@@ -38,18 +38,16 @@ public class CommitController {
         return ResponseEntity.ok(commits);
     }
 
-    @GetMapping
+    @PostMapping("/query")
     public ResponseEntity<List<CommitDto>> getCommits(
             @AuthenticationPrincipal String login,
-            @RequestParam("fullName") String fullName,
-            @RequestParam(required = false) String branchName
+            @RequestBody @Valid GetCommitsRequest request
     ) {
-        List<CommitDto> commits;
-        if (branchName != null && !branchName.isBlank()) {
-            commits = commitService.getCommitsByFullNameAndBranch(login, fullName, branchName);
-        } else {
-            commits = commitService.getCommitsByFullName(login, fullName);
-        }
+        List<CommitDto> commits = commitService.getCommits(
+                login,
+                request.fullName(),
+                request.branchName()
+        );
         return ResponseEntity.ok(commits);
     }
 }
