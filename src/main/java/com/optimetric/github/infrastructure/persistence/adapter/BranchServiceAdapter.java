@@ -1,20 +1,24 @@
 package com.optimetric.github.infrastructure.persistence.adapter;
 
-import com.optimetric.github.api.response.BranchDto;
-import com.optimetric.github.infrastructure.persistence.entity.BranchEntity;
-import com.optimetric.github.infrastructure.persistence.entity.RepositoryEntity;
-import com.optimetric.github.infrastructure.core.mapper.BranchMapper;
-import com.optimetric.github.infrastructure.persistence.jpa.BranchRepository;
-import com.optimetric.github.application.client.BranchClientPort;
-import com.optimetric.github.application.port.BranchServicePort;
-import com.optimetric.github.application.port.RepoServicePort;
-import com.optimetric.auth.application.AuthServicePort;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.optimetric.auth.application.AuthServicePort;
+import com.optimetric.github.api.response.BranchDto;
+import com.optimetric.github.application.client.BranchClientPort;
+import com.optimetric.github.application.port.BranchServicePort;
+import com.optimetric.github.application.port.RepoServicePort;
+import com.optimetric.github.infrastructure.core.mapper.BranchMapper;
+import com.optimetric.github.infrastructure.persistence.entity.BranchEntity;
+import com.optimetric.github.infrastructure.persistence.entity.RepositoryEntity;
+import com.optimetric.github.infrastructure.persistence.jpa.BranchRepository;
+import com.optimetric.shared.exception.RepositoryNotFoundException;
+import com.optimetric.shared.exception.UserNotFoundException;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -27,11 +31,10 @@ public class BranchServiceAdapter implements BranchServicePort {
 
     @Override
     @Transactional
-    public List<BranchDto> initRepoBranches(String login, String fullName) {
+    public List<BranchDto> initRepoBranches(String login, String fullName) 
+            throws RepositoryNotFoundException, UserNotFoundException {
         String accessToken = authServicePort.getAccessTokenFromLogin(login);
-
-        RepositoryEntity repo = repoServicePort.getByFullNameForCurrentUser(login, fullName)
-                .orElseThrow(() -> new IllegalArgumentException("Repository not found with fullName: " + fullName));
+        RepositoryEntity repo = repoServicePort.getByFullNameForCurrentUserOrThrow(login, fullName);
 
         String owner = repo.getOwnerLogin();
         List<String> branchNames = branchClient.getRepoBranchNames(accessToken, owner, repo.getName());
@@ -42,9 +45,9 @@ public class BranchServiceAdapter implements BranchServicePort {
 
     @Override
     @Transactional(readOnly = true)
-    public List<BranchDto> getBranchesByFullName(String login, String fullName) {
-        RepositoryEntity repo = repoServicePort.getByFullNameForCurrentUser(login, fullName)
-                .orElseThrow(() -> new IllegalArgumentException("Repository not found with fullName: " + fullName));
+    public List<BranchDto> getBranchesByFullName(String login, String fullName) 
+            throws RepositoryNotFoundException, UserNotFoundException {
+        RepositoryEntity repo = repoServicePort.getByFullNameForCurrentUserOrThrow(login, fullName);
 
         return branchRepository.findByRepository(repo)
                 .stream()

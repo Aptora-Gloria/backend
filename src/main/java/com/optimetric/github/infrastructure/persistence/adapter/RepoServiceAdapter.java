@@ -15,6 +15,8 @@ import com.optimetric.github.infrastructure.core.mapper.RepoMapper;
 import com.optimetric.github.infrastructure.persistence.jpa.RepositoryRepository;
 import com.optimetric.github.application.client.RepoClientPort;
 import com.optimetric.github.application.port.RepoServicePort;
+import com.optimetric.shared.exception.RepositoryNotFoundException;
+import com.optimetric.shared.exception.UserNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,10 +29,9 @@ public class RepoServiceAdapter implements RepoServicePort {
     private final AuthServicePort authServicePort;
 
     @Override
-    public List<RepoInitrequest> initUserRepos(String login) {
+    public List<RepoInitrequest> initUserRepos(String login) throws UserNotFoundException {
         String accessToken = authServicePort.getAccessTokenFromLogin(login);
-        User user = authServicePort.findByLogin(login)
-                .orElseThrow(() -> new RuntimeException("User not found: " + login));
+        User user = authServicePort.findByLoginOrThrow(login);
 
         List<RepoInitrequest> repos = repoClient.getUserRepos(accessToken);
         saveRepos(repos, user);
@@ -46,9 +47,8 @@ public class RepoServiceAdapter implements RepoServicePort {
     }
 
     @Override
-    public List<RepoDto> getRepos(String login, OwnerType ownerType, String ownerLogin) {
-        User user = authServicePort.findByLogin(login)
-                .orElseThrow(() -> new RuntimeException("User not found: " + login));
+    public List<RepoDto> getRepos(String login, OwnerType ownerType, String ownerLogin) throws UserNotFoundException {
+        User user = authServicePort.findByLoginOrThrow(login);
 
         List<RepositoryEntity> entities;
 
@@ -69,9 +69,16 @@ public class RepoServiceAdapter implements RepoServicePort {
 
     @Override
     public java.util.Optional<RepositoryEntity> getByFullNameForCurrentUser(String login, String fullName) {
-        User user = authServicePort.findByLogin(login)
-                .orElseThrow(() -> new RuntimeException("User not found: " + login));
+        User user = authServicePort.findByLoginOrThrow(login);
         return repositoryRepo.findByFullNameAndUser(fullName, user);
+    }
+
+    @Override
+    public RepositoryEntity getByFullNameForCurrentUserOrThrow(String login, String fullName) 
+            throws RepositoryNotFoundException, UserNotFoundException {
+        User user = authServicePort.findByLoginOrThrow(login);
+        return repositoryRepo.findByFullNameAndUser(fullName, user)
+                .orElseThrow(() -> new RepositoryNotFoundException("Repository not found with fullName: " + fullName));
     }
 
     private void saveRepos(List<RepoInitrequest> repos, User user) {

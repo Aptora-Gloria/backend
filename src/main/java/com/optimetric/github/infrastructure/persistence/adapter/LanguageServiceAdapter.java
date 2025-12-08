@@ -10,6 +10,8 @@ import com.optimetric.github.infrastructure.persistence.entity.LanguageEntity;
 import com.optimetric.github.infrastructure.persistence.entity.RepositoryEntity;
 import com.optimetric.github.infrastructure.persistence.jpa.LanguageRepository;
 import com.optimetric.github.infrastructure.persistence.jpa.RepositoryRepository;
+import com.optimetric.shared.exception.RepositoryNotFoundException;
+import com.optimetric.shared.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,12 +36,13 @@ public class LanguageServiceAdapter implements LanguageServicePort {
      */
     @Override
     @Transactional
-    public LanguageDto getRepoLanguages(String login, Long repositoryId) {
+    public LanguageDto getRepoLanguages(String login, Long repositoryId) 
+            throws RepositoryNotFoundException, UserNotFoundException {
         String accessToken = authServicePort.getAccessTokenFromLogin(login);
 
         // Get repository entity
         RepositoryEntity repository = repositoryRepository.findById(repositoryId)
-                .orElseThrow(() -> new IllegalArgumentException("Repository not found with id: " + repositoryId));
+                .orElseThrow(() -> new RepositoryNotFoundException("Repository not found with id: " + repositoryId));
 
         // Fetch languages from GitHub API
         String owner = repository.getOwnerLogin();

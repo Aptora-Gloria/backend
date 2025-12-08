@@ -14,6 +14,7 @@ import com.optimetric.auth.infrastructure.persistence.jpa.repository.UserReposit
 import com.optimetric.auth.application.TokenPort;
 import com.optimetric.auth.application.AuthServicePort;
 import com.optimetric.shared.exception.GitHubApiException;
+import com.optimetric.shared.exception.UserNotFoundException;
 import com.optimetric.github.application.port.GitHubServicePort;
 
 import lombok.RequiredArgsConstructor;
@@ -93,9 +94,7 @@ public class AuthServiceAdapter implements AuthServicePort {
     public GitHubUserDto getCurrentUser(String token) {
         String login = tokenPort.getLoginFromToken(token);
 
-        User user = userRepository.findByLogin(login)
-                .orElseThrow(() -> new RuntimeException("User not found for login: " + login));
-
+        User user = findByLoginOrThrow(login);
         return GitHubUserMapper.toDto(user);
     }
 
@@ -113,19 +112,21 @@ public class AuthServiceAdapter implements AuthServicePort {
     @Override
     public String getAccessTokenFromToken(String jwtToken) {
         String extractToken = extractToken(jwtToken);
-
-        String login =getLoginFromToken(extractToken);
-        User user = findByLogin(login)
-                .orElseThrow(() -> new GitHubApiException("User not found: " + login));
-        String accessToken = user.getAccessToken();
-        return accessToken;
+        String login = getLoginFromToken(extractToken);
+        User user = findByLoginOrThrow(login);
+        return user.getAccessToken();
     }
 
     @Override
     public String getAccessTokenFromLogin(String login) {
-        User user = findByLogin(login)
-                .orElseThrow(() -> new GitHubApiException("User not found: " + login));
+        User user = findByLoginOrThrow(login);
         return user.getAccessToken();
+    }
+
+    @Override
+    public User findByLoginOrThrow(String login) throws UserNotFoundException {
+        return findByLogin(login)
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + login));
     }
 
     public static String extractToken(String authHeader) {

@@ -113,6 +113,21 @@ Authorization: Bearer {jwt_token}
 backend: -mvn clean install
          -mvn spring-boot:run
 
+---
 
+## Troubleshooting
+
+### Lombok ve Annotation Processing Sorunları
+
+Eğer IDE'nizde Lombok annotation'ları (örn: `@RequiredArgsConstructor`, `@Builder`) okunamıyorsa:
+
+1. **Hızlı Çözüm:** `QUICK_FIX_LOMBOK.md` dosyasına bakın
+2. **Detaylı Çözüm:** `TROUBLESHOOTING.md` dosyasına bakın
+
+Yaygın sorunlar:
+- Lombok plugin yüklü değil
+- Annotation processing aktif değil
+- IDE cache sorunları
+- Maven projesi doğru import edilmemiş
 
 ---

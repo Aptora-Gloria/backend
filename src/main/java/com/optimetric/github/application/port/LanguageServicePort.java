@@ -2,6 +2,8 @@ package com.optimetric.github.application.port;
 
 import com.optimetric.github.api.response.LanguageDto;
 import com.optimetric.github.api.response.LanguageUiDto;
+import com.optimetric.shared.exception.RepositoryNotFoundException;
+import com.optimetric.shared.exception.UserNotFoundException;
 
 public interface LanguageServicePort {
     
@@ -11,8 +13,11 @@ public interface LanguageServicePort {
      * @param login User login
      * @param repositoryId Repository ID
      * @return LanguageDto from GitHub API
+     * @throws RepositoryNotFoundException if repository not found
+     * @throws UserNotFoundException if user not found
      */
-    LanguageDto getRepoLanguages(String login, Long repositoryId);
+    LanguageDto getRepoLanguages(String login, Long repositoryId) 
+            throws RepositoryNotFoundException, UserNotFoundException;
     
     /**
      * Gets languages from database by repository ID (raw Map format).

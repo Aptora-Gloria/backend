@@ -19,6 +19,21 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(createErrorBody("GitHub API Error", ex.getMessage()), HttpStatus.BAD_GATEWAY);
     }
 
+    @ExceptionHandler(RepositoryNotFoundException.class)
+    public ResponseEntity<?> handleRepositoryNotFoundException(RepositoryNotFoundException ex) {
+        return new ResponseEntity<>(createErrorBody("Repository Not Found", ex.getMessage()), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(BranchNotFoundException.class)
+    public ResponseEntity<?> handleBranchNotFoundException(BranchNotFoundException ex) {
+        return new ResponseEntity<>(createErrorBody("Branch Not Found", ex.getMessage()), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<?> handleUserNotFoundException(UserNotFoundException ex) {
+        return new ResponseEntity<>(createErrorBody("User Not Found", ex.getMessage()), HttpStatus.NOT_FOUND);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> handleValidationException(MethodArgumentNotValidException ex) {
         String message = ex.getBindingResult()

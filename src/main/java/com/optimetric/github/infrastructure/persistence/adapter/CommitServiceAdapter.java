@@ -6,6 +6,9 @@ import com.optimetric.github.application.client.CommitClientPort;
 import com.optimetric.github.application.port.CommitServicePort;
 import com.optimetric.github.application.port.RepoServicePort;
 import com.optimetric.github.infrastructure.core.mapper.CommitMapper;
+import com.optimetric.shared.exception.BranchNotFoundException;
+import com.optimetric.shared.exception.RepositoryNotFoundException;
+import com.optimetric.shared.exception.UserNotFoundException;
 import com.optimetric.github.infrastructure.persistence.entity.BranchEntity;
 import com.optimetric.github.infrastructure.persistence.entity.CommitEntity;
 import com.optimetric.github.infrastructure.persistence.entity.RepositoryEntity;
@@ -32,14 +35,11 @@ public class CommitServiceAdapter implements CommitServicePort {
 
     @Override
     @Transactional
-    public List<CommitDto> initCommits(String login, String fullName, String branchName, String since) {
+    public List<CommitDto> initCommits(String login, String fullName, String branchName, String since) 
+            throws RepositoryNotFoundException, BranchNotFoundException, UserNotFoundException {
         String accessToken = authServicePort.getAccessTokenFromLogin(login);
-
-        RepositoryEntity repository = repoServicePort.getByFullNameForCurrentUser(login, fullName)
-                .orElseThrow(() -> new IllegalArgumentException("Repository not found with fullName: " + fullName));
-
-        BranchEntity branch = branchRepository.findByRepositoryAndName(repository, branchName)
-                .orElseThrow(() -> new IllegalArgumentException("Branch not found with name: " + branchName + " in repository: " + fullName));
+        RepositoryEntity repository = repoServicePort.getByFullNameForCurrentUserOrThrow(login, fullName);
+        BranchEntity branch = findBranchOrThrow(repository, branchName, fullName);
 
         String owner = repository.getOwnerLogin();
         String repoName = repository.getName();
@@ -52,19 +52,18 @@ public class CommitServiceAdapter implements CommitServicePort {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CommitDto> getCommits(String login, String fullName, String branchName) {
-        RepositoryEntity repository = repoServicePort.getByFullNameForCurrentUser(login, fullName)
-                .orElseThrow(() -> new IllegalArgumentException("Repository not found with fullName: " + fullName));
+    public List<CommitDto> getCommits(String login, String fullName, String branchName) 
+            throws RepositoryNotFoundException, BranchNotFoundException, UserNotFoundException {
+        RepositoryEntity repository = repoServicePort.getByFullNameForCurrentUserOrThrow(login, fullName);
 
         if (branchName == null || branchName.isBlank()) {
-        return commitRepository.findByRepository(repository)
-                .stream()
-                .map(CommitMapper::toDto)
-                .collect(Collectors.toList());
-    }
+            return commitRepository.findByRepository(repository)
+                    .stream()
+                    .map(CommitMapper::toDto)
+                    .collect(Collectors.toList());
+        }
 
-        BranchEntity branch = branchRepository.findByRepositoryAndName(repository, branchName)
-                .orElseThrow(() -> new IllegalArgumentException("Branch not found with name: " + branchName + " in repository: " + fullName));
+        BranchEntity branch = findBranchOrThrow(repository, branchName, fullName);
 
         return commitRepository.findByRepositoryAndBranch(repository, branch)
                 .stream()
@@ -99,5 +98,12 @@ public class CommitServiceAdapter implements CommitServicePort {
         if (!toSave.isEmpty()) {
             commitRepository.saveAll(toSave);
         }
+    }
+
+    private BranchEntity findBranchOrThrow(RepositoryEntity repository, String branchName, String fullName) 
+            throws BranchNotFoundException {
+        return branchRepository.findByRepositoryAndName(repository, branchName)
+                .orElseThrow(() -> new BranchNotFoundException(
+                        "Branch not found with name: " + branchName + " in repository: " + fullName));
     }
 }
