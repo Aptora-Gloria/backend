@@ -1,18 +1,23 @@
 package com.optimetric.github.infrastructure.http;
 
-import com.optimetric.github.api.response.BranchDto;
-import com.optimetric.github.application.client.BranchClientPort;
-import com.optimetric.github.infrastructure.core.constant.GitHubConstants;
-import com.optimetric.github.infrastructure.util.GitHubUtil;
-import com.optimetric.shared.exception.GitHubApiException;
-import lombok.RequiredArgsConstructor;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.optimetric.github.api.response.BranchDto;
+import com.optimetric.github.application.client.BranchClientPort;
+import com.optimetric.github.infrastructure.core.constant.GitHubConstants;
+import com.optimetric.github.infrastructure.util.GitHubUtil;
+import com.optimetric.github.infrastructure.util.UrlBuilder;
+import com.optimetric.shared.exception.GitHubApiException;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -27,14 +32,14 @@ public class BranchClientAdapter implements BranchClientPort {
         List<String> result = new ArrayList<>();
 
         while (true) {
-            String endpoint = String.format(
+            URI uri = UrlBuilder.fromTemplate(
                     GitHubConstants.REPO_BRANCHES_ENDPOINT_TEMPLATE,
                     ownerLogin, repoName, perPage, page
-            );
+            ).buildUri();
 
             List<BranchDto> pageData = githubWebClient
                     .get()
-                    .uri(endpoint)
+                    .uri(uri)
                     .headers(h -> {
                         h.set(HttpHeaders.AUTHORIZATION, GitHubUtil.buildBearerHeader(accessToken));
                         h.set("Accept", "application/vnd.github+json");
@@ -50,9 +55,12 @@ public class BranchClientAdapter implements BranchClientPort {
 
             if (pageData == null || pageData.isEmpty()) break;
 
-            for (BranchDto b : pageData) {
-                if (b.name() != null && !b.name().isBlank()) result.add(b.name());
-            }
+            List<String> branchNames = pageData.stream()
+                    .map(BranchDto::name)
+                    .filter(Objects::nonNull)
+                    .filter(name -> !name.isBlank())
+                    .toList();
+            result.addAll(branchNames);
 
             if (pageData.size() < perPage) break;
             page++;
