@@ -40,31 +40,25 @@ public class RepoServiceAdapter implements RepoServicePort {
 
     @Override
     public List<RepoDto> getReposFromDb(String ownerLogin) {
-        return repositoryRepo.findAllByOwnerLoginOrderByPushedAtDesc(ownerLogin)
-                .stream()
-                .map(RepoMapper::toDto)
-                .toList();
+        List<RepositoryEntity> entities = repositoryRepo.findAllByOwnerLoginOrderByPushedAtDesc(ownerLogin);
+        return RepoMapper.toDtos(entities);
     }
 
     @Override
     public List<RepoDto> getRepos(String login, OwnerType ownerType, String ownerLogin) throws UserNotFoundException {
         User user = authServicePort.findByLoginOrThrow(login);
+        List<RepositoryEntity> entities = findReposByCriteria(user, ownerType, ownerLogin);
+        return RepoMapper.toDtos(entities);
+    }
 
-        List<RepositoryEntity> entities;
-
-        if (ownerType == null && ownerLogin == null) {
-            entities = repositoryRepo.findByUserOrderByPushedAtDesc(user);
-        } else if (ownerType != null && ownerLogin == null) {
-            entities = repositoryRepo.findByUserAndOwnerTypeOrderByPushedAtDesc(user, ownerType);
-        } else if (ownerType != null && ownerLogin != null) {
-            entities = repositoryRepo.findByUserAndOwnerTypeAndOwnerLoginOrderByPushedAtDesc(user, ownerType, ownerLogin);
+    private List<RepositoryEntity> findReposByCriteria(User user, OwnerType ownerType, String ownerLogin) {
+        if (ownerType != null && ownerLogin != null) {
+            return repositoryRepo.findByUserAndOwnerTypeAndOwnerLoginOrderByPushedAtDesc(user, ownerType, ownerLogin);
+        } else if (ownerType != null) {
+            return repositoryRepo.findByUserAndOwnerTypeOrderByPushedAtDesc(user, ownerType);
         } else {
-            entities = repositoryRepo.findByUserOrderByPushedAtDesc(user);
+            return repositoryRepo.findByUserOrderByPushedAtDesc(user);
         }
-
-        return entities.stream()
-                .map(RepoMapper::toDto)
-                .toList();
     }
 
     @Override

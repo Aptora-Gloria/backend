@@ -16,6 +16,7 @@ import com.optimetric.auth.application.AuthServicePort;
 import com.optimetric.shared.exception.GitHubApiException;
 import com.optimetric.shared.exception.UserNotFoundException;
 import com.optimetric.github.application.port.GitHubServicePort;
+import com.optimetric.github.infrastructure.util.TokenUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,10 +32,17 @@ public class AuthServiceAdapter implements AuthServicePort {
 
     @Override
     public AuthResponse login(AuthRequest request) {
-        // 1) GitHub access token al
+        String accessToken = fetchAccessToken(request.code());
+        GitHubUserDto userDto = fetchUserInfo(accessToken);
+        User user = saveOrUpdateUser(userDto, accessToken);
+        String jwt = tokenPort.createToken(user.getLogin());
+        return new AuthResponse(jwt);
+    }
+
+    private String fetchAccessToken(String code) {
         GitHubAccessTokenResponse tokenResponse;
         try {
-            tokenResponse = githubService.getAccessTokenFromCode(request.code());
+            tokenResponse = githubService.getAccessTokenFromCode(code);
         } catch (GitHubApiException e) {
             throw new GitHubApiException("Failed to exchange authorization code for access token: " + e.getMessage(), e);
         }
@@ -47,8 +55,10 @@ public class AuthServiceAdapter implements AuthServicePort {
         if (accessToken == null || accessToken.isEmpty()) {
             throw new GitHubApiException("GitHub access token is null or empty in the response.");
         }
+        return accessToken;
+    }
 
-        // 2) Kullanıcı bilgisi çek
+    private GitHubUserDto fetchUserInfo(String accessToken) {
         GitHubUserDto apiUser;
         try {
             apiUser = githubService.getUserInfo(accessToken);
@@ -56,20 +66,21 @@ public class AuthServiceAdapter implements AuthServicePort {
             throw new GitHubApiException("Failed to fetch user info from GitHub: " + e.getMessage(), e);
         }
 
-        // 3) DTO'ya accessToken ekle (record immutable olduğu için yeni örnek)
-        GitHubUserDto dto = new GitHubUserDto(
+        // DTO'ya accessToken ekle (record immutable olduğu için yeni örnek)
+        return new GitHubUserDto(
                 apiUser.id(),
                 apiUser.githubUserId(),
                 apiUser.login(),
-                accessToken,                 // <-- token burada
+                accessToken,
                 apiUser.name(),
                 apiUser.avatar_url(),
                 apiUser.htmlUrl(),
                 apiUser.ownerType(),
                 apiUser.lastSyncedAt()
         );
+    }
 
-        // 4) Upsert: önce githubUserId, yoksa login
+    private User saveOrUpdateUser(GitHubUserDto dto, String accessToken) {
         User entity = userRepository.findByGithubUserId(dto.githubUserId())
                 .orElseGet(() -> userRepository.findByLogin(dto.login()).orElse(null));
 
@@ -77,15 +88,10 @@ public class AuthServiceAdapter implements AuthServicePort {
             entity = GitHubUserMapper.toNewEntity(dto);
         } else {
             GitHubUserMapper.updateEntityFromDto(dto, entity);
-            // Mapper set etse de garanti olsun:
             entity.setAccessToken(accessToken);
         }
 
-        userRepository.save(entity);
-
-        // 5) JWT üret ve dön
-        String jwt = tokenPort.createToken(entity.getLogin());
-        return new AuthResponse(jwt);
+        return userRepository.save(entity);
     }
 
 
@@ -111,7 +117,7 @@ public class AuthServiceAdapter implements AuthServicePort {
 
     @Override
     public String getAccessTokenFromToken(String jwtToken) {
-        String extractToken = extractToken(jwtToken);
+        String extractToken = TokenUtil.extractToken(jwtToken);
         String login = getLoginFromToken(extractToken);
         User user = findByLoginOrThrow(login);
         return user.getAccessToken();
@@ -128,12 +134,4 @@ public class AuthServiceAdapter implements AuthServicePort {
         return findByLogin(login)
                 .orElseThrow(() -> new UserNotFoundException("User not found: " + login));
     }
-
-    public static String extractToken(String authHeader) {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return null;
-        }
-        return authHeader.substring(7);
-    }
-
 }

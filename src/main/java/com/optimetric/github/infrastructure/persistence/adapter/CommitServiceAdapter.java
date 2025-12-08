@@ -57,18 +57,13 @@ public class CommitServiceAdapter implements CommitServicePort {
         RepositoryEntity repository = repoServicePort.getByFullNameForCurrentUserOrThrow(login, fullName);
 
         if (branchName == null || branchName.isBlank()) {
-            return commitRepository.findByRepository(repository)
-                    .stream()
-                    .map(CommitMapper::toDto)
-                    .collect(Collectors.toList());
+            List<CommitEntity> commits = commitRepository.findByRepository(repository);
+            return CommitMapper.toDtos(commits);
         }
 
         BranchEntity branch = findBranchOrThrow(repository, branchName, fullName);
-
-        return commitRepository.findByRepositoryAndBranch(repository, branch)
-                .stream()
-                .map(CommitMapper::toDto)
-                .collect(Collectors.toList());
+        List<CommitEntity> commits = commitRepository.findByRepositoryAndBranch(repository, branch);
+        return CommitMapper.toDtos(commits);
     }
 
     private void saveCommits(List<CommitDto> commits, RepositoryEntity repository, BranchEntity branch) {

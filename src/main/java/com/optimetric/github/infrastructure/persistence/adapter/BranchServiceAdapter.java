@@ -40,7 +40,12 @@ public class BranchServiceAdapter implements BranchServicePort {
         List<String> branchNames = branchClient.getRepoBranchNames(accessToken, owner, repo.getName());
 
         saveBranches(branchNames, repo);
-        return getBranchesByFullName(login, fullName);
+        return getBranchesByRepository(repo);
+    }
+
+    private List<BranchDto> getBranchesByRepository(RepositoryEntity repo) {
+        List<BranchEntity> branches = branchRepository.findByRepository(repo);
+        return BranchMapper.toDtos(branches);
     }
 
     @Override
@@ -48,11 +53,8 @@ public class BranchServiceAdapter implements BranchServicePort {
     public List<BranchDto> getBranchesByFullName(String login, String fullName) 
             throws RepositoryNotFoundException, UserNotFoundException {
         RepositoryEntity repo = repoServicePort.getByFullNameForCurrentUserOrThrow(login, fullName);
-
-        return branchRepository.findByRepository(repo)
-                .stream()
-                .map(BranchMapper::toDto)
-                .toList();
+        List<BranchEntity> branches = branchRepository.findByRepository(repo);
+        return BranchMapper.toDtos(branches);
     }
 
     private void saveBranches(List<String> branchNames, RepositoryEntity repo) {
