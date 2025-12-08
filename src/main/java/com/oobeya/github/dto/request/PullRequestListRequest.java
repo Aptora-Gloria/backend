@@ -1,6 +1,6 @@
 package com.oobeya.github.dto.request;
 
-import com.oobeya.github.domain.pullrequest.PullRequestState;
+import com.oobeya.github.infrastructure.persistence.entity.PullRequestEntity;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -18,7 +18,7 @@ public record PullRequestListRequest(
         @Positive(message = "size must be greater than zero")
         Integer size,
 
-        PullRequestState state,
+        PullRequestEntity.PullRequestStatus status,
 
         Boolean merged
 ) {

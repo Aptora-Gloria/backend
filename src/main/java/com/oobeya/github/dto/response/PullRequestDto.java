@@ -1,31 +1,34 @@
 package com.oobeya.github.dto.response;
 
-import com.oobeya.github.domain.pullrequest.PullRequest;
-import com.oobeya.github.domain.pullrequest.PullRequestState;
+import com.oobeya.github.infrastructure.persistence.entity.PullRequestEntity;
 
 import java.time.OffsetDateTime;
 import java.util.Objects;
 
+/**
+ * Response DTO for pull request data.
+ * Maps from PullRequestEntity to DTO following the same pattern as other modules.
+ */
 public record PullRequestDto(
         Long id,
         Integer number,
         String title,
-        PullRequestState state,
+        PullRequestEntity.PullRequestStatus status,
         boolean merged,
         OffsetDateTime createdAt,
         OffsetDateTime updatedAt
 ) {
 
-    public static PullRequestDto fromDomain(PullRequest pullRequest) {
-        Objects.requireNonNull(pullRequest, "pullRequest must not be null");
+    public static PullRequestDto fromEntity(PullRequestEntity entity) {
+        Objects.requireNonNull(entity, "entity must not be null");
         return new PullRequestDto(
-                pullRequest.getId(),
-                pullRequest.getNumber(),
-                pullRequest.getTitle(),
-                pullRequest.getState(),
-                pullRequest.isMerged(),
-                pullRequest.getCreatedAt(),
-                pullRequest.getUpdatedAt()
+                entity.getId(),
+                entity.getNumber(),
+                entity.getTitle(),
+                entity.getStatus(),
+                entity.getStatus() == PullRequestEntity.PullRequestStatus.MERGED,
+                entity.getCreatedAt(),
+                entity.getUpdatedAt()
         );
     }
 }

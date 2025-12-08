@@ -20,7 +20,9 @@ public record PullRequestSyncRequest(
         String repositoryName,
 
         @PastOrPresent(message = "syncSince cannot be in the future")
-        OffsetDateTime syncSince
+        OffsetDateTime syncSince,
+
+        String authHeader
 ) {
 }
 

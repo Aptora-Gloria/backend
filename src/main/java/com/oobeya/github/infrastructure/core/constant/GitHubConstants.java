@@ -15,6 +15,10 @@ public class GitHubConstants {
     public static final String TOKEN_ENDPOINT = "/login/oauth/access_token";
     public static final String REPO_BRANCHES_ENDPOINT_TEMPLATE =
             "https://api.github.com/repos/%s/%s/branches?per_page=%d&page=%d";
+    public static final String REPO_PULL_REQUESTS_ENDPOINT_TEMPLATE =
+            BASE_API_URL + "/repos/%s/%s/pulls?state=%s&page=%d&per_page=%d";
+    public static final String REPO_PULL_REQUEST_BY_NUMBER_ENDPOINT_TEMPLATE =
+            BASE_API_URL + "/repos/%s/%s/pulls/%d";
 
     // === Error Messages ===
     public static final String ERROR_USER_NOT_FOUND = "User not found with login: ";
@@ -24,6 +28,7 @@ public class GitHubConstants {
     public static final String ERROR_REPO_FETCH_FAILED = "GitHub repo fetch failed: ";
     public static final String ERROR_REPO_CONTENTS_FAILED = "GitHub repo contents fetch failed: ";
     public static final String ERROR_COMMIT_FETCH_FAILED = "GitHub commit fetch failed: ";
+    public static final String ERROR_PULL_REQUEST_FETCH_FAILED = "GitHub pull request fetch failed: ";
 
     private GitHubConstants() {
         // Utility class – no instantiation

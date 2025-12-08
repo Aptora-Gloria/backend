@@ -6,7 +6,10 @@ import com.oobeya.auth.api.dto.GitHubUserResponse;
 import com.oobeya.github.api.response.BranchDto;
 import com.oobeya.github.api.response.CommitDto;
 import com.oobeya.github.api.response.LanguageDto;
+import com.oobeya.github.api.response.GitHubPullRequestResponse;
 import com.oobeya.github.application.port.ApiClientPort;
+import com.oobeya.github.dto.response.PullRequestDto;
+import com.oobeya.github.infrastructure.core.mapper.PullRequestMapper;
 import com.oobeya.github.infrastructure.core.config.GitHubOAuthProperties;
 import com.oobeya.github.infrastructure.core.constant.GitHubConstants;
 import com.oobeya.github.api.request.RepoInitrequest;
@@ -189,12 +192,119 @@ public class ApiClientImpl implements ApiClientPort {
         return new LanguageDto(casted);
     }
 
+    @Override
+    public List<PullRequestDto> getPullRequests(String accessToken, String owner, String repo, String state, Integer page, Integer perPage) {
+        String endpoint = String.format(
+                GitHubConstants.REPO_PULL_REQUESTS_ENDPOINT_TEMPLATE,
+                owner, repo, state != null ? state : "all", page != null ? page : 1, perPage != null ? perPage : 30
+        );
 
+        List<GitHubPullRequestResponse> responses = githubWebClient
+                .get()
+                .uri(endpoint)
+                .headers(h -> {
+                    h.set(HttpHeaders.AUTHORIZATION, GitHubUtil.buildBearerHeader(accessToken));
+                    h.set("Accept", "application/vnd.github+json");
+                    h.set("X-GitHub-Api-Version", "2022-11-28");
+                })
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, res ->
+                        res.bodyToMono(String.class).map(body ->
+                                new GitHubApiException(GitHubConstants.ERROR_PULL_REQUEST_FETCH_FAILED + body)))
+                .bodyToFlux(GitHubPullRequestResponse.class)
+                .collectList()
+                .block();
 
+        if (responses == null) {
+            return List.of();
+        }
 
+        return PullRequestMapper.toDtos(responses);
+    }
 
+    @Override
+    public PullRequestDto getPullRequestByNumber(String accessToken, String owner, String repo, Integer pullRequestNumber) {
+        String endpoint = String.format(
+                GitHubConstants.REPO_PULL_REQUEST_BY_NUMBER_ENDPOINT_TEMPLATE,
+                owner, repo, pullRequestNumber
+        );
 
+        GitHubPullRequestResponse response = githubWebClient
+                .get()
+                .uri(endpoint)
+                .headers(h -> {
+                    h.set(HttpHeaders.AUTHORIZATION, GitHubUtil.buildBearerHeader(accessToken));
+                    h.set("Accept", "application/vnd.github+json");
+                    h.set("X-GitHub-Api-Version", "2022-11-28");
+                })
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, res ->
+                        res.bodyToMono(String.class).map(body ->
+                                new GitHubApiException(GitHubConstants.ERROR_PULL_REQUEST_FETCH_FAILED + body)))
+                .bodyToMono(GitHubPullRequestResponse.class)
+                .block();
 
+        if (response == null) {
+            throw new GitHubApiException("Pull request not found: " + pullRequestNumber);
+        }
+
+        return PullRequestMapper.toDto(response);
+    }
+
+    @Override
+    public List<GitHubPullRequestResponse> getPullRequestsRaw(String accessToken, String owner, String repo, String state, Integer page, Integer perPage) {
+        String endpoint = String.format(
+                GitHubConstants.REPO_PULL_REQUESTS_ENDPOINT_TEMPLATE,
+                owner, repo, state != null ? state : "all", page != null ? page : 1, perPage != null ? perPage : 30
+        );
+
+        List<GitHubPullRequestResponse> responses = githubWebClient
+                .get()
+                .uri(endpoint)
+                .headers(h -> {
+                    h.set(HttpHeaders.AUTHORIZATION, GitHubUtil.buildBearerHeader(accessToken));
+                    h.set("Accept", "application/vnd.github+json");
+                    h.set("X-GitHub-Api-Version", "2022-11-28");
+                })
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, res ->
+                        res.bodyToMono(String.class).map(body ->
+                                new GitHubApiException(GitHubConstants.ERROR_PULL_REQUEST_FETCH_FAILED + body)))
+                .bodyToFlux(GitHubPullRequestResponse.class)
+                .collectList()
+                .block();
+
+        return responses != null ? responses : List.of();
+    }
+
+    @Override
+    public GitHubPullRequestResponse getPullRequestByNumberRaw(String accessToken, String owner, String repo, Integer pullRequestNumber) {
+        String endpoint = String.format(
+                GitHubConstants.REPO_PULL_REQUEST_BY_NUMBER_ENDPOINT_TEMPLATE,
+                owner, repo, pullRequestNumber
+        );
+
+        GitHubPullRequestResponse response = githubWebClient
+                .get()
+                .uri(endpoint)
+                .headers(h -> {
+                    h.set(HttpHeaders.AUTHORIZATION, GitHubUtil.buildBearerHeader(accessToken));
+                    h.set("Accept", "application/vnd.github+json");
+                    h.set("X-GitHub-Api-Version", "2022-11-28");
+                })
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, res ->
+                        res.bodyToMono(String.class).map(body ->
+                                new GitHubApiException(GitHubConstants.ERROR_PULL_REQUEST_FETCH_FAILED + body)))
+                .bodyToMono(GitHubPullRequestResponse.class)
+                .block();
+
+        if (response == null) {
+            throw new GitHubApiException("Pull request not found: " + pullRequestNumber);
+        }
+
+        return response;
+    }
 
 
 
