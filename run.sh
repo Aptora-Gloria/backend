@@ -6,3 +6,10 @@ export PATH=$JAVA_HOME/bin:$PATH
 
 mvn spring-boot:run
 
+
+
+
+
+
+
+

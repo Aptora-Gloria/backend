@@ -61,3 +61,10 @@ Eğer IntelliJ'de hala sorun varsa, terminal'den çalıştırabilirsiniz:
 
 Bu script Java 17 kullanarak projeyi çalıştırır.
 
+
+
+
+
+
+
+

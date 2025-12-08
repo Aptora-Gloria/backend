@@ -41,6 +41,16 @@ CYGWIN* | MINGW*)
   ;;
 esac
 
+# Default to bundled JDK 17 if JAVA_HOME is not defined (useful on CI/shells)
+if [ -z "${JAVA_HOME-}" ]; then
+  for candidate in /Library/Java/JavaVirtualMachines/openjdk-17*/Contents/Home; do
+    if [ -d "$candidate" ]; then
+      JAVA_HOME="$candidate"
+      break
+    fi
+  done
+fi
+
 # set JAVACMD and JAVACCMD
 set_java_home() {
   # For Cygwin and MinGW, ensure paths are in Unix format before anything is touched

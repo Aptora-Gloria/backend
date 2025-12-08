@@ -107,3 +107,10 @@ Eğer yukarıdaki adımların hepsini uyguladıysanız ve hala hatalar varsa:
 3. Eğer terminal'den derleme başarılıysa, sorun IntelliJ yapılandırmasındadır
 4. IntelliJ'yi açın ve **File** → **Open** → Proje klasörünü **yeniden açın**
 
+
+
+
+
+
+
+
