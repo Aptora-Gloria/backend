@@ -11,7 +11,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.optimetric.github.api.response.PullRequestDto;
+import com.optimetric.github.api.response.SyncMetricsResponse;
 import com.optimetric.github.application.port.PullRequestServicePort;
+import com.optimetric.github.application.service.PullRequestMetricsSyncService;
+import com.optimetric.shared.exception.RepositoryNotFoundException;
+import com.optimetric.shared.exception.UserNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 public class PullRequestController {
 
     private final PullRequestServicePort pullRequestService;
+    private final PullRequestMetricsSyncService metricsSyncService;
 
     @PostMapping("/init")
     public ResponseEntity<List<PullRequestDto>> initPullRequests(
@@ -42,6 +47,15 @@ public class PullRequestController {
         return ResponseEntity.ok(
                 pullRequestService.getPullRequestsByFullName(login, fullName, state)
         );
+    }
+
+    @PostMapping("/sync-metrics")
+    public ResponseEntity<SyncMetricsResponse> syncMetrics(
+            @AuthenticationPrincipal String login,
+            @RequestParam("fullName") String fullName
+    ) throws RepositoryNotFoundException, UserNotFoundException {
+        SyncMetricsResponse response = metricsSyncService.syncMetricsForRepository(login, fullName);
+        return ResponseEntity.ok(response);
     }
 }
 

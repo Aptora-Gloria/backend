@@ -17,6 +17,10 @@ public class GitHubConstants {
             "https://api.github.com/repos/%s/%s/branches?per_page=%d&page=%d";
     public static final String REPO_LANGUAGES_ENDPOINT_TEMPLATE = BASE_API_URL + "/repos/%s/%s/languages";
     public static final String REPO_PULL_REQUESTS_ENDPOINT_TEMPLATE = BASE_API_URL + "/repos/%s/%s/pulls";
+    public static final String REPO_PULL_REQUEST_DETAILS_ENDPOINT_TEMPLATE = BASE_API_URL + "/repos/%s/%s/pulls/%d";
+    public static final String REPO_PULL_REQUEST_COMMITS_ENDPOINT_TEMPLATE = BASE_API_URL + "/repos/%s/%s/pulls/%d/commits";
+    public static final String REPO_PULL_REQUEST_REVIEWS_ENDPOINT_TEMPLATE = BASE_API_URL + "/repos/%s/%s/pulls/%d/reviews";
+    public static final String REPO_ISSUE_COMMENTS_ENDPOINT_TEMPLATE = BASE_API_URL + "/repos/%s/%s/issues/%d/comments";
 
     // === Error Messages ===
     public static final String ERROR_USER_NOT_FOUND = "User not found with login: ";
@@ -27,6 +31,10 @@ public class GitHubConstants {
     public static final String ERROR_REPO_CONTENTS_FAILED = "GitHub repo contents fetch failed: ";
     public static final String ERROR_COMMIT_FETCH_FAILED = "GitHub commit fetch failed: ";
     public static final String ERROR_PULL_REQUEST_FETCH_FAILED = "GitHub pull request fetch failed: ";
+    public static final String ERROR_PULL_REQUEST_DETAILS_FETCH_FAILED = "GitHub pull request details fetch failed: ";
+    public static final String ERROR_PULL_REQUEST_COMMITS_FETCH_FAILED = "GitHub pull request commits fetch failed: ";
+    public static final String ERROR_PULL_REQUEST_REVIEWS_FETCH_FAILED = "GitHub pull request reviews fetch failed: ";
+    public static final String ERROR_PULL_REQUEST_COMMENTS_FETCH_FAILED = "GitHub pull request comments fetch failed: ";
 
     private GitHubConstants() {
         // Utility class – no instantiation

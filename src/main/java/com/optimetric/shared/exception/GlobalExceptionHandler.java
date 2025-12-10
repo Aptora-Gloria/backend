@@ -2,6 +2,8 @@ package com.optimetric.shared.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,6 +34,22 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<?> handleUserNotFoundException(UserNotFoundException ex) {
         return new ResponseEntity<>(createErrorBody("User Not Found", ex.getMessage()), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<?> handleAccessDeniedException(AccessDeniedException ex) {
+        return new ResponseEntity<>(
+                createErrorBody("Access Denied", "You do not have permission to access this resource. Please ensure you are authenticated with a valid JWT token."),
+                HttpStatus.FORBIDDEN
+        );
+    }
+
+    @ExceptionHandler(AuthenticationCredentialsNotFoundException.class)
+    public ResponseEntity<?> handleAuthenticationCredentialsNotFoundException(AuthenticationCredentialsNotFoundException ex) {
+        return new ResponseEntity<>(
+                createErrorBody("Authentication Required", "You must be authenticated to access this resource. Please provide a valid JWT token in the Authorization header."),
+                HttpStatus.UNAUTHORIZED
+        );
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
