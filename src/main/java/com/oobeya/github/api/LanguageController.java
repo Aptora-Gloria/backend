@@ -1,9 +1,10 @@
 package com.oobeya.github.api;
 
 import com.oobeya.github.api.response.LanguageDto;
-import com.oobeya.github.api.request.LanguageInitRequest;
 import com.oobeya.github.api.response.LanguageUiDto;
 import com.oobeya.github.application.port.LanguageServicePort;
+import com.oobeya.github.dto.request.LanguageSyncRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,15 +16,30 @@ public class LanguageController {
 
     private final LanguageServicePort languageService;
 
-    @PostMapping("/languages/init")
-    public ResponseEntity<LanguageDto> initLanguages(
+    /**
+     * Synchronizes languages from GitHub API and saves them to database.
+     * Frontend should provide: repositoryId, owner, repositoryName, and authHeader.
+     */
+    @PostMapping("/languages/sync")
+    public ResponseEntity<LanguageDto> syncLanguages(
             @RequestHeader("Authorization") String authHeader,
-            @RequestBody LanguageInitRequest request
+            @Valid @RequestBody LanguageSyncRequest request
     ) {
-        LanguageDto dto = languageService.getRepoLanguages(authHeader, request.repositoryId());
+        // Set authHeader from request header
+        LanguageSyncRequest requestWithAuth = new LanguageSyncRequest(
+                request.repositoryId(),
+                request.owner(),
+                request.repositoryName(),
+                request.syncSince(),
+                authHeader
+        );
+        LanguageDto dto = languageService.syncLanguages(requestWithAuth);
         return ResponseEntity.ok(dto);
     }
 
+    /**
+     * Gets languages from database by repository ID (raw Map format).
+     */
     @GetMapping("/languages/repository/{repositoryId}")
     public ResponseEntity<LanguageDto> getLanguagesFromDb(
             @PathVariable("repositoryId") Long repositoryId
@@ -32,6 +48,10 @@ public class LanguageController {
         return ResponseEntity.ok(dto);
     }
 
+    /**
+     * Gets languages from database by repository ID (UI format with percentages).
+     * This is the preferred endpoint for frontend to display language statistics.
+     */
     @GetMapping("/languages/repository/{repositoryId}/ui")
     public ResponseEntity<LanguageUiDto> getLanguagesForUi(
             @PathVariable("repositoryId") Long repositoryId

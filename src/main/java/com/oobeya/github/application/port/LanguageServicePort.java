@@ -2,17 +2,17 @@ package com.oobeya.github.application.port;
 
 import com.oobeya.github.api.response.LanguageDto;
 import com.oobeya.github.api.response.LanguageUiDto;
+import com.oobeya.github.dto.request.LanguageSyncRequest;
 
 public interface LanguageServicePort {
     
     /**
-     * Fetches languages from GitHub API and saves them to database.
+     * Synchronizes languages from GitHub API and saves them to database.
      * 
-     * @param authHeader Authorization header
-     * @param repositoryId Repository ID
+     * @param request Language sync request containing repository info and auth header
      * @return LanguageDto from GitHub API
      */
-    LanguageDto getRepoLanguages(String authHeader, Long repositoryId);
+    LanguageDto syncLanguages(LanguageSyncRequest request);
     
     /**
      * Gets languages from database by repository ID (raw Map format).

@@ -5,17 +5,21 @@ import com.oobeya.github.api.response.LanguageDto;
 import com.oobeya.github.api.response.LanguageUiDto;
 import com.oobeya.github.application.port.ApiClientPort;
 import com.oobeya.github.application.port.LanguageServicePort;
+import com.oobeya.github.dto.request.LanguageSyncRequest;
 import com.oobeya.github.infrastructure.core.mapper.LanguageMapper;
 import com.oobeya.github.infrastructure.persistence.entity.LanguageEntity;
 import com.oobeya.github.infrastructure.persistence.entity.RepositoryEntity;
 import com.oobeya.github.infrastructure.persistence.jpa.LanguageRepository;
 import com.oobeya.github.infrastructure.persistence.jpa.RepositoryRepository;
+import com.oobeya.shared.exception.GitHubApiException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LanguageServiceAdapter implements LanguageServicePort {
@@ -26,36 +30,48 @@ public class LanguageServiceAdapter implements LanguageServicePort {
     private final RepositoryRepository repositoryRepository;
 
     /**
-     * Fetches languages from GitHub API and saves them to database.
+     * Synchronizes languages from GitHub API and saves them to database.
      * 
-     * @param authHeader Authorization header
-     * @param repositoryId Repository ID
+     * @param request Language sync request containing repository info and auth header
      * @return LanguageDto from GitHub API
      */
     @Override
     @Transactional
-    public LanguageDto getRepoLanguages(String authHeader, Long repositoryId) {
-        String accessToken = authServicePort.getAccessTokenFromToken(authHeader);
+    public LanguageDto syncLanguages(LanguageSyncRequest request) {
+        try {
+            RepositoryEntity repository = repositoryRepository.findById(request.repositoryId())
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Repository not found with id: " + request.repositoryId()));
 
-        // Get repository entity
-        RepositoryEntity repository = repositoryRepository.findById(repositoryId)
-                .orElseThrow(() -> new IllegalArgumentException("Repository not found with id: " + repositoryId));
+            String accessToken = authServicePort.getAccessTokenFromToken(request.authHeader());
+            if (accessToken == null || accessToken.isEmpty()) {
+                throw new GitHubApiException("Access token is required for syncing languages");
+            }
 
-        // Fetch languages from GitHub API
-        String owner = repository.getOwnerLogin();
-        String repoName = repository.getName();
-        LanguageDto dto = apiClient.getRepoLanguages(accessToken, owner, repoName);
+            // Fetch languages from GitHub API using request parameters
+            LanguageDto dto = apiClient.getRepoLanguages(accessToken, request.owner(), request.repositoryName());
 
-        // Delete old languages for this repository
-        languageRepository.deleteByRepository_Id(repositoryId);
+            // Delete old languages for this repository
+            languageRepository.deleteByRepository_Id(request.repositoryId());
 
-        // Save new languages
-        List<LanguageEntity> entities = LanguageMapper.toEntities(dto, repository);
-        if (!entities.isEmpty()) {
-            languageRepository.saveAll(entities);
+            // Save new languages
+            List<LanguageEntity> entities = LanguageMapper.toEntities(dto, repository);
+            if (!entities.isEmpty()) {
+                languageRepository.saveAll(entities);
+            }
+
+            log.info("Successfully synced languages for repository {} ({}/{})",
+                    request.repositoryId(), request.owner(), request.repositoryName());
+
+            return dto;
+        } catch (GitHubApiException e) {
+            log.error("GitHub API error while syncing languages: {}", e.getMessage(), e);
+            throw e;
+        } catch (Exception e) {
+            log.error("Error syncing languages for repository {}: {}",
+                    request.repositoryId(), e.getMessage(), e);
+            throw new GitHubApiException("Failed to sync languages: " + e.getMessage(), e);
         }
-
-        return dto;
     }
 
     /**
