@@ -3,9 +3,9 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/oobeya
-    username: oobeya_user
-    password: oobeya_pass
+    url: jdbc:postgresql://localhost:5432/optimetric
+    username: optimetric_user
+    password: optimetric_pass
 
   jpa:
     hibernate:
@@ -38,3 +38,41 @@ spring:
 jwt:
   secret: e1c365c317f94e4abf2040c75a35fc0e
   expiration-ms: 3600000
+
+logging:
+  level:
+    # Root logging level
+    root: INFO
+    
+    # Application-specific logging
+    com.optimetric: DEBUG
+    com.optimetric.github.infrastructure.http: DEBUG
+    com.optimetric.github.infrastructure.persistence.adapter: DEBUG
+    com.optimetric.shared.exception: DEBUG
+    
+    # Spring Security (for authentication debugging)
+    org.springframework.security: INFO
+    
+    # HTTP client logging (for GitHub API debugging)
+    org.springframework.web.reactive.function.client: DEBUG
+    reactor.netty.http.client: DEBUG
+    
+    # Database logging
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    
+    # Transaction logging
+    org.springframework.transaction: DEBUG
+    
+  pattern:
+    # Console logging pattern with correlation ID support
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{correlationId:-}] %logger{36} - %msg%n"
+    
+    # File logging pattern (if file logging is enabled)
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{correlationId:-}] %logger{36} - %msg%n"
+  
+  # Uncomment to enable file logging
+  # file:
+  #   name: logs/optimetric.log
+  #   max-size: 10MB
+  #   max-history: 30

@@ -30,8 +30,8 @@ Postman Agent (macOS)
 
 Git veya brew install git
 
-git clone https://github.com/<kullanıcı_adı>/oobeya.git
-cd oobeya/backend
+git clone https://github.com/<kullanıcı_adı>/optimetric.git
+cd optimetric/backend
 
 
 
