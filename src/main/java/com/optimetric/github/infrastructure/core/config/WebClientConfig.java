@@ -18,4 +18,13 @@ public class WebClientConfig {
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE) // ← bunu ekle
                 .build();
     }
+
+    @Bean
+    public WebClient githubApiWebClient() {
+        return WebClient.builder()
+                .baseUrl(GitHubConstants.BASE_API_URL)
+                .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .build();
+    }
 }

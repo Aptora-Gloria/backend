@@ -36,6 +36,29 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(createErrorBody("User Not Found", ex.getMessage()), HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(PullRequestNotFoundException.class)
+    public ResponseEntity<?> handlePullRequestNotFoundException(PullRequestNotFoundException ex) {
+        return new ResponseEntity<>(createErrorBody("Pull Request Not Found", ex.getMessage()), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(SyncJobException.class)
+    public ResponseEntity<?> handleSyncJobException(SyncJobException ex) {
+        return new ResponseEntity<>(createErrorBody("Synchronization Error", ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(GitHubRateLimitException.class)
+    public ResponseEntity<?> handleGitHubRateLimitException(GitHubRateLimitException ex) {
+        Map<String, Object> errorBody = createErrorBody("GitHub Rate Limit Exceeded", ex.getMessage());
+        errorBody.put("resetTime", ex.getResetTime());
+        errorBody.put("remainingRequests", ex.getRemainingRequests());
+        return new ResponseEntity<>(errorBody, HttpStatus.TOO_MANY_REQUESTS);
+    }
+
+    @ExceptionHandler(InvalidRepositoryFormatException.class)
+    public ResponseEntity<?> handleInvalidRepositoryFormatException(InvalidRepositoryFormatException ex) {
+        return new ResponseEntity<>(createErrorBody("Invalid Repository Format", ex.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<?> handleAccessDeniedException(AccessDeniedException ex) {
         return new ResponseEntity<>(

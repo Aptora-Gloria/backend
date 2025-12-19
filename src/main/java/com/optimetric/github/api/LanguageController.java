@@ -21,7 +21,7 @@ public class LanguageController {
             @AuthenticationPrincipal String login,
             @RequestBody LanguageInitRequest request
     ) {
-        LanguageDto dto = languageService.getRepoLanguages(login, request.repositoryId());
+        LanguageDto dto = languageService.initRepoLanguages(login, request.repositoryId());
         return ResponseEntity.ok(dto);
     }
 

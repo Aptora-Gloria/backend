@@ -36,7 +36,7 @@ public class LanguageServiceAdapter implements LanguageServicePort {
      */
     @Override
     @Transactional
-    public LanguageDto getRepoLanguages(String login, Long repositoryId) 
+    public LanguageDto initRepoLanguages(String login, Long repositoryId)
             throws RepositoryNotFoundException, UserNotFoundException {
         String accessToken = authServicePort.getAccessTokenFromLogin(login);
 

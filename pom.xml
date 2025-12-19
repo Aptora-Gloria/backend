@@ -129,6 +129,14 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!-- Property-based testing -->
+		<dependency>
+			<groupId>net.jqwik</groupId>
+			<artifactId>jqwik</artifactId>
+			<version>1.8.2</version>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 

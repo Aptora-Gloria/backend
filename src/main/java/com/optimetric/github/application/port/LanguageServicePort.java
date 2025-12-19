@@ -16,7 +16,7 @@ public interface LanguageServicePort {
      * @throws RepositoryNotFoundException if repository not found
      * @throws UserNotFoundException if user not found
      */
-    LanguageDto getRepoLanguages(String login, Long repositoryId) 
+    LanguageDto initRepoLanguages(String login, Long repositoryId)
             throws RepositoryNotFoundException, UserNotFoundException;
     
     /**
