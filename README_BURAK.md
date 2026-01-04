@@ -1,1 +1,0 @@
-Tahşr burak AVar
