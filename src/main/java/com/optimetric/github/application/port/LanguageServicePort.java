@@ -11,27 +11,27 @@ public interface LanguageServicePort {
      * Fetches languages from GitHub API and saves them to database.
      * 
      * @param login User login
-     * @param repositoryId Repository ID
+     * @param repoFullName Repository full name (e.g., "owner/repo")
      * @return LanguageDto from GitHub API
      * @throws RepositoryNotFoundException if repository not found
      * @throws UserNotFoundException if user not found
      */
-    LanguageDto initRepoLanguages(String login, Long repositoryId)
+    LanguageDto initRepoLanguages(String login, String repoFullName)
             throws RepositoryNotFoundException, UserNotFoundException;
     
     /**
-     * Gets languages from database by repository ID (raw Map format).
+     * Gets languages from database by repository full name (raw Map format).
      * 
-     * @param repositoryId Repository ID
+     * @param repoFullName Repository full name (e.g., "owner/repo")
      * @return LanguageDto
      */
-    LanguageDto getLanguagesFromDb(Long repositoryId);
+    LanguageDto getLanguagesFromDb(String repoFullName);
     
     /**
-     * Gets languages from database by repository ID (UI format with percentages).
+     * Gets languages from database by repository full name (UI format with percentages).
      * 
-     * @param repositoryId Repository ID
+     * @param repoFullName Repository full name (e.g., "owner/repo")
      * @return LanguageUiDto
      */
-    LanguageUiDto getLanguagesForUi(Long repositoryId);
+    LanguageUiDto getLanguagesForUi(String repoFullName);
 }

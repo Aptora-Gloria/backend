@@ -17,5 +17,14 @@ public interface LanguageRepository extends JpaRepository<LanguageEntity, Long> 
      */
     void deleteByRepository_Id(Long repositoryId);
     
+    /**
+     * Finds all languages by repository full name.
+     */
+    List<LanguageEntity> findAllByRepository_FullName(String fullName);
+    
+    /**
+     * Deletes all languages by repository full name.
+     */
+    void deleteByRepository_FullName(String fullName);
 
 }
