@@ -1,9 +1,11 @@
 package com.optimetric.github.api;
 
-import com.optimetric.github.api.response.LanguageDto;
+import com.optimetric.github.api.request.GetLanguagesRequest;
 import com.optimetric.github.api.request.LanguageInitRequest;
+import com.optimetric.github.api.response.LanguageDto;
 import com.optimetric.github.api.response.LanguageUiDto;
 import com.optimetric.github.application.port.LanguageServicePort;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -19,25 +21,27 @@ public class LanguageController {
     @PostMapping("/languages/init")
     public ResponseEntity<LanguageDto> initLanguages(
             @AuthenticationPrincipal String login,
-            @RequestBody LanguageInitRequest request
+            @RequestBody @Valid LanguageInitRequest request
     ) {
-        LanguageDto dto = languageService.initRepoLanguages(login, request.repositoryId());
+        LanguageDto dto = languageService.initRepoLanguages(login, request.repoFullName());
         return ResponseEntity.ok(dto);
     }
 
-    @GetMapping("/languages/repository/{repositoryId}")
+    @PostMapping("/languages/query")
     public ResponseEntity<LanguageDto> getLanguagesFromDb(
-            @PathVariable("repositoryId") Long repositoryId
+            @AuthenticationPrincipal String login,
+            @RequestBody @Valid GetLanguagesRequest request
     ) {
-        LanguageDto dto = languageService.getLanguagesFromDb(repositoryId);
+        LanguageDto dto = languageService.getLanguagesFromDb(request.repoFullName());
         return ResponseEntity.ok(dto);
     }
 
-    @GetMapping("/languages/repository/{repositoryId}/ui")
+    @PostMapping("/languages/query/ui")
     public ResponseEntity<LanguageUiDto> getLanguagesForUi(
-            @PathVariable("repositoryId") Long repositoryId
+            @AuthenticationPrincipal String login,
+            @RequestBody @Valid GetLanguagesRequest request
     ) {
-        LanguageUiDto uiDto = languageService.getLanguagesForUi(repositoryId);
+        LanguageUiDto uiDto = languageService.getLanguagesForUi(request.repoFullName());
         return ResponseEntity.ok(uiDto);
     }
 }
