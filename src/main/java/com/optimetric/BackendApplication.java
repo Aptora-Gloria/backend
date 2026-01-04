@@ -13,7 +13,8 @@ import com.optimetric.github.infrastructure.core.config.GitHubOAuthProperties;
 @ComponentScan(basePackages = {
 		"com.optimetric.github",
 		"com.optimetric.Gemini",
-		"com.optimetric.auth"
+		"com.optimetric.auth",
+		"com.optimetric.metrics"
 	})
 public class BackendApplication {
 
