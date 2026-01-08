@@ -14,7 +14,9 @@ import com.optimetric.github.api.request.RepoInitrequest;
 import com.optimetric.github.api.response.RepoDto;
 import com.optimetric.github.application.dto.RepositoryInfo;
 import com.optimetric.github.application.dto.RepositoryInitData;
-import com.optimetric.github.application.port.RepoServicePort;
+import com.optimetric.github.application.usecase.GetRepositoryForCurrentUserUseCase;
+import com.optimetric.github.application.usecase.InitializeUserRepositoriesUseCase;
+import com.optimetric.github.application.usecase.QueryRepositoriesUseCase;
 import com.optimetric.github.infrastructure.core.mapper.ApplicationToApiMapper;
 
 import jakarta.validation.Valid;
@@ -25,14 +27,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class RepoController {
 
-    private final RepoServicePort repoService;
+    private final InitializeUserRepositoriesUseCase initializeUserRepositoriesUseCase;
+    private final QueryRepositoriesUseCase queryRepositoriesUseCase;
 
     @PostMapping("/init/user")
     public ResponseEntity<List<RepoInitrequest>> initUserRepos(
             @AuthenticationPrincipal String login
     ) {
-        // Application layer returns RepositoryInitData
-        List<RepositoryInitData> repos = repoService.initUserRepos(login);
+        // Use case orchestrates the flow and returns RepositoryInitData
+        List<RepositoryInitData> repos = initializeUserRepositoriesUseCase.execute(login);
         // Map to API DTO
         List<RepoInitrequest> apiRepos = ApplicationToApiMapper.toRepoInitRequests(repos);
         return ResponseEntity.ok(apiRepos);
@@ -47,8 +50,8 @@ public class RepoController {
         com.optimetric.shared.domain.OwnerType ownerType = request.ownerType() != null 
             ? com.optimetric.shared.domain.OwnerType.valueOf(request.ownerType().name())
             : null;
-        // Application layer returns RepositoryInfo
-        List<RepositoryInfo> repos = repoService.getRepos(login, ownerType, request.ownerLogin());
+        // Use case orchestrates the flow and returns RepositoryInfo
+        List<RepositoryInfo> repos = queryRepositoriesUseCase.execute(login, ownerType, request.ownerLogin());
         // Map to API DTO
         List<RepoDto> apiRepos = ApplicationToApiMapper.toRepoDtos(repos);
         return ResponseEntity.ok(apiRepos);

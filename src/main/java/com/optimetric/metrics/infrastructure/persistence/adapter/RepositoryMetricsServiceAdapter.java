@@ -1,7 +1,7 @@
 package com.optimetric.metrics.infrastructure.persistence.adapter;
 
 import com.optimetric.auth.application.AuthServicePort;
-import com.optimetric.github.application.port.RepoServicePort;
+import com.optimetric.github.application.usecase.GetRepositoryForCurrentUserUseCase;
 import com.optimetric.github.infrastructure.persistence.adapter.RepositoryPersistenceAdapter;
 import com.optimetric.metrics.api.response.*;
 import com.optimetric.metrics.application.port.RepositoryMetricsServicePort;
@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 public class RepositoryMetricsServiceAdapter implements RepositoryMetricsServicePort {
 
     private final AuthServicePort authServicePort;
-    private final RepoServicePort repoServicePort;
+    private final GetRepositoryForCurrentUserUseCase getRepositoryForCurrentUserUseCase;
     private final RepositoryPersistenceAdapter repositoryPersistenceAdapter;
     private final PullRequestRepository pullRequestRepository;
     private final PullRequestReviewRepository pullRequestReviewRepository;
@@ -61,7 +61,7 @@ public class RepositoryMetricsServiceAdapter implements RepositoryMetricsService
      */
     private RepositoryEntity getRepositoryEntity(String login, String repoFullName) 
             throws RepositoryNotFoundException, UserNotFoundException {
-        com.optimetric.github.application.dto.RepositoryInfo repoInfo = repoServicePort.getByFullNameForCurrentUserOrThrow(login, repoFullName);
+        com.optimetric.github.application.dto.RepositoryInfo repoInfo = getRepositoryForCurrentUserUseCase.executeOrThrow(login, repoFullName);
         return repositoryPersistenceAdapter.findEntityById(repoInfo.id())
                 .orElseThrow(() -> new RepositoryNotFoundException("Repository not found with id: " + repoInfo.id()));
     }
