@@ -4,10 +4,10 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.optimetric.github.application.client.GitHubRepoQueryPort;
 import com.optimetric.github.application.dto.RepositoryInitData;
-import com.optimetric.github.application.port.RepositoryPersistencePort;
-import com.optimetric.github.application.port.UserContextPort;
+import com.optimetric.github.application.port.out.GitHubRepoQueryPort;
+import com.optimetric.github.application.port.out.RepositoryPersistencePort;
+import com.optimetric.github.application.port.out.UserContextPort;
 import com.optimetric.shared.exception.UserNotFoundException;
 
 import lombok.RequiredArgsConstructor;

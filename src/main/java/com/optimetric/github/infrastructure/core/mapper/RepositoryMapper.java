@@ -17,12 +17,20 @@ import java.util.stream.Collectors;
  */
 public class RepositoryMapper {
 
-    private static OffsetDateTime parseTime(String s) {
+    /**
+     * Parses ISO date-time string to OffsetDateTime.
+     * Public for use in RepositoryPersistenceAdapter.
+     */
+    public static OffsetDateTime parseTime(String s) {
         if (s == null || s.isBlank()) return null;
         return OffsetDateTime.parse(s, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
     }
 
-    private static OwnerType mapOwnerType(String ownerType) {
+    /**
+     * Maps owner type string to OwnerType enum.
+     * Public for use in RepositoryPersistenceAdapter.
+     */
+    public static OwnerType mapOwnerType(String ownerType) {
         if (ownerType == null) return null;
         return switch (ownerType.toUpperCase(Locale.ROOT)) {
             case "USER" -> OwnerType.USER;

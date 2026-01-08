@@ -1,4 +1,4 @@
-package com.optimetric.github.application.port;
+package com.optimetric.github.application.port.out;
 
 import com.optimetric.auth.infrastructure.persistence.entity.User;
 import com.optimetric.github.application.dto.RepositoryInfo;
@@ -15,12 +15,17 @@ import java.util.Optional;
 public interface RepositoryPersistencePort {
 
     /**
-     * Saves all repositories. Implements upsert logic by checking existing repositories
-     * by htmlUrl and only saving new ones.
+     * Saves all repositories. Implements upsert logic using githubRepoId as canonical key.
+     * 
+     * - If githubRepoId exists: updates repository metadata (fullName, htmlUrl, name, etc.)
+     *   This handles rename/transfer scenarios where githubRepoId remains the same.
+     * - If githubRepoId does not exist: creates new repository.
+     * 
+     * Canonical key: githubRepoId (GitHub's official unique identifier)
      * 
      * @param repos List of repository initialization data
      * @param userId User ID to associate repositories with
-     * @return List of saved repository information
+     * @return List of saved/updated repository information
      */
     List<RepositoryInfo> saveAll(List<RepositoryInitData> repos, Long userId);
 
@@ -77,4 +82,3 @@ public interface RepositoryPersistencePort {
      */
     Optional<RepositoryInfo> findByFullName(String fullName);
 }
-

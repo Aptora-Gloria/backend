@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import com.optimetric.auth.application.AuthServicePort;
 import com.optimetric.auth.infrastructure.persistence.entity.User;
 import com.optimetric.github.application.dto.RepositoryInfo;
-import com.optimetric.github.application.port.RepositoryPersistencePort;
+import com.optimetric.github.application.port.out.RepositoryPersistencePort;
 import com.optimetric.shared.exception.RepositoryNotFoundException;
 import com.optimetric.shared.exception.UserNotFoundException;
 

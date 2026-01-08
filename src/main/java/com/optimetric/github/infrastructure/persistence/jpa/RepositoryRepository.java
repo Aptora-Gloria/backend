@@ -15,7 +15,8 @@ public interface RepositoryRepository extends JpaRepository<RepositoryEntity, Lo
     List<RepositoryEntity> findById(int id);
 
     List<RepositoryEntity> findAllByHtmlUrlIn(List<String> htmlUrls);
-    List<RepositoryEntity> findByGithubRepoId(Long githubRepoId);
+    List<RepositoryEntity> findByGithubRepoIdIn(List<Long> githubRepoIds);
+    Optional<RepositoryEntity> findByGithubRepoId(Long githubRepoId);
     Optional<RepositoryEntity> findByHtmlUrl(String htmlUrl);
 
     List<RepositoryEntity> findByUserOrderByPushedAtDesc(User user);

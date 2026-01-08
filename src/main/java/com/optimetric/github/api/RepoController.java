@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.optimetric.github.api.request.GetReposRequest;
-import com.optimetric.github.api.request.RepoInitrequest;
+import com.optimetric.github.api.request.RepoInitRequest;
 import com.optimetric.github.api.response.RepoDto;
 import com.optimetric.github.application.dto.RepositoryInfo;
 import com.optimetric.github.application.dto.RepositoryInitData;
@@ -31,13 +31,13 @@ public class RepoController {
     private final QueryRepositoriesUseCase queryRepositoriesUseCase;
 
     @PostMapping("/init/user")
-    public ResponseEntity<List<RepoInitrequest>> initUserRepos(
+    public ResponseEntity<List<RepoInitRequest>> initUserRepos(
             @AuthenticationPrincipal String login
     ) {
         // Use case orchestrates the flow and returns RepositoryInitData
         List<RepositoryInitData> repos = initializeUserRepositoriesUseCase.execute(login);
         // Map to API DTO
-        List<RepoInitrequest> apiRepos = ApplicationToApiMapper.toRepoInitRequests(repos);
+        List<RepoInitRequest> apiRepos = ApplicationToApiMapper.toRepoInitRequests(repos);
         return ResponseEntity.ok(apiRepos);
     }
 

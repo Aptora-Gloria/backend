@@ -1,4 +1,4 @@
-package com.optimetric.github.application.client;
+package com.optimetric.github.application.port.out;
 
 import java.util.List;
 

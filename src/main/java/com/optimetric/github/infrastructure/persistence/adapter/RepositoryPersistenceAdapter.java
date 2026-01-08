@@ -9,7 +9,7 @@ import com.optimetric.auth.infrastructure.persistence.entity.User;
 import com.optimetric.auth.infrastructure.persistence.jpa.repository.UserRepository;
 import com.optimetric.github.application.dto.RepositoryInfo;
 import com.optimetric.github.application.dto.RepositoryInitData;
-import com.optimetric.github.application.port.RepositoryPersistencePort;
+import com.optimetric.github.application.port.out.RepositoryPersistencePort;
 import com.optimetric.github.infrastructure.core.mapper.RepositoryMapper;
 import com.optimetric.github.infrastructure.persistence.entity.RepositoryEntity;
 import com.optimetric.github.infrastructure.persistence.jpa.RepositoryRepository;
@@ -39,29 +39,82 @@ public class RepositoryPersistenceAdapter implements RepositoryPersistencePort {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
 
-        // Get incoming URLs for deduplication
-        List<String> incomingUrls = repos.stream()
-                .map(RepositoryInitData::htmlUrl)
+        // Get incoming githubRepoIds for deduplication (canonical key: githubRepoId)
+        List<Long> incomingRepoIds = repos.stream()
+                .map(RepositoryInitData::id)
+                .filter(id -> id != null)
                 .toList();
 
-        // Find existing repositories by HTML URLs
-        List<RepositoryEntity> existingEntities = repositoryRepository.findAllByHtmlUrlIn(incomingUrls);
-        List<String> existingUrls = existingEntities.stream()
-                .map(RepositoryEntity::getHtmlUrl)
-                .toList();
+        // Find existing repositories by githubRepoId (canonical key)
+        List<RepositoryEntity> existingEntities = repositoryRepository.findByGithubRepoIdIn(incomingRepoIds);
+        java.util.Set<Long> existingRepoIds = existingEntities.stream()
+                .map(RepositoryEntity::getGithubRepoId)
+                .collect(java.util.stream.Collectors.toSet());
 
-        // Filter out repositories that already exist
+        // Separate new repos and repos to update
         List<RepositoryInitData> newRepos = repos.stream()
-                .filter(repo -> !existingUrls.contains(repo.htmlUrl()))
+                .filter(repo -> repo.id() == null || !existingRepoIds.contains(repo.id()))
                 .toList();
 
-        // Convert to entities and save
+        List<RepositoryInitData> reposToUpdate = repos.stream()
+                .filter(repo -> repo.id() != null && existingRepoIds.contains(repo.id()))
+                .toList();
+
+        // Convert new repos to entities and save
         List<RepositoryEntity> entitiesToSave = RepositoryMapper.toEntities(newRepos);
         entitiesToSave.forEach(e -> e.setUser(user));
         List<RepositoryEntity> savedEntities = repositoryRepository.saveAll(entitiesToSave);
 
-        // Return saved repositories as RepositoryInfo
-        return RepositoryMapper.toRepositoryInfos(savedEntities);
+        // Update existing repositories (upsert logic)
+        // For existing repos, update metadata but keep githubRepoId as canonical key
+        List<RepositoryEntity> updatedEntities = new java.util.ArrayList<>();
+        for (RepositoryInitData repoData : reposToUpdate) {
+            RepositoryEntity existingEntity = existingEntities.stream()
+                    .filter(e -> e.getGithubRepoId().equals(repoData.id()))
+                    .findFirst()
+                    .orElse(null);
+            
+            if (existingEntity != null) {
+                // Update metadata (fullName, htmlUrl, name, etc. may change on rename/transfer)
+                // But githubRepoId remains the same (canonical key)
+                existingEntity.setName(repoData.name());
+                existingEntity.setFullName(repoData.fullName());
+                existingEntity.setDescription(repoData.description());
+                existingEntity.setHtmlUrl(repoData.htmlUrl());
+                existingEntity.setIsPrivate(repoData.isPrivate());
+                existingEntity.setIsFork(repoData.fork());
+                existingEntity.setStargazersCount(repoData.stargazersCount());
+                existingEntity.setWatchersCount(repoData.watchersCount());
+                existingEntity.setForksCount(repoData.forksCount());
+                existingEntity.setOpenIssuesCount(repoData.openIssuesCount());
+                existingEntity.setSize(repoData.size());
+                existingEntity.setLanguage(repoData.language());
+                existingEntity.setDefaultBranch(repoData.defaultBranch());
+                if (repoData.createdAt() != null) {
+                    existingEntity.setCreatedAt(RepositoryMapper.parseTime(repoData.createdAt()));
+                }
+                if (repoData.updatedAt() != null) {
+                    existingEntity.setUpdatedAt(RepositoryMapper.parseTime(repoData.updatedAt()));
+                }
+                if (repoData.pushedAt() != null) {
+                    existingEntity.setPushedAt(RepositoryMapper.parseTime(repoData.pushedAt()));
+                }
+                if (repoData.owner() != null) {
+                    existingEntity.setOwnerLogin(repoData.owner().login());
+                    existingEntity.setOwnerType(RepositoryMapper.mapOwnerType(repoData.owner().type()));
+                }
+                existingEntity.setLastSyncedAt(java.time.OffsetDateTime.now());
+                updatedEntities.add(existingEntity);
+            }
+        }
+        
+        List<RepositoryEntity> allSavedEntities = new java.util.ArrayList<>(savedEntities);
+        if (!updatedEntities.isEmpty()) {
+            allSavedEntities.addAll(repositoryRepository.saveAll(updatedEntities));
+        }
+
+        // Return all saved/updated repositories as RepositoryInfo
+        return RepositoryMapper.toRepositoryInfos(allSavedEntities);
     }
 
     @Override

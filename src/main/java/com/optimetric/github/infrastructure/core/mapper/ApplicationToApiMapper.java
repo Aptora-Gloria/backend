@@ -1,6 +1,6 @@
 package com.optimetric.github.infrastructure.core.mapper;
 
-import com.optimetric.github.api.request.RepoInitrequest;
+import com.optimetric.github.api.request.RepoInitRequest;
 import com.optimetric.github.api.response.RepoDto;
 import com.optimetric.github.application.dto.RepositoryInfo;
 import com.optimetric.github.application.dto.RepositoryInitData;
@@ -60,16 +60,16 @@ public class ApplicationToApiMapper {
     }
 
     /**
-     * Maps RepositoryInitData (application) to RepoInitrequest (API).
+     * Maps RepositoryInitData (application) to RepoInitRequest (API).
      */
-    public static RepoInitrequest toRepoInitRequest(RepositoryInitData data) {
+    public static RepoInitRequest toRepoInitRequest(RepositoryInitData data) {
         if (data == null) return null;
-        return new RepoInitrequest(
+        return new RepoInitRequest(
                 data.id(),
                 data.nodeId(),
                 data.name(),
                 data.fullName(),
-                data.owner() != null ? new RepoInitrequest.Owner(
+                data.owner() != null ? new RepoInitRequest.Owner(
                         data.owner().login(),
                         data.owner().nodeId(),
                         data.owner().type()
@@ -88,7 +88,7 @@ public class ApplicationToApiMapper {
                 data.createdAt(),
                 data.updatedAt(),
                 data.pushedAt(),
-                data.permissions() != null ? new RepoInitrequest.Permissions(
+                data.permissions() != null ? new RepoInitRequest.Permissions(
                         data.permissions().admin(),
                         data.permissions().maintain(),
                         data.permissions().push(),
@@ -99,9 +99,9 @@ public class ApplicationToApiMapper {
     }
 
     /**
-     * Maps list of RepositoryInitData to list of RepoInitrequest.
+     * Maps list of RepositoryInitData to list of RepoInitRequest.
      */
-    public static List<RepoInitrequest> toRepoInitRequests(List<RepositoryInitData> dataList) {
+    public static List<RepoInitRequest> toRepoInitRequests(List<RepositoryInitData> dataList) {
         return dataList.stream()
                 .map(ApplicationToApiMapper::toRepoInitRequest)
                 .collect(Collectors.toList());

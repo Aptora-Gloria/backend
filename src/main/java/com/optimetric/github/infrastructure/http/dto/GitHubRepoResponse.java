@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * GitHub API response DTO for repository data.
  * This is the raw response from GitHub API (snake_case).
  */
-public record GitHubRepositoryResponse(
+public record GitHubRepoResponse(
         Long id,
         @JsonProperty("node_id")
         String nodeId,
@@ -43,4 +43,3 @@ public record GitHubRepositoryResponse(
     public record Owner(String login, @JsonProperty("node_id") String nodeId, String type) {}
     public record Permissions(Boolean admin, Boolean maintain, Boolean push, Boolean triage, Boolean pull) {}
 }
-

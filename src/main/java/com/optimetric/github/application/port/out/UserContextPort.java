@@ -1,4 +1,4 @@
-package com.optimetric.github.application.port;
+package com.optimetric.github.application.port.out;
 
 import com.optimetric.github.application.dto.UserContext;
 import com.optimetric.shared.exception.UserNotFoundException;

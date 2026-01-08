@@ -1,6 +1,6 @@
 package com.optimetric.github.infrastructure.core.mapper;
 
-import com.optimetric.github.api.request.RepoInitrequest;
+import com.optimetric.github.api.request.RepoInitRequest;
 import com.optimetric.github.api.response.RepoDto;
 import com.optimetric.github.infrastructure.persistence.entity.RepositoryEntity;
 import com.optimetric.shared.domain.OwnerType;
@@ -26,7 +26,7 @@ public class RepoMapper {
         };
     }
 
-    public static RepositoryEntity toEntity(RepoInitrequest dto) {
+    public static RepositoryEntity toEntity(RepoInitRequest dto) {
         var ownerLogin = dto.owner() != null ? dto.owner().login() : null;
         var ownerType  = dto.owner() != null ? mapOwnerType(dto.owner().type()) : null;
         return RepositoryEntity.builder()
@@ -87,7 +87,7 @@ public class RepoMapper {
         );
     }
 
-    public static List<RepositoryEntity> toEntities(List<RepoInitrequest> list) {
+    public static List<RepositoryEntity> toEntities(List<RepoInitRequest> list) {
         return list.stream()
                 .map(RepoMapper::toEntity)
                 .toList();

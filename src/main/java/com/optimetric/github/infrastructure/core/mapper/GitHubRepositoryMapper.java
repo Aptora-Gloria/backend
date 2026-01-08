@@ -1,7 +1,7 @@
 package com.optimetric.github.infrastructure.core.mapper;
 
 import com.optimetric.github.application.dto.RepositoryInitData;
-import com.optimetric.github.infrastructure.http.dto.GitHubRepositoryResponse;
+import com.optimetric.github.infrastructure.http.dto.GitHubRepoResponse;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,9 +12,9 @@ import java.util.stream.Collectors;
 public class GitHubRepositoryMapper {
 
     /**
-     * Maps GitHubRepositoryResponse (GitHub API) to RepositoryInitData (application).
+     * Maps GitHubRepoResponse (GitHub API) to RepositoryInitData (application).
      */
-    public static RepositoryInitData toRepositoryInitData(GitHubRepositoryResponse response) {
+    public static RepositoryInitData toRepositoryInitData(GitHubRepoResponse response) {
         if (response == null) return null;
         return new RepositoryInitData(
                 response.id(),
@@ -51,9 +51,9 @@ public class GitHubRepositoryMapper {
     }
 
     /**
-     * Maps list of GitHubRepositoryResponse to list of RepositoryInitData.
+     * Maps list of GitHubRepoResponse to list of RepositoryInitData.
      */
-    public static List<RepositoryInitData> toRepositoryInitDataList(List<GitHubRepositoryResponse> responses) {
+    public static List<RepositoryInitData> toRepositoryInitDataList(List<GitHubRepoResponse> responses) {
         return responses.stream()
                 .map(GitHubRepositoryMapper::toRepositoryInitData)
                 .collect(Collectors.toList());
