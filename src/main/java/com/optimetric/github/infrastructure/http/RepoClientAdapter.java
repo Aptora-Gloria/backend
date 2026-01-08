@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.optimetric.github.application.client.RepoClientPort;
+import com.optimetric.github.application.client.GitHubRepoQueryPort;
 import com.optimetric.github.application.dto.RepositoryInitData;
 import com.optimetric.github.infrastructure.core.constant.GitHubConstants;
 import com.optimetric.github.infrastructure.core.mapper.GitHubRepositoryMapper;
@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class RepoClientAdapter implements RepoClientPort {
+public class RepoClientAdapter implements GitHubRepoQueryPort {
 
     private final WebClient githubWebClient;
 

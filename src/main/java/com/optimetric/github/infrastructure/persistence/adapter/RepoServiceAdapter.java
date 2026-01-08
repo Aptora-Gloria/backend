@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.optimetric.auth.application.AuthServicePort;
 import com.optimetric.auth.infrastructure.persistence.entity.User;
-import com.optimetric.github.application.client.RepoClientPort;
+import com.optimetric.github.application.client.GitHubRepoQueryPort;
 import com.optimetric.github.application.dto.RepositoryInfo;
 import com.optimetric.github.application.dto.RepositoryInitData;
 import com.optimetric.github.application.port.RepoServicePort;
@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class RepoServiceAdapter implements RepoServicePort {
 
     private final RepositoryPersistencePort repositoryPersistencePort;
-    private final RepoClientPort repoClient;
+    private final GitHubRepoQueryPort githubRepoQueryPort;
     private final AuthServicePort authServicePort;
 
     @Override
@@ -31,7 +31,7 @@ public class RepoServiceAdapter implements RepoServicePort {
         String accessToken = authServicePort.getAccessTokenFromLogin(login);
         User user = authServicePort.findByLoginOrThrow(login);
 
-        List<RepositoryInitData> repos = repoClient.getUserRepos(accessToken);
+        List<RepositoryInitData> repos = githubRepoQueryPort.getUserRepos(accessToken);
         // Save repos using persistence port (includes deduplication logic)
         repositoryPersistencePort.saveAll(repos, user);
         return repos;
