@@ -1,8 +1,8 @@
 package com.optimetric.github.application.dto;
 
-import com.optimetric.shared.domain.OwnerType;
-
 import java.time.OffsetDateTime;
+
+import com.optimetric.shared.domain.OwnerType;
 
 /**
  * Application layer DTO for repository information.

@@ -9,12 +9,12 @@ import com.optimetric.github.infrastructure.core.mapper.CommitMapper;
 import com.optimetric.shared.exception.BranchNotFoundException;
 import com.optimetric.shared.exception.RepositoryNotFoundException;
 import com.optimetric.shared.exception.UserNotFoundException;
+import com.optimetric.github.infrastructure.persistence.adapter.RepositoryPersistenceAdapter;
 import com.optimetric.github.infrastructure.persistence.entity.BranchEntity;
 import com.optimetric.github.infrastructure.persistence.entity.CommitEntity;
 import com.optimetric.github.infrastructure.persistence.entity.RepositoryEntity;
 import com.optimetric.github.infrastructure.persistence.jpa.BranchRepository;
 import com.optimetric.github.infrastructure.persistence.jpa.CommitRepository;
-import com.optimetric.github.infrastructure.persistence.jpa.RepositoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,7 +32,7 @@ public class CommitServiceAdapter implements CommitServicePort {
     private final AuthServicePort authServicePort;
     private final CommitRepository commitRepository;
     private final BranchRepository branchRepository;
-    private final RepositoryRepository repositoryRepository;
+    private final RepositoryPersistenceAdapter repositoryPersistenceAdapter;
     private final RepoServicePort repoServicePort;
 
     @Override
@@ -41,7 +41,7 @@ public class CommitServiceAdapter implements CommitServicePort {
             throws RepositoryNotFoundException, BranchNotFoundException, UserNotFoundException {
         String accessToken = authServicePort.getAccessTokenFromLogin(login);
         com.optimetric.github.application.dto.RepositoryInfo repoInfo = repoServicePort.getByFullNameForCurrentUserOrThrow(login, fullName);
-        RepositoryEntity repository = repositoryRepository.findById(repoInfo.id())
+        RepositoryEntity repository = repositoryPersistenceAdapter.findEntityById(repoInfo.id())
                 .orElseThrow(() -> new RepositoryNotFoundException("Repository not found with id: " + repoInfo.id()));
         BranchEntity branch = findBranchOrThrow(repository, branchName, fullName);
 
@@ -59,7 +59,7 @@ public class CommitServiceAdapter implements CommitServicePort {
     public List<CommitDto> getCommits(String login, String fullName, String branchName) 
             throws RepositoryNotFoundException, BranchNotFoundException, UserNotFoundException {
         com.optimetric.github.application.dto.RepositoryInfo repoInfo = repoServicePort.getByFullNameForCurrentUserOrThrow(login, fullName);
-        RepositoryEntity repository = repositoryRepository.findById(repoInfo.id())
+        RepositoryEntity repository = repositoryPersistenceAdapter.findEntityById(repoInfo.id())
                 .orElseThrow(() -> new RepositoryNotFoundException("Repository not found with id: " + repoInfo.id()));
 
         if (branchName == null || branchName.isBlank()) {

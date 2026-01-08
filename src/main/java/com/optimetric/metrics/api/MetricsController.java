@@ -1,14 +1,25 @@
 package com.optimetric.metrics.api;
 
-import com.optimetric.metrics.api.request.GetUserMetricsRequest;
-import com.optimetric.metrics.api.response.*;
-import com.optimetric.metrics.application.port.UserMetricsServicePort;
-import com.optimetric.shared.exception.UserNotFoundException;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.optimetric.metrics.api.request.GetUserMetricsRequest;
+import com.optimetric.metrics.api.response.ActivityTrendDto;
+import com.optimetric.metrics.api.response.CommitTimeAnalysisDto;
+import com.optimetric.metrics.api.response.LanguageDiversityDto;
+import com.optimetric.metrics.api.response.PrMergeRateDto;
+import com.optimetric.metrics.api.response.PrSizeDto;
+import com.optimetric.metrics.api.response.ReviewStatsDto;
+import com.optimetric.metrics.api.response.UserMetricsDto;
+import com.optimetric.metrics.application.port.UserMetricsServicePort;
+import com.optimetric.shared.exception.UserNotFoundException;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/metrics")
