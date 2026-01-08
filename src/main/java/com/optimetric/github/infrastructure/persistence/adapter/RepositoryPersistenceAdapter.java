@@ -1,6 +1,12 @@
 package com.optimetric.github.infrastructure.persistence.adapter;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Component;
+
 import com.optimetric.auth.infrastructure.persistence.entity.User;
+import com.optimetric.auth.infrastructure.persistence.jpa.repository.UserRepository;
 import com.optimetric.github.application.dto.RepositoryInfo;
 import com.optimetric.github.application.dto.RepositoryInitData;
 import com.optimetric.github.application.port.RepositoryPersistencePort;
@@ -8,11 +14,9 @@ import com.optimetric.github.infrastructure.core.mapper.RepositoryMapper;
 import com.optimetric.github.infrastructure.persistence.entity.RepositoryEntity;
 import com.optimetric.github.infrastructure.persistence.jpa.RepositoryRepository;
 import com.optimetric.shared.domain.OwnerType;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import com.optimetric.shared.exception.UserNotFoundException;
 
-import java.util.List;
-import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Infrastructure adapter for repository persistence operations.
@@ -23,12 +27,17 @@ import java.util.Optional;
 public class RepositoryPersistenceAdapter implements RepositoryPersistencePort {
 
     private final RepositoryRepository repositoryRepository;
+    private final UserRepository userRepository;
 
     @Override
-    public List<RepositoryInfo> saveAll(List<RepositoryInitData> repos, User user) {
+    public List<RepositoryInfo> saveAll(List<RepositoryInitData> repos, Long userId) {
         if (repos == null || repos.isEmpty()) {
             return List.of();
         }
+
+        // Resolve User entity from userId
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
 
         // Get incoming URLs for deduplication
         List<String> incomingUrls = repos.stream()

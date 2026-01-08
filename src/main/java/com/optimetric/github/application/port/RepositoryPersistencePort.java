@@ -19,10 +19,10 @@ public interface RepositoryPersistencePort {
      * by htmlUrl and only saving new ones.
      * 
      * @param repos List of repository initialization data
-     * @param user User to associate repositories with
+     * @param userId User ID to associate repositories with
      * @return List of saved repository information
      */
-    List<RepositoryInfo> saveAll(List<RepositoryInitData> repos, User user);
+    List<RepositoryInfo> saveAll(List<RepositoryInitData> repos, Long userId);
 
     /**
      * Finds all repositories by owner login, ordered by pushed date descending.
