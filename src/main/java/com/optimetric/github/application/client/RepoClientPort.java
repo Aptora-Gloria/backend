@@ -1,10 +1,10 @@
 package com.optimetric.github.application.client;
 
-import com.optimetric.github.api.request.RepoInitrequest;
+import com.optimetric.github.application.dto.RepositoryInitData;
 
 import java.util.List;
 
 public interface RepoClientPort {
-    List<RepoInitrequest> getUserRepos(String accessToken);
+    List<RepositoryInitData> getUserRepos(String accessToken);
 }
 

@@ -1,8 +1,10 @@
 package com.optimetric.github.infrastructure.http;
 
-import com.optimetric.github.api.request.RepoInitrequest;
 import com.optimetric.github.application.client.RepoClientPort;
+import com.optimetric.github.application.dto.RepositoryInitData;
 import com.optimetric.github.infrastructure.core.constant.GitHubConstants;
+import com.optimetric.github.infrastructure.core.mapper.GitHubRepositoryMapper;
+import com.optimetric.github.infrastructure.http.dto.GitHubRepositoryResponse;
 import com.optimetric.github.infrastructure.util.GitHubUtil;
 import com.optimetric.shared.exception.GitHubApiException;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +22,8 @@ public class RepoClientAdapter implements RepoClientPort {
     private final WebClient githubWebClient;
 
     @Override
-    public List<RepoInitrequest> getUserRepos(String accessToken) {
-        return githubWebClient
+    public List<RepositoryInitData> getUserRepos(String accessToken) {
+        List<GitHubRepositoryResponse> responses = githubWebClient
                 .get()
                 .uri(GitHubConstants.USER_REPOS_ENDPOINT)
                 .headers(h -> h.set(HttpHeaders.AUTHORIZATION, GitHubUtil.buildBearerHeader(accessToken)))
@@ -29,9 +31,11 @@ public class RepoClientAdapter implements RepoClientPort {
                 .onStatus(HttpStatusCode::isError, res ->
                         res.bodyToMono(String.class).map(body ->
                                 new GitHubApiException(GitHubConstants.ERROR_REPO_FETCH_FAILED + body)))
-                .bodyToFlux(RepoInitrequest.class)
+                .bodyToFlux(GitHubRepositoryResponse.class)
                 .collectList()
                 .block();
+        
+        return GitHubRepositoryMapper.toRepositoryInitDataList(responses);
     }
 }
 

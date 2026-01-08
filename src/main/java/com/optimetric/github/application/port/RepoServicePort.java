@@ -1,8 +1,8 @@
 package com.optimetric.github.application.port;
 
 import com.optimetric.auth.infrastructure.persistence.entity.OwnerType;
-import com.optimetric.github.api.request.RepoInitrequest;
-import com.optimetric.github.api.response.RepoDto;
+import com.optimetric.github.application.dto.RepositoryInfo;
+import com.optimetric.github.application.dto.RepositoryInitData;
 import com.optimetric.github.infrastructure.persistence.entity.RepositoryEntity;
 import com.optimetric.shared.exception.RepositoryNotFoundException;
 import com.optimetric.shared.exception.UserNotFoundException;
@@ -12,10 +12,43 @@ import java.util.Optional;
 
 public interface RepoServicePort {
 
-    List<RepoInitrequest> initUserRepos(String login) throws UserNotFoundException;
-    List<RepoDto> getReposFromDb(String ownerLogin);
-    List<RepoDto> getRepos(String login, OwnerType ownerType, String ownerLogin) throws UserNotFoundException;
-    Optional<RepositoryEntity> getByFullNameForCurrentUser(String login, String fullName);
+    /**
+     * Initializes user repositories from GitHub API.
+     * 
+     * @param login User login
+     * @return List of repository initialization data
+     * @throws UserNotFoundException if user not found
+     */
+    List<RepositoryInitData> initUserRepos(String login) throws UserNotFoundException;
+    
+    /**
+     * Gets repositories from database by owner login.
+     * 
+     * @param ownerLogin Owner login
+     * @return List of repository information
+     */
+    List<RepositoryInfo> getReposFromDb(String ownerLogin);
+    
+    /**
+     * Gets repositories for user with optional filters.
+     * 
+     * @param login User login
+     * @param ownerType Owner type filter (optional)
+     * @param ownerLogin Owner login filter (optional)
+     * @return List of repository information
+     * @throws UserNotFoundException if user not found
+     */
+    List<RepositoryInfo> getRepos(String login, OwnerType ownerType, String ownerLogin) throws UserNotFoundException;
+    
+    /**
+     * Gets repository by fullName for current user.
+     * 
+     * @param login User login
+     * @param fullName Repository full name (e.g., "owner/repo")
+     * @return Optional RepositoryEntity
+     * @throws UserNotFoundException if user not found
+     */
+    Optional<RepositoryEntity> getByFullNameForCurrentUser(String login, String fullName) throws UserNotFoundException;
     
     /**
      * Gets repository by fullName for current user or throws RepositoryNotFoundException.
