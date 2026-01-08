@@ -4,6 +4,7 @@ import com.optimetric.github.api.request.RepoInitrequest;
 import com.optimetric.github.api.response.RepoDto;
 import com.optimetric.github.application.dto.RepositoryInfo;
 import com.optimetric.github.application.dto.RepositoryInitData;
+import com.optimetric.shared.domain.OwnerType;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,6 +20,11 @@ public class ApplicationToApiMapper {
      */
     public static RepoDto toRepoDto(RepositoryInfo info) {
         if (info == null) return null;
+        // Convert shared domain OwnerType to API OwnerType
+        com.optimetric.auth.infrastructure.persistence.entity.OwnerType apiOwnerType = null;
+        if (info.ownerType() != null) {
+            apiOwnerType = com.optimetric.auth.infrastructure.persistence.entity.OwnerType.valueOf(info.ownerType().name());
+        }
         return new RepoDto(
                 info.id(),
                 info.githubRepoId(),
@@ -39,7 +45,7 @@ public class ApplicationToApiMapper {
                 info.updatedAt(),
                 info.pushedAt(),
                 info.ownerLogin(),
-                info.ownerType(),
+                apiOwnerType,
                 info.lastSyncedAt()
         );
     }

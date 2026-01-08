@@ -1,9 +1,8 @@
 package com.optimetric.github.application.port;
 
-import com.optimetric.auth.infrastructure.persistence.entity.OwnerType;
 import com.optimetric.github.application.dto.RepositoryInfo;
 import com.optimetric.github.application.dto.RepositoryInitData;
-import com.optimetric.github.infrastructure.persistence.entity.RepositoryEntity;
+import com.optimetric.shared.domain.OwnerType;
 import com.optimetric.shared.exception.RepositoryNotFoundException;
 import com.optimetric.shared.exception.UserNotFoundException;
 
@@ -45,10 +44,10 @@ public interface RepoServicePort {
      * 
      * @param login User login
      * @param fullName Repository full name (e.g., "owner/repo")
-     * @return Optional RepositoryEntity
+     * @return Optional RepositoryInfo
      * @throws UserNotFoundException if user not found
      */
-    Optional<RepositoryEntity> getByFullNameForCurrentUser(String login, String fullName) throws UserNotFoundException;
+    Optional<RepositoryInfo> getByFullNameForCurrentUser(String login, String fullName) throws UserNotFoundException;
     
     /**
      * Gets repository by fullName for current user or throws RepositoryNotFoundException.
@@ -56,10 +55,10 @@ public interface RepoServicePort {
      * 
      * @param login User login
      * @param fullName Repository full name (e.g., "owner/repo")
-     * @return RepositoryEntity
+     * @return RepositoryInfo
      * @throws RepositoryNotFoundException if repository not found
      * @throws UserNotFoundException if user not found
      */
-    RepositoryEntity getByFullNameForCurrentUserOrThrow(String login, String fullName) 
+    RepositoryInfo getByFullNameForCurrentUserOrThrow(String login, String fullName) 
             throws RepositoryNotFoundException, UserNotFoundException;
 }

@@ -1,6 +1,6 @@
 package com.optimetric.github.application.dto;
 
-import com.optimetric.auth.infrastructure.persistence.entity.OwnerType;
+import com.optimetric.shared.domain.OwnerType;
 
 import java.time.OffsetDateTime;
 

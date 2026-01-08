@@ -1,10 +1,9 @@
 package com.optimetric.github.infrastructure.core.mapper;
 
-
-import com.optimetric.auth.infrastructure.persistence.entity.OwnerType;
 import com.optimetric.github.api.request.RepoInitrequest;
 import com.optimetric.github.api.response.RepoDto;
 import com.optimetric.github.infrastructure.persistence.entity.RepositoryEntity;
+import com.optimetric.shared.domain.OwnerType;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -57,9 +56,12 @@ public class RepoMapper {
     }
 
     public static RepoDto toDto(RepositoryEntity e) {
-
-
         if (e == null) return null;
+        // Convert shared domain OwnerType to API OwnerType
+        com.optimetric.auth.infrastructure.persistence.entity.OwnerType apiOwnerType = null;
+        if (e.getOwnerType() != null) {
+            apiOwnerType = com.optimetric.auth.infrastructure.persistence.entity.OwnerType.valueOf(e.getOwnerType().name());
+        }
         return new RepoDto(
                 e.getId(),
                 e.getGithubRepoId(),
@@ -80,7 +82,7 @@ public class RepoMapper {
                 e.getUpdatedAt(),
                 e.getPushedAt(),
                 e.getOwnerLogin(),
-                e.getOwnerType(),
+                apiOwnerType,
                 e.getLastSyncedAt()
         );
     }

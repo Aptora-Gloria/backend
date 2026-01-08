@@ -1,5 +1,6 @@
 package com.optimetric.auth.infrastructure.persistence.entity;
 
+import com.optimetric.shared.domain.OwnerType;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.OffsetDateTime;

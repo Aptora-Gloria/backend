@@ -54,11 +54,22 @@ public class RepositoryMetricsServiceAdapter implements RepositoryMetricsService
         );
     }
 
+    /**
+     * Helper method to get RepositoryEntity from RepositoryInfo.
+     * This is needed because infrastructure adapters need entities for JPA operations.
+     */
+    private RepositoryEntity getRepositoryEntity(String login, String repoFullName) 
+            throws RepositoryNotFoundException, UserNotFoundException {
+        com.optimetric.github.application.dto.RepositoryInfo repoInfo = repoServicePort.getByFullNameForCurrentUserOrThrow(login, repoFullName);
+        return repositoryRepository.findById(repoInfo.id())
+                .orElseThrow(() -> new RepositoryNotFoundException("Repository not found with id: " + repoInfo.id()));
+    }
+
     @Override
     @Transactional(readOnly = true)
     public RepositoryOverviewDto getOverview(String login, String repoFullName) 
             throws RepositoryNotFoundException, UserNotFoundException {
-        RepositoryEntity repository = repoServicePort.getByFullNameForCurrentUserOrThrow(login, repoFullName);
+        RepositoryEntity repository = getRepositoryEntity(login, repoFullName);
         
         OffsetDateTime now = OffsetDateTime.now();
         long ageDays = repository.getCreatedAt() != null 
@@ -102,7 +113,7 @@ public class RepositoryMetricsServiceAdapter implements RepositoryMetricsService
     @Transactional(readOnly = true)
     public RepositoryPrMetricsDto getPullRequestMetrics(String login, String repoFullName) 
             throws RepositoryNotFoundException, UserNotFoundException {
-        RepositoryEntity repository = repoServicePort.getByFullNameForCurrentUserOrThrow(login, repoFullName);
+        RepositoryEntity repository = getRepositoryEntity(login, repoFullName);
         List<PullRequestEntity> allPrs = pullRequestRepository.findByRepositoryOrderByCreatedAtDesc(repository);
         
         long total = allPrs.size();
@@ -212,7 +223,7 @@ public class RepositoryMetricsServiceAdapter implements RepositoryMetricsService
     @Transactional(readOnly = true)
     public RepositoryCommitMetricsDto getCommitMetrics(String login, String repoFullName) 
             throws RepositoryNotFoundException, UserNotFoundException {
-        RepositoryEntity repository = repoServicePort.getByFullNameForCurrentUserOrThrow(login, repoFullName);
+        RepositoryEntity repository = getRepositoryEntity(login, repoFullName);
         List<CommitEntity> allCommits = commitRepository.findByRepository(repository);
         
         long total = allCommits.size();
@@ -311,7 +322,7 @@ public class RepositoryMetricsServiceAdapter implements RepositoryMetricsService
     @Transactional(readOnly = true)
     public RepositoryReviewMetricsDto getReviewMetrics(String login, String repoFullName) 
             throws RepositoryNotFoundException, UserNotFoundException {
-        RepositoryEntity repository = repoServicePort.getByFullNameForCurrentUserOrThrow(login, repoFullName);
+        RepositoryEntity repository = getRepositoryEntity(login, repoFullName);
         List<PullRequestEntity> allPrs = pullRequestRepository.findByRepositoryOrderByCreatedAtDesc(repository);
         
         List<PullRequestReviewEntity> allReviews = allPrs.stream()
@@ -391,7 +402,7 @@ public class RepositoryMetricsServiceAdapter implements RepositoryMetricsService
     @Transactional(readOnly = true)
     public RepositoryBranchMetricsDto getBranchMetrics(String login, String repoFullName) 
             throws RepositoryNotFoundException, UserNotFoundException {
-        RepositoryEntity repository = repoServicePort.getByFullNameForCurrentUserOrThrow(login, repoFullName);
+        RepositoryEntity repository = getRepositoryEntity(login, repoFullName);
         List<BranchEntity> allBranches = branchRepository.findByRepository(repository);
         
         long totalBranches = allBranches.size();
@@ -445,7 +456,7 @@ public class RepositoryMetricsServiceAdapter implements RepositoryMetricsService
     @Transactional(readOnly = true)
     public RepositoryLanguageMetricsDto getLanguageMetrics(String login, String repoFullName) 
             throws RepositoryNotFoundException, UserNotFoundException {
-        RepositoryEntity repository = repoServicePort.getByFullNameForCurrentUserOrThrow(login, repoFullName);
+        RepositoryEntity repository = getRepositoryEntity(login, repoFullName);
         List<LanguageEntity> languages = languageRepository.findAllByRepository_FullName(repoFullName);
         
         int totalLanguages = languages.size();
@@ -513,7 +524,7 @@ public class RepositoryMetricsServiceAdapter implements RepositoryMetricsService
     @Transactional(readOnly = true)
     public RepositoryActivityTrendDto getActivityTrend(String login, String repoFullName) 
             throws RepositoryNotFoundException, UserNotFoundException {
-        RepositoryEntity repository = repoServicePort.getByFullNameForCurrentUserOrThrow(login, repoFullName);
+        RepositoryEntity repository = getRepositoryEntity(login, repoFullName);
         
         OffsetDateTime now = OffsetDateTime.now();
         OffsetDateTime twelveWeeksAgo = now.minusWeeks(12);
@@ -645,7 +656,7 @@ public class RepositoryMetricsServiceAdapter implements RepositoryMetricsService
     @Transactional(readOnly = true)
     public RepositoryCodeQualityDto getCodeQuality(String login, String repoFullName) 
             throws RepositoryNotFoundException, UserNotFoundException {
-        RepositoryEntity repository = repoServicePort.getByFullNameForCurrentUserOrThrow(login, repoFullName);
+        RepositoryEntity repository = getRepositoryEntity(login, repoFullName);
         List<PullRequestEntity> allPrs = pullRequestRepository.findByRepositoryOrderByCreatedAtDesc(repository);
         List<CommitEntity> allCommits = commitRepository.findByRepository(repository);
         
@@ -751,7 +762,7 @@ public class RepositoryMetricsServiceAdapter implements RepositoryMetricsService
     @Transactional(readOnly = true)
     public RepositoryContributorMetricsDto getContributorMetrics(String login, String repoFullName) 
             throws RepositoryNotFoundException, UserNotFoundException {
-        RepositoryEntity repository = repoServicePort.getByFullNameForCurrentUserOrThrow(login, repoFullName);
+        RepositoryEntity repository = getRepositoryEntity(login, repoFullName);
         
         List<CommitEntity> allCommits = commitRepository.findByRepository(repository);
         List<PullRequestEntity> allPrs = pullRequestRepository.findByRepositoryOrderByCreatedAtDesc(repository);
@@ -881,7 +892,7 @@ public class RepositoryMetricsServiceAdapter implements RepositoryMetricsService
     @Transactional(readOnly = true)
     public RepositoryHealthScoreDto getHealthScore(String login, String repoFullName) 
             throws RepositoryNotFoundException, UserNotFoundException {
-        RepositoryEntity repository = repoServicePort.getByFullNameForCurrentUserOrThrow(login, repoFullName);
+        RepositoryEntity repository = getRepositoryEntity(login, repoFullName);
         
         // Get all metrics
         RepositoryActivityTrendDto activityTrend = getActivityTrend(login, repoFullName);

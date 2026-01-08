@@ -5,9 +5,9 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.optimetric.auth.infrastructure.persistence.entity.OwnerType;
 import com.optimetric.auth.infrastructure.persistence.entity.User;
 import com.optimetric.github.infrastructure.persistence.entity.RepositoryEntity;
+import com.optimetric.shared.domain.OwnerType;
 
 public interface RepositoryRepository extends JpaRepository<RepositoryEntity, Long> {
 

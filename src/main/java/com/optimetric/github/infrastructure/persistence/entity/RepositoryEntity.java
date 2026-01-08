@@ -1,6 +1,6 @@
 package com.optimetric.github.infrastructure.persistence.entity;
 
-import com.optimetric.auth.infrastructure.persistence.entity.OwnerType;
+import com.optimetric.shared.domain.OwnerType;
 import com.optimetric.auth.infrastructure.persistence.entity.User;
 import jakarta.persistence.*;
 import lombok.*;

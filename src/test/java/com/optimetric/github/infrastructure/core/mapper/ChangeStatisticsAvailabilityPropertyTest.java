@@ -4,7 +4,7 @@ import com.optimetric.github.api.response.ChangeStatsDto;
 import com.optimetric.github.api.response.PullRequestDto;
 import com.optimetric.github.infrastructure.persistence.entity.*;
 import com.optimetric.auth.infrastructure.persistence.entity.User;
-import com.optimetric.auth.infrastructure.persistence.entity.OwnerType;
+import com.optimetric.shared.domain.OwnerType;
 import net.jqwik.api.*;
 
 import java.time.OffsetDateTime;

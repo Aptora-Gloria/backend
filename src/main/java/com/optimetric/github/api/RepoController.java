@@ -41,8 +41,12 @@ public class RepoController {
             @AuthenticationPrincipal String login,
             @RequestBody @Valid GetReposRequest request
     ) {
+        // Convert API OwnerType to shared domain OwnerType
+        com.optimetric.shared.domain.OwnerType ownerType = request.ownerType() != null 
+            ? com.optimetric.shared.domain.OwnerType.valueOf(request.ownerType().name())
+            : null;
         // Application layer returns RepositoryInfo
-        List<RepositoryInfo> repos = repoService.getRepos(login, request.ownerType(), request.ownerLogin());
+        List<RepositoryInfo> repos = repoService.getRepos(login, ownerType, request.ownerLogin());
         // Map to API DTO
         List<RepoDto> apiRepos = ApplicationToApiMapper.toRepoDtos(repos);
         return ResponseEntity.ok(apiRepos);

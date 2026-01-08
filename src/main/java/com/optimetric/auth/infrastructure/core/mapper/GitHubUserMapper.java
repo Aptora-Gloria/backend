@@ -3,7 +3,7 @@ package com.optimetric.auth.infrastructure.core.mapper;
 
 
 import com.optimetric.auth.infrastructure.persistence.entity.User;
-import com.optimetric.auth.infrastructure.persistence.entity.OwnerType;
+import com.optimetric.shared.domain.OwnerType;
 import com.optimetric.auth.api.dto.GitHubUserDto;
 
 import java.time.OffsetDateTime;

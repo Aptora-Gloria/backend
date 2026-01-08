@@ -15,6 +15,7 @@ import com.optimetric.github.infrastructure.core.mapper.BranchMapper;
 import com.optimetric.github.infrastructure.persistence.entity.BranchEntity;
 import com.optimetric.github.infrastructure.persistence.entity.RepositoryEntity;
 import com.optimetric.github.infrastructure.persistence.jpa.BranchRepository;
+import com.optimetric.github.infrastructure.persistence.jpa.RepositoryRepository;
 import com.optimetric.shared.exception.RepositoryNotFoundException;
 import com.optimetric.shared.exception.UserNotFoundException;
 
@@ -25,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 public class BranchServiceAdapter implements BranchServicePort {
 
     private final BranchRepository branchRepository;
+    private final RepositoryRepository repositoryRepository;
     private final RepoServicePort repoServicePort;
     private final BranchClientPort branchClient;
     private final AuthServicePort authServicePort;
@@ -34,7 +36,9 @@ public class BranchServiceAdapter implements BranchServicePort {
     public List<BranchDto> initRepoBranches(String login, String fullName) 
             throws RepositoryNotFoundException, UserNotFoundException {
         String accessToken = authServicePort.getAccessTokenFromLogin(login);
-        RepositoryEntity repo = repoServicePort.getByFullNameForCurrentUserOrThrow(login, fullName);
+        com.optimetric.github.application.dto.RepositoryInfo repoInfo = repoServicePort.getByFullNameForCurrentUserOrThrow(login, fullName);
+        RepositoryEntity repo = repositoryRepository.findById(repoInfo.id())
+                .orElseThrow(() -> new RepositoryNotFoundException("Repository not found with id: " + repoInfo.id()));
 
         String owner = repo.getOwnerLogin();
         List<String> branchNames = branchClient.getRepoBranchNames(accessToken, owner, repo.getName());
@@ -52,7 +56,9 @@ public class BranchServiceAdapter implements BranchServicePort {
     @Transactional(readOnly = true)
     public List<BranchDto> getBranchesByFullName(String login, String fullName) 
             throws RepositoryNotFoundException, UserNotFoundException {
-        RepositoryEntity repo = repoServicePort.getByFullNameForCurrentUserOrThrow(login, fullName);
+        com.optimetric.github.application.dto.RepositoryInfo repoInfo = repoServicePort.getByFullNameForCurrentUserOrThrow(login, fullName);
+        RepositoryEntity repo = repositoryRepository.findById(repoInfo.id())
+                .orElseThrow(() -> new RepositoryNotFoundException("Repository not found with id: " + repoInfo.id()));
         List<BranchEntity> branches = branchRepository.findByRepository(repo);
         return BranchMapper.toDtos(branches);
     }

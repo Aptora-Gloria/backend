@@ -1,6 +1,6 @@
 package com.optimetric.github.infrastructure.core.mapper;
 
-import com.optimetric.auth.infrastructure.persistence.entity.OwnerType;
+import com.optimetric.shared.domain.OwnerType;
 import com.optimetric.github.application.dto.RepositoryInfo;
 import com.optimetric.github.application.dto.RepositoryInitData;
 import com.optimetric.github.infrastructure.persistence.entity.RepositoryEntity;

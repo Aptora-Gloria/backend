@@ -1,7 +1,6 @@
 package com.optimetric.github.infrastructure.persistence.adapter;
 
 import com.optimetric.auth.application.AuthServicePort;
-import com.optimetric.auth.infrastructure.persistence.entity.OwnerType;
 import com.optimetric.auth.infrastructure.persistence.entity.User;
 import com.optimetric.github.application.client.RepoClientPort;
 import com.optimetric.github.application.dto.RepositoryInfo;
@@ -10,6 +9,7 @@ import com.optimetric.github.application.port.RepoServicePort;
 import com.optimetric.github.infrastructure.core.mapper.RepositoryMapper;
 import com.optimetric.github.infrastructure.persistence.entity.RepositoryEntity;
 import com.optimetric.github.infrastructure.persistence.jpa.RepositoryRepository;
+import com.optimetric.shared.domain.OwnerType;
 import com.optimetric.shared.exception.RepositoryNotFoundException;
 import com.optimetric.shared.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -60,17 +60,19 @@ public class RepoServiceAdapter implements RepoServicePort {
     }
 
     @Override
-    public Optional<RepositoryEntity> getByFullNameForCurrentUser(String login, String fullName) throws UserNotFoundException {
+    public Optional<RepositoryInfo> getByFullNameForCurrentUser(String login, String fullName) throws UserNotFoundException {
         User user = authServicePort.findByLoginOrThrow(login);
-        return repositoryRepo.findByFullNameAndUser(fullName, user);
+        Optional<RepositoryEntity> entity = repositoryRepo.findByFullNameAndUser(fullName, user);
+        return entity.map(RepositoryMapper::toRepositoryInfo);
     }
 
     @Override
-    public RepositoryEntity getByFullNameForCurrentUserOrThrow(String login, String fullName) 
+    public RepositoryInfo getByFullNameForCurrentUserOrThrow(String login, String fullName) 
             throws RepositoryNotFoundException, UserNotFoundException {
         User user = authServicePort.findByLoginOrThrow(login);
-        return repositoryRepo.findByFullNameAndUser(fullName, user)
+        RepositoryEntity entity = repositoryRepo.findByFullNameAndUser(fullName, user)
                 .orElseThrow(() -> new RepositoryNotFoundException("Repository not found with fullName: " + fullName));
+        return RepositoryMapper.toRepositoryInfo(entity);
     }
 
     private void saveRepos(List<RepositoryInitData> repos, User user) {
