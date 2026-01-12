@@ -1,5 +1,6 @@
 package com.optimetric.github.infrastructure.core.mapper;
 
+import com.optimetric.github.api.request.GetReposRequest;
 import com.optimetric.github.api.request.RepoInitRequest;
 import com.optimetric.github.api.response.RepoDto;
 import com.optimetric.github.application.dto.RepositoryInfo;
@@ -12,19 +13,39 @@ import java.util.stream.Collectors;
 /**
  * Mapper for converting between application DTOs and API DTOs.
  * This mapper is used in the controller layer to map application contracts to API contracts.
+ * 
+ * Supports bidirectional mapping:
+ * - Application → API: Maps application DTOs to API DTOs for responses
+ * - API → Application: Maps API request DTOs to application-level parameters
  */
 public class ApplicationToApiMapper {
+
+    /**
+     * Extracts OwnerType from GetReposRequest for use case execution.
+     * This method handles the API → Application mapping for request parameters.
+     * 
+     * @param request API request DTO
+     * @return OwnerType from shared domain (can be null)
+     */
+    public static OwnerType extractOwnerType(GetReposRequest request) {
+        return request != null ? request.ownerType() : null;
+    }
+
+    /**
+     * Extracts ownerLogin from GetReposRequest for use case execution.
+     * 
+     * @param request API request DTO
+     * @return Owner login string (can be null)
+     */
+    public static String extractOwnerLogin(GetReposRequest request) {
+        return request != null ? request.ownerLogin() : null;
+    }
 
     /**
      * Maps RepositoryInfo (application) to RepoDto (API).
      */
     public static RepoDto toRepoDto(RepositoryInfo info) {
         if (info == null) return null;
-        // Convert shared domain OwnerType to API OwnerType
-        com.optimetric.auth.infrastructure.persistence.entity.OwnerType apiOwnerType = null;
-        if (info.ownerType() != null) {
-            apiOwnerType = com.optimetric.auth.infrastructure.persistence.entity.OwnerType.valueOf(info.ownerType().name());
-        }
         return new RepoDto(
                 info.id(),
                 info.githubRepoId(),
@@ -45,7 +66,7 @@ public class ApplicationToApiMapper {
                 info.updatedAt(),
                 info.pushedAt(),
                 info.ownerLogin(),
-                apiOwnerType,
+                info.ownerType(), // Shared domain OwnerType, no conversion needed
                 info.lastSyncedAt()
         );
     }

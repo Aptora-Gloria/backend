@@ -57,11 +57,7 @@ public class RepoMapper {
 
     public static RepoDto toDto(RepositoryEntity e) {
         if (e == null) return null;
-        // Convert shared domain OwnerType to API OwnerType
-        com.optimetric.auth.infrastructure.persistence.entity.OwnerType apiOwnerType = null;
-        if (e.getOwnerType() != null) {
-            apiOwnerType = com.optimetric.auth.infrastructure.persistence.entity.OwnerType.valueOf(e.getOwnerType().name());
-        }
+        // RepositoryEntity already uses shared domain OwnerType, no conversion needed
         return new RepoDto(
                 e.getId(),
                 e.getGithubRepoId(),
@@ -82,7 +78,7 @@ public class RepoMapper {
                 e.getUpdatedAt(),
                 e.getPushedAt(),
                 e.getOwnerLogin(),
-                apiOwnerType,
+                e.getOwnerType(), // Shared domain OwnerType, no conversion needed
                 e.getLastSyncedAt()
         );
     }

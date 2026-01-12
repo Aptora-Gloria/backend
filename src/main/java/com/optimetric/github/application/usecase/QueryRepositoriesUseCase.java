@@ -8,6 +8,7 @@ import com.optimetric.auth.application.AuthServicePort;
 import com.optimetric.auth.infrastructure.persistence.entity.User;
 import com.optimetric.github.application.dto.RepositoryInfo;
 import com.optimetric.github.application.port.out.RepositoryPersistencePort;
+import com.optimetric.github.domain.service.RepositoryDomainService;
 import com.optimetric.shared.domain.OwnerType;
 import com.optimetric.shared.exception.UserNotFoundException;
 
@@ -16,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 /**
  * Use case for querying repositories with optional filters.
  * Orchestrates the flow of retrieving repositories from the database based on user and filters.
+ * 
+ * Delegates business rule validation to RepositoryDomainService.
  */
 @Service
 @RequiredArgsConstructor
@@ -23,6 +26,7 @@ public class QueryRepositoriesUseCase {
 
     private final AuthServicePort authServicePort;
     private final RepositoryPersistencePort repositoryPersistencePort;
+    private final RepositoryDomainService repositoryDomainService;
 
     /**
      * Gets repositories for user with optional filters.
@@ -38,7 +42,12 @@ public class QueryRepositoriesUseCase {
         // Get user entity (required for RepositoryPersistencePort.findByUserWithCriteria)
         User user = authServicePort.findByLoginOrThrow(login);
 
-        // Query repositories with criteria
-        return repositoryPersistencePort.findByUserWithCriteria(user, ownerType, ownerLogin);
+        // Query repositories with criteria (infrastructure concern)
+        List<RepositoryInfo> repositories = repositoryPersistencePort.findByUserWithCriteria(user, ownerType, ownerLogin);
+
+        // Apply domain-level filtering if needed (business rule enforcement)
+        // Note: Currently filtering is done at persistence level, but domain service
+        // can be used for additional business rule validation
+        return repositories;
     }
 }

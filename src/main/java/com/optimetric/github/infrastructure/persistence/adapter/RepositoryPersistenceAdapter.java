@@ -75,35 +75,8 @@ public class RepositoryPersistenceAdapter implements RepositoryPersistencePort {
                     .orElse(null);
             
             if (existingEntity != null) {
-                // Update metadata (fullName, htmlUrl, name, etc. may change on rename/transfer)
-                // But githubRepoId remains the same (canonical key)
-                existingEntity.setName(repoData.name());
-                existingEntity.setFullName(repoData.fullName());
-                existingEntity.setDescription(repoData.description());
-                existingEntity.setHtmlUrl(repoData.htmlUrl());
-                existingEntity.setIsPrivate(repoData.isPrivate());
-                existingEntity.setIsFork(repoData.fork());
-                existingEntity.setStargazersCount(repoData.stargazersCount());
-                existingEntity.setWatchersCount(repoData.watchersCount());
-                existingEntity.setForksCount(repoData.forksCount());
-                existingEntity.setOpenIssuesCount(repoData.openIssuesCount());
-                existingEntity.setSize(repoData.size());
-                existingEntity.setLanguage(repoData.language());
-                existingEntity.setDefaultBranch(repoData.defaultBranch());
-                if (repoData.createdAt() != null) {
-                    existingEntity.setCreatedAt(RepositoryMapper.parseTime(repoData.createdAt()));
-                }
-                if (repoData.updatedAt() != null) {
-                    existingEntity.setUpdatedAt(RepositoryMapper.parseTime(repoData.updatedAt()));
-                }
-                if (repoData.pushedAt() != null) {
-                    existingEntity.setPushedAt(RepositoryMapper.parseTime(repoData.pushedAt()));
-                }
-                if (repoData.owner() != null) {
-                    existingEntity.setOwnerLogin(repoData.owner().login());
-                    existingEntity.setOwnerType(RepositoryMapper.mapOwnerType(repoData.owner().type()));
-                }
-                existingEntity.setLastSyncedAt(java.time.OffsetDateTime.now());
+                // Delegate entity update to mapper (mapping responsibility)
+                RepositoryMapper.updateEntity(existingEntity, repoData);
                 updatedEntities.add(existingEntity);
             }
         }

@@ -31,9 +31,21 @@ public class InitializeUserRepositoriesUseCase {
      * @return List of repository initialization data
      * @throws UserNotFoundException if user not found
      */
+
+    //TODO aplication katmanı altıngeni oluşturan kırmızı çizgilerden bahsediyorsak eğer yani orkestra sınıfı ise
+    //TODO 1- doğrudan infra ya erişemez
+    //TODO 2. buranın bağımlılığı domaine bağımlı olmak zorunda
+    //TODO 3. doamin katmanı infara gitmeli
     public List<RepositoryInitData> execute(String login) throws UserNotFoundException {
         // Get user context (userId, login, accessToken) through port
-        var userContext = userContextPort.getContextByLogin(login);
+        var userContextOpt = userContextPort.getContextByLogin(login);
+        
+        // Handle user not found case (exception thrown by adapter, handled here)
+        if (userContextOpt.isEmpty()) {
+            throw new UserNotFoundException("User not found with login: " + login);
+        }
+        
+        var userContext = userContextOpt.get();
 
         // Fetch repositories from GitHub API
         List<RepositoryInitData> repos = githubRepoQueryPort.getUserRepos(userContext.accessToken());

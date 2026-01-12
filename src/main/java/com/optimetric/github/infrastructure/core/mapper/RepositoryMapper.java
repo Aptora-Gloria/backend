@@ -116,5 +116,57 @@ public class RepositoryMapper {
                 .map(RepositoryMapper::toRepositoryInfo)
                 .collect(Collectors.toList());
     }
+
+    /**
+     * Updates an existing RepositoryEntity with data from RepositoryInitData.
+     * This method is used for upsert operations where metadata may have changed
+     * (e.g., repository rename/transfer) but githubRepoId remains the same.
+     * 
+     * Note: githubRepoId is not updated as it's the canonical key.
+     * 
+     * @param entity Existing RepositoryEntity to update
+     * @param data RepositoryInitData containing updated information
+     */
+    public static void updateEntity(RepositoryEntity entity, RepositoryInitData data) {
+        if (entity == null || data == null) {
+            return;
+        }
+
+        // Update metadata (fullName, htmlUrl, name, etc. may change on rename/transfer)
+        // But githubRepoId remains the same (canonical key)
+        entity.setName(data.name());
+        entity.setFullName(data.fullName());
+        entity.setDescription(data.description());
+        entity.setHtmlUrl(data.htmlUrl());
+        entity.setIsPrivate(data.isPrivate());
+        entity.setIsFork(data.fork());
+        entity.setStargazersCount(data.stargazersCount());
+        entity.setWatchersCount(data.watchersCount());
+        entity.setForksCount(data.forksCount());
+        entity.setOpenIssuesCount(data.openIssuesCount());
+        entity.setSize(data.size());
+        entity.setLanguage(data.language());
+        entity.setDefaultBranch(data.defaultBranch());
+        
+        // Update timestamps
+        if (data.createdAt() != null) {
+            entity.setCreatedAt(parseTime(data.createdAt()));
+        }
+        if (data.updatedAt() != null) {
+            entity.setUpdatedAt(parseTime(data.updatedAt()));
+        }
+        if (data.pushedAt() != null) {
+            entity.setPushedAt(parseTime(data.pushedAt()));
+        }
+        
+        // Update owner information
+        if (data.owner() != null) {
+            entity.setOwnerLogin(data.owner().login());
+            entity.setOwnerType(mapOwnerType(data.owner().type()));
+        }
+        
+        // Update sync timestamp
+        entity.setLastSyncedAt(OffsetDateTime.now());
+    }
 }
 

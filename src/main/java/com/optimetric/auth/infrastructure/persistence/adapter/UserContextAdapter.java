@@ -21,14 +21,20 @@ public class UserContextAdapter implements UserContextPort {
     private final AuthServicePort authServicePort;
 
     @Override
-    public UserContext getContextByLogin(String login) throws UserNotFoundException {
-        User user = authServicePort.findByLoginOrThrow(login);
-        String accessToken = authServicePort.getAccessTokenFromLogin(login);
-        
-        return new UserContext(
-                user.getId(),
-                user.getLogin(),
-                accessToken
-        );
+    public java.util.Optional<UserContext> getContextByLogin(String login) {
+        try {
+            User user = authServicePort.findByLoginOrThrow(login);
+            String accessToken = authServicePort.getAccessTokenFromLogin(login);
+            
+            return java.util.Optional.of(new UserContext(
+                    user.getId(),
+                    user.getLogin(),
+                    accessToken
+            ));
+        } catch (com.optimetric.shared.exception.UserNotFoundException e) {
+            // User not found - return empty Optional
+            // Exception handling is done in use case layer
+            return java.util.Optional.empty();
+        }
     }
 }

@@ -17,3 +17,4 @@ public interface GitHubRepoQueryPort {
      */
     List<RepositoryInitData> getUserRepos(String accessToken);
 }
+
