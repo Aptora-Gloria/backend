@@ -1,15 +1,16 @@
 package com.optimetric.github.infrastructure.persistence.jpa;
 
-import com.optimetric.github.infrastructure.persistence.entity.DataLevel;
-import com.optimetric.github.infrastructure.persistence.entity.PullRequestEntity;
-import com.optimetric.github.infrastructure.persistence.entity.RepositoryEntity;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
+import com.optimetric.github.infrastructure.persistence.entity.DataLevel;
+import com.optimetric.github.infrastructure.persistence.entity.PullRequestEntity;
+import com.optimetric.github.infrastructure.persistence.entity.RepositoryEntity;
 
 public interface PullRequestRepository extends JpaRepository<PullRequestEntity, Long> {
 
@@ -46,4 +47,21 @@ public interface PullRequestRepository extends JpaRepository<PullRequestEntity, 
     @Query("SELECT pr FROM PullRequestEntity pr WHERE pr.repository = :repository " +
            "AND (pr.additions IS NULL OR pr.deletions IS NULL OR pr.changedFiles IS NULL)")
     List<PullRequestEntity> findPullRequestsWithoutChangeStats(@Param("repository") RepositoryEntity repository);
+
+    /**
+     * Checks if any pull request exists for the given repository ID.
+     * Used for readiness checks (EXISTS with LIMIT 1 for performance).
+     */
+    @Query("SELECT CASE WHEN COUNT(pr) > 0 THEN true ELSE false END " +
+           "FROM PullRequestEntity pr WHERE pr.repository.id = :repositoryId")
+    boolean existsByRepositoryId(@Param("repositoryId") Long repositoryId);
+
+    /**
+     * Checks if any pull request with details (additions IS NOT NULL) exists for the given repository ID.
+     * Used for PR_DETAILS readiness checks.
+     */
+    @Query("SELECT CASE WHEN COUNT(pr) > 0 THEN true ELSE false END " +
+           "FROM PullRequestEntity pr WHERE pr.repository.id = :repositoryId " +
+           "AND pr.additions IS NOT NULL")
+    boolean existsWithDetailsByRepositoryId(@Param("repositoryId") Long repositoryId);
 }

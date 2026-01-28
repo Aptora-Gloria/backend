@@ -1,11 +1,14 @@
 package com.optimetric.github.infrastructure.persistence.jpa;
 
-import com.optimetric.github.infrastructure.persistence.entity.PullRequestEntity;
-import com.optimetric.github.infrastructure.persistence.entity.PullRequestReviewEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import com.optimetric.github.infrastructure.persistence.entity.PullRequestEntity;
+import com.optimetric.github.infrastructure.persistence.entity.PullRequestReviewEntity;
 
 public interface PullRequestReviewRepository extends JpaRepository<PullRequestReviewEntity, Long> {
 
@@ -32,4 +35,15 @@ public interface PullRequestReviewRepository extends JpaRepository<PullRequestRe
 
     // Find reviews by reviewer GitHub ID
     List<PullRequestReviewEntity> findByReviewerGithubIdOrderBySubmittedAtDesc(Long reviewerGithubId);
+
+    /**
+     * Checks if any review exists for the given repository ID.
+     * Uses JOIN with pull_requests table since reviews table doesn't have repository_id.
+     * Used for readiness checks (EXISTS with LIMIT 1 for performance).
+     */
+    @Query("SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END " +
+           "FROM PullRequestReviewEntity r " +
+           "JOIN r.pullRequest p " +
+           "WHERE p.repository.id = :repositoryId")
+    boolean existsByRepositoryId(@Param("repositoryId") Long repositoryId);
 }
