@@ -4,6 +4,7 @@ import com.optimetric.github.infrastructure.persistence.entity.LanguageEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface LanguageRepository extends JpaRepository<LanguageEntity, Long> {
     
@@ -26,5 +27,11 @@ public interface LanguageRepository extends JpaRepository<LanguageEntity, Long> 
      * Deletes all languages by repository full name.
      */
     void deleteByRepository_FullName(String fullName);
+
+    /**
+     * Finds a language by repository ID and language name.
+     * Used for upsert operations to check if a language already exists.
+     */
+    Optional<LanguageEntity> findByRepository_IdAndLanguageName(Long repositoryId, String languageName);
 
 }
