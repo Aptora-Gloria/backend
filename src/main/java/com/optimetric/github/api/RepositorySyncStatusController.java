@@ -1,6 +1,7 @@
 package com.optimetric.github.api;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,11 +28,13 @@ public class RepositorySyncStatusController {
     /**
      * Gets the sync status and data readiness for a repository.
      * 
+     * @param login Authenticated user login (for security)
      * @param request Request containing repository full name
      * @return RepositoryReadinessDto with state, missing components, and flags
      */
     @PostMapping("/sync/status")
     public ResponseEntity<RepositoryReadinessDto> getSyncStatus(
+            @AuthenticationPrincipal String login,
             @RequestBody @Valid RepositorySyncStatusRequest request
     ) {
         RepositoryReadinessDto readiness = repoSyncStatusService.getReadiness(request.fullName());
