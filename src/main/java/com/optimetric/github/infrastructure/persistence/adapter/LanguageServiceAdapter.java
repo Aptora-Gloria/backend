@@ -6,10 +6,10 @@ import com.optimetric.github.api.response.LanguageUiDto;
 import com.optimetric.github.application.client.LanguageClientPort;
 import com.optimetric.github.application.port.LanguageServicePort;
 import com.optimetric.github.infrastructure.core.mapper.LanguageMapper;
+import com.optimetric.github.infrastructure.persistence.adapter.RepositoryPersistenceAdapter;
 import com.optimetric.github.infrastructure.persistence.entity.LanguageEntity;
 import com.optimetric.github.infrastructure.persistence.entity.RepositoryEntity;
 import com.optimetric.github.infrastructure.persistence.jpa.LanguageRepository;
-import com.optimetric.github.infrastructure.persistence.jpa.RepositoryRepository;
 import com.optimetric.shared.exception.RepositoryNotFoundException;
 import com.optimetric.shared.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +25,7 @@ public class LanguageServiceAdapter implements LanguageServicePort {
     private final LanguageClientPort languageClient;
     private final AuthServicePort authServicePort;
     private final LanguageRepository languageRepository;
-    private final RepositoryRepository repositoryRepository;
+    private final RepositoryPersistenceAdapter repositoryPersistenceAdapter;
 
     /**
      * Fetches languages from GitHub API and saves them to database.
@@ -41,7 +41,7 @@ public class LanguageServiceAdapter implements LanguageServicePort {
         String accessToken = authServicePort.getAccessTokenFromLogin(login);
 
         // Get repository entity
-        RepositoryEntity repository = repositoryRepository.findByFullName(repoFullName)
+        RepositoryEntity repository = repositoryPersistenceAdapter.findEntityByFullName(repoFullName)
                 .orElseThrow(() -> new RepositoryNotFoundException("Repository not found with fullName: " + repoFullName));
 
         // Fetch languages from GitHub API

@@ -1,6 +1,6 @@
 package com.optimetric.auth.security;
 
-import com.optimetric.auth.application.TokenPort;
+import com.optimetric.auth.application.port.out.JwtTokenPort;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,7 +21,7 @@ import java.util.List;
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final TokenPort tokenPort;
+    private final JwtTokenPort jwtTokenPort;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -38,7 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = authHeader.substring(7);
         try {
-            String login = tokenPort.getLoginFromToken(token);
+            String login = jwtTokenPort.extractLoginFromToken(token);
 
             // Spring Security'nin authenticated() kontrolü için authorities gerekiyor
             // Boş bir authority listesi ekliyoruz (ROLE_USER gibi bir role de eklenebilir)

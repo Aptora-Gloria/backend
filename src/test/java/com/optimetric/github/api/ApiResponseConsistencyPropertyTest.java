@@ -1,6 +1,6 @@
 package com.optimetric.github.api;
 
-import com.optimetric.auth.infrastructure.persistence.entity.OwnerType;
+import com.optimetric.shared.domain.OwnerType;
 import com.optimetric.auth.infrastructure.persistence.entity.User;
 import com.optimetric.github.api.response.*;
 import com.optimetric.github.infrastructure.persistence.adapter.PullRequestServiceAdapter;

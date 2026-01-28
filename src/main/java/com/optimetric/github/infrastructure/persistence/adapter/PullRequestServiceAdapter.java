@@ -2,6 +2,7 @@ package com.optimetric.github.infrastructure.persistence.adapter;
 
 import com.optimetric.auth.application.AuthServicePort;
 import com.optimetric.auth.infrastructure.persistence.entity.User;
+import com.optimetric.auth.infrastructure.persistence.jpa.repository.UserRepository;
 import com.optimetric.github.api.response.*;
 import com.optimetric.github.application.port.PullRequestServicePort;
 import com.optimetric.github.application.port.SyncJobServicePort;
@@ -35,6 +36,7 @@ public class PullRequestServiceAdapter implements PullRequestServicePort {
     private final PullRequestReviewRepository pullRequestReviewRepository;
     private final PullRequestCommitRepository pullRequestCommitRepository;
     private final RepositoryRepository repositoryRepository;
+    private final UserRepository userRepository;
     private final AuthServicePort authServicePort;
     private final SyncJobServicePort syncJobServicePort;
 
@@ -253,8 +255,12 @@ public class PullRequestServiceAdapter implements PullRequestServicePort {
     private RepositoryEntity validateRepositoryAccess(String login, String repoFullName) 
             throws UserNotFoundException, RepositoryNotFoundException {
         
-        // Find user by login
-        User user = authServicePort.findByLoginOrThrow(login);
+        // Get user info (Application DTO)
+        com.optimetric.auth.application.dto.UserInfo userInfo = authServicePort.findByLoginOrThrow(login);
+        
+        // Resolve User entity from userId (infrastructure concern - needed for JPA repository)
+        User user = userRepository.findById(userInfo.id())
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userInfo.id()));
         
         // Find repository by full name and user (following existing patterns)
         Optional<RepositoryEntity> repository = repositoryRepository.findByFullNameAndUser(repoFullName, user);

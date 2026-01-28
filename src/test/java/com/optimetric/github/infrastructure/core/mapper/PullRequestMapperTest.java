@@ -6,7 +6,7 @@ import com.optimetric.github.api.response.ReviewDto;
 import com.optimetric.github.api.response.ReviewCommentDto;
 import com.optimetric.github.infrastructure.persistence.entity.*;
 import com.optimetric.auth.infrastructure.persistence.entity.User;
-import com.optimetric.auth.infrastructure.persistence.entity.OwnerType;
+import com.optimetric.shared.domain.OwnerType;
 import org.junit.jupiter.api.Test;
 
 import java.time.OffsetDateTime;

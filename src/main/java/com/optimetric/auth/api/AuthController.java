@@ -3,7 +3,9 @@ package com.optimetric.auth.api;
 import com.optimetric.auth.api.dto.AuthRequest;
 import com.optimetric.auth.api.dto.AuthResponse;
 import com.optimetric.auth.api.dto.GitHubUserDto;
-import com.optimetric.auth.application.AuthServicePort;
+import com.optimetric.auth.application.usecase.LoginUseCase;
+import com.optimetric.auth.application.usecase.GetCurrentUserUseCase;
+import com.optimetric.auth.infrastructure.core.mapper.AuthApiMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -14,13 +16,21 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthServicePort authServicePort;
+    private final LoginUseCase loginUseCase;
+    private final GetCurrentUserUseCase getCurrentUserUseCase;
 
     // 1. Giriş (login) endpoint'i
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
-        AuthResponse response = authServicePort.login(request);
-
+        // Convert API DTO to Application DTO
+        var command = AuthApiMapper.toLoginCommand(request);
+        
+        // Call use case
+        var result = loginUseCase.execute(command);
+        
+        // Convert Application DTO to API DTO
+        var response = AuthApiMapper.toAuthResponse(result);
+        
         return ResponseEntity.ok(response);
     }
 
@@ -34,7 +44,13 @@ public class AuthController {
         if (token.isEmpty()) {
             return ResponseEntity.status(401).build();
         }
-        GitHubUserDto user = authServicePort.getCurrentUser(token);
-        return ResponseEntity.ok(user);
+        
+        // Call use case (returns Application DTO)
+        var userInfo = getCurrentUserUseCase.execute(token);
+        
+        // Convert Application DTO to API DTO
+        var userDto = AuthApiMapper.toGitHubUserDto(userInfo);
+        
+        return ResponseEntity.ok(userDto);
     }
 }

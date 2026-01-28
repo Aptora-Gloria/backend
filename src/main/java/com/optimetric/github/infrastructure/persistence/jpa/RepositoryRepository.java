@@ -5,9 +5,9 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.optimetric.auth.infrastructure.persistence.entity.OwnerType;
 import com.optimetric.auth.infrastructure.persistence.entity.User;
 import com.optimetric.github.infrastructure.persistence.entity.RepositoryEntity;
+import com.optimetric.shared.domain.OwnerType;
 
 public interface RepositoryRepository extends JpaRepository<RepositoryEntity, Long> {
 
@@ -15,7 +15,8 @@ public interface RepositoryRepository extends JpaRepository<RepositoryEntity, Lo
     List<RepositoryEntity> findById(int id);
 
     List<RepositoryEntity> findAllByHtmlUrlIn(List<String> htmlUrls);
-    List<RepositoryEntity> findByGithubRepoId(Long githubRepoId);
+    List<RepositoryEntity> findByGithubRepoIdIn(List<Long> githubRepoIds);
+    Optional<RepositoryEntity> findByGithubRepoId(Long githubRepoId);
     Optional<RepositoryEntity> findByHtmlUrl(String htmlUrl);
 
     List<RepositoryEntity> findByUserOrderByPushedAtDesc(User user);

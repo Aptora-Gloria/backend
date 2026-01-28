@@ -1,10 +1,9 @@
 package com.optimetric.github.infrastructure.core.mapper;
 
-
-import com.optimetric.auth.infrastructure.persistence.entity.OwnerType;
-import com.optimetric.github.api.request.RepoInitrequest;
+import com.optimetric.github.api.request.RepoInitRequest;
 import com.optimetric.github.api.response.RepoDto;
 import com.optimetric.github.infrastructure.persistence.entity.RepositoryEntity;
+import com.optimetric.shared.domain.OwnerType;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -27,7 +26,7 @@ public class RepoMapper {
         };
     }
 
-    public static RepositoryEntity toEntity(RepoInitrequest dto) {
+    public static RepositoryEntity toEntity(RepoInitRequest dto) {
         var ownerLogin = dto.owner() != null ? dto.owner().login() : null;
         var ownerType  = dto.owner() != null ? mapOwnerType(dto.owner().type()) : null;
         return RepositoryEntity.builder()
@@ -57,9 +56,8 @@ public class RepoMapper {
     }
 
     public static RepoDto toDto(RepositoryEntity e) {
-
-
         if (e == null) return null;
+        // RepositoryEntity already uses shared domain OwnerType, no conversion needed
         return new RepoDto(
                 e.getId(),
                 e.getGithubRepoId(),
@@ -80,12 +78,12 @@ public class RepoMapper {
                 e.getUpdatedAt(),
                 e.getPushedAt(),
                 e.getOwnerLogin(),
-                e.getOwnerType(),
+                e.getOwnerType(), // Shared domain OwnerType, no conversion needed
                 e.getLastSyncedAt()
         );
     }
 
-    public static List<RepositoryEntity> toEntities(List<RepoInitrequest> list) {
+    public static List<RepositoryEntity> toEntities(List<RepoInitRequest> list) {
         return list.stream()
                 .map(RepoMapper::toEntity)
                 .toList();

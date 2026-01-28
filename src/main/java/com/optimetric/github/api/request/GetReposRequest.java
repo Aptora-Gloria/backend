@@ -2,7 +2,7 @@ package com.optimetric.github.api.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.optimetric.auth.infrastructure.persistence.entity.OwnerType;
+import com.optimetric.shared.domain.OwnerType;
 
 public record GetReposRequest(
         OwnerType ownerType,
