@@ -1,25 +1,66 @@
 package com.optimetric.auth.application;
 
-import com.optimetric.auth.api.dto.AuthRequest;
-import com.optimetric.auth.api.dto.AuthResponse;
-import com.optimetric.auth.infrastructure.persistence.entity.User;
-import com.optimetric.auth.api.dto.GitHubUserDto;
-import com.optimetric.shared.exception.UserNotFoundException;
+import com.optimetric.auth.application.dto.LoginCommand;
+import com.optimetric.auth.application.dto.LoginResult;
+import com.optimetric.auth.application.dto.UserInfo;
 
 import java.util.Optional;
 
+/**
+ * Application port for authentication operations.
+ * This port uses Application DTOs, not API DTOs.
+ * 
+ * Note: This port will be replaced by Use Cases in PHASE 4.
+ * For now, it's updated to use Application DTOs instead of API DTOs.
+ */
 public interface AuthServicePort {
 
-    AuthResponse login(AuthRequest request);
+    /**
+     * Performs user login with GitHub OAuth code.
+     * 
+     * @param command Login command containing OAuth code
+     * @return Login result containing JWT access token
+     */
+    LoginResult login(LoginCommand command);
 
-    GitHubUserDto getCurrentUser(String token);
+    /**
+     * Gets current user information from JWT token.
+     * 
+     * @param token JWT token
+     * @return User information
+     */
+    UserInfo getCurrentUser(String token);
 
-    Optional<User> findByLogin(String login);
+    /**
+     * Finds user by login.
+     * 
+     * @param login User login
+     * @return Optional user information
+     */
+    Optional<UserInfo> findByLogin(String login);
 
+    /**
+     * Extracts login from JWT token.
+     * 
+     * @param token JWT token
+     * @return User login
+     */
     String getLoginFromToken(String token);
 
-    String getAccessTokenFromToken(String authToken);
+    /**
+     * Gets GitHub access token from JWT token.
+     * 
+     * @param jwtToken JWT token
+     * @return GitHub access token
+     */
+    String getAccessTokenFromToken(String jwtToken);
 
+    /**
+     * Gets GitHub access token from user login.
+     * 
+     * @param login User login
+     * @return GitHub access token
+     */
     String getAccessTokenFromLogin(String login);
     
     /**
@@ -27,8 +68,8 @@ public interface AuthServicePort {
      * This method should be used when user existence is required.
      * 
      * @param login User login
-     * @return User entity
-     * @throws UserNotFoundException if user not found
+     * @return User information
+     * @throws com.optimetric.shared.exception.UserNotFoundException if user not found
      */
-    User findByLoginOrThrow(String login) throws UserNotFoundException;
+    UserInfo findByLoginOrThrow(String login);
 }

@@ -1,11 +1,13 @@
-/*package com.optimetric.auth;
+package com.optimetric.auth;
 
 import com.optimetric.auth.infrastructure.persistence.entity.User;
-import com.optimetric.auth.repository.UserRepository;
+import com.optimetric.auth.infrastructure.persistence.jpa.repository.UserRepository;
+import com.optimetric.shared.domain.OwnerType;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -19,10 +21,18 @@ public class UserRepositoryTest {
     @Test
     void itShouldFindUserByLogin() {
         // given
+        var now = OffsetDateTime.now();
         User user = User.builder()
+                .githubUserId(12345L)
                 .login("mehmetarif")
-                .email("mehmet@example.com")
-                .avatarUrl("https://github.com/avatar.png")
+                .loginCi("mehmetarif")
+                .name("Mehmet Arif")
+                .avatar_url("https://github.com/avatar.png")
+                .htmlUrl("https://github.com/mehmetarif")
+                .ownerType(OwnerType.USER)
+                .createdAt(now)
+                .updatedAt(now)
+                .lastSyncedAt(now)
                 .build();
 
         userRepository.save(user);
@@ -32,7 +42,7 @@ public class UserRepositoryTest {
 
         // then
         assertTrue(foundUser.isPresent());
-        assertEquals("mehmet@example.com", foundUser.get().getEmail());
+        assertEquals("Mehmet Arif", foundUser.get().getName());
+        assertEquals("mehmetarif", foundUser.get().getLogin());
     }
 }
-*/

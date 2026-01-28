@@ -5,7 +5,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.optimetric.auth.application.AuthServicePort;
-import com.optimetric.auth.infrastructure.persistence.entity.User;
+import com.optimetric.auth.application.dto.UserInfo;
 import com.optimetric.github.application.dto.RepositoryInfo;
 import com.optimetric.github.application.port.out.RepositoryPersistencePort;
 import com.optimetric.github.domain.service.RepositoryDomainService;
@@ -30,6 +30,14 @@ public class GetRepositoryForCurrentUserUseCase {
 
     /**
      * Gets repository by fullName for current user.
+     * 
+     * Note: This method first tries to find repository by fullName and userId.
+     * If found, user has access (because they synced it, including org repos).
+     * If not found, tries to find by fullName only and applies domain-level access validation.
+     * This allows access to:
+     * - User's own repositories (where user is owner)
+     * - Organization repositories (where user synced the repo but org is owner)
+     * - Public repositories (accessible to everyone)
      *
      * @param login User login
      * @param fullName Repository full name (e.g., "owner/repo")
@@ -41,14 +49,31 @@ public class GetRepositoryForCurrentUserUseCase {
         // Validate fullName format using domain service (business rule)
         repositoryDomainService.validateAndParseFullName(fullName);
         
-        // Get user entity (required for RepositoryPersistencePort.findByFullNameAndUser)
-        User user = authServicePort.findByLoginOrThrow(login);
-
-        // Query repository by fullName and user
-        Optional<RepositoryInfo> repository = repositoryPersistencePort.findByFullNameAndUser(fullName, user);
+        // Get user info (Application DTO, not entity)
+        UserInfo userInfo = authServicePort.findByLoginOrThrow(login);
+        
+        // First, try to find repository by fullName and userId
+        // This finds repos that the user synced (including org repos where user synced but org is owner)
+        Optional<RepositoryInfo> repository = repositoryPersistencePort.findByFullNameAndUser(
+                fullName, userInfo.id());
+        
+        // If found by user, user has access (they synced it, so they can access it)
+        if (repository.isPresent()) {
+            return repository;
+        }
+        
+        // If not found by user, try to find by fullName only (for public repos or other cases)
+        repository = repositoryPersistencePort.findByFullName(fullName);
+        
+        // If repository not found, return empty
+        if (repository.isEmpty()) {
+            return Optional.empty();
+        }
         
         // Apply domain-level access validation (business rule)
-        if (repository.isPresent() && !repositoryDomainService.canUserAccessRepository(login, repository.get())) {
+        // This checks if user can access based on ownership, visibility, etc.
+        // (e.g., public repos are accessible, private repos only to owner)
+        if (!repositoryDomainService.canUserAccessRepository(login, repository.get())) {
             return Optional.empty();
         }
         
@@ -69,6 +94,9 @@ public class GetRepositoryForCurrentUserUseCase {
     public RepositoryInfo executeOrThrow(String login, String fullName) 
             throws RepositoryNotFoundException, UserNotFoundException {
         return execute(login, fullName)
-                .orElseThrow(() -> new RepositoryNotFoundException("Repository not found with fullName: " + fullName));
+                .orElseThrow(() -> new RepositoryNotFoundException(
+                        "Repository not found with fullName: " + fullName + 
+                        " for user: " + login + 
+                        ". Please ensure the repository is initialized first."));
     }
 }

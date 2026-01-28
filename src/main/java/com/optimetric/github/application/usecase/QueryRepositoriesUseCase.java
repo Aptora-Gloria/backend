@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.optimetric.auth.application.AuthServicePort;
-import com.optimetric.auth.infrastructure.persistence.entity.User;
+import com.optimetric.auth.application.dto.UserInfo;
 import com.optimetric.github.application.dto.RepositoryInfo;
 import com.optimetric.github.application.port.out.RepositoryPersistencePort;
 import com.optimetric.github.domain.service.RepositoryDomainService;
@@ -39,11 +39,12 @@ public class QueryRepositoriesUseCase {
      */
     public List<RepositoryInfo> execute(String login, OwnerType ownerType, String ownerLogin) 
             throws UserNotFoundException {
-        // Get user entity (required for RepositoryPersistencePort.findByUserWithCriteria)
-        User user = authServicePort.findByLoginOrThrow(login);
+        // Get user info (Application DTO, not entity)
+        UserInfo userInfo = authServicePort.findByLoginOrThrow(login);
 
-        // Query repositories with criteria (infrastructure concern)
-        List<RepositoryInfo> repositories = repositoryPersistencePort.findByUserWithCriteria(user, ownerType, ownerLogin);
+        // Query repositories with criteria using userId (not entity)
+        List<RepositoryInfo> repositories = repositoryPersistencePort.findByUserWithCriteria(
+                userInfo.id(), ownerType, ownerLogin);
 
         // Apply domain-level filtering if needed (business rule enforcement)
         // Note: Currently filtering is done at persistence level, but domain service

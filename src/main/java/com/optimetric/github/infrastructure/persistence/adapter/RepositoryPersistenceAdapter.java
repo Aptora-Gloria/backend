@@ -97,7 +97,11 @@ public class RepositoryPersistenceAdapter implements RepositoryPersistencePort {
     }
 
     @Override
-    public List<RepositoryInfo> findByUserWithCriteria(User user, OwnerType ownerType, String ownerLogin) {
+    public List<RepositoryInfo> findByUserWithCriteria(Long userId, OwnerType ownerType, String ownerLogin) {
+        // Resolve User entity from userId (infrastructure concern)
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+        
         List<RepositoryEntity> entities;
         
         if (ownerType != null && ownerLogin != null) {
@@ -112,7 +116,11 @@ public class RepositoryPersistenceAdapter implements RepositoryPersistencePort {
     }
 
     @Override
-    public Optional<RepositoryInfo> findByFullNameAndUser(String fullName, User user) {
+    public Optional<RepositoryInfo> findByFullNameAndUser(String fullName, Long userId) {
+        // Resolve User entity from userId (infrastructure concern)
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+        
         Optional<RepositoryEntity> entity = repositoryRepository.findByFullNameAndUser(fullName, user);
         return entity.map(RepositoryMapper::toRepositoryInfo);
     }

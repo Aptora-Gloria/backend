@@ -1,6 +1,5 @@
 package com.optimetric.github.application.port.out;
 
-import com.optimetric.auth.infrastructure.persistence.entity.User;
 import com.optimetric.github.application.dto.RepositoryInfo;
 import com.optimetric.github.application.dto.RepositoryInitData;
 import com.optimetric.shared.domain.OwnerType;
@@ -38,23 +37,23 @@ public interface RepositoryPersistencePort {
     List<RepositoryInfo> findAllByOwnerLoginOrderByPushedAtDesc(String ownerLogin);
 
     /**
-     * Finds repositories by user with optional filters, ordered by pushed date descending.
+     * Finds repositories by user ID with optional filters, ordered by pushed date descending.
      * 
-     * @param user User
+     * @param userId User ID
      * @param ownerType Owner type filter (optional)
      * @param ownerLogin Owner login filter (optional)
      * @return List of repository information
      */
-    List<RepositoryInfo> findByUserWithCriteria(User user, OwnerType ownerType, String ownerLogin);
+    List<RepositoryInfo> findByUserWithCriteria(Long userId, OwnerType ownerType, String ownerLogin);
 
     /**
-     * Finds repository by full name and user.
+     * Finds repository by full name and user ID.
      * 
      * @param fullName Repository full name (e.g., "owner/repo")
-     * @param user User
+     * @param userId User ID
      * @return Optional repository information
      */
-    Optional<RepositoryInfo> findByFullNameAndUser(String fullName, User user);
+    Optional<RepositoryInfo> findByFullNameAndUser(String fullName, Long userId);
 
     /**
      * Finds repository by ID.

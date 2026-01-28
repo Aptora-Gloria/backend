@@ -1,6 +1,5 @@
 package com.optimetric.metrics.infrastructure.persistence.adapter;
 
-import com.optimetric.auth.application.AuthServicePort;
 import com.optimetric.github.application.usecase.GetRepositoryForCurrentUserUseCase;
 import com.optimetric.github.infrastructure.persistence.adapter.RepositoryPersistenceAdapter;
 import com.optimetric.metrics.api.response.*;
@@ -28,7 +27,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RepositoryMetricsServiceAdapter implements RepositoryMetricsServicePort {
 
-    private final AuthServicePort authServicePort;
     private final GetRepositoryForCurrentUserUseCase getRepositoryForCurrentUserUseCase;
     private final RepositoryPersistenceAdapter repositoryPersistenceAdapter;
     private final PullRequestRepository pullRequestRepository;
@@ -58,12 +56,37 @@ public class RepositoryMetricsServiceAdapter implements RepositoryMetricsService
     /**
      * Helper method to get RepositoryEntity from RepositoryInfo.
      * This is needed because infrastructure adapters need entities for JPA operations.
+     * 
+     * First tries to find repository by fullName and user (with access control).
+     * If not found, tries to find by fullName only (for public repositories).
      */
     private RepositoryEntity getRepositoryEntity(String login, String repoFullName) 
             throws RepositoryNotFoundException, UserNotFoundException {
-        com.optimetric.github.application.dto.RepositoryInfo repoInfo = getRepositoryForCurrentUserUseCase.executeOrThrow(login, repoFullName);
-        return repositoryPersistenceAdapter.findEntityById(repoInfo.id())
-                .orElseThrow(() -> new RepositoryNotFoundException("Repository not found with id: " + repoInfo.id()));
+        // First, try to find repository with user access control
+        Optional<com.optimetric.github.application.dto.RepositoryInfo> repoInfoOpt = 
+                getRepositoryForCurrentUserUseCase.execute(login, repoFullName);
+        
+        if (repoInfoOpt.isPresent()) {
+            // Repository found and user has access
+            return repositoryPersistenceAdapter.findEntityById(repoInfoOpt.get().id())
+                    .orElseThrow(() -> new RepositoryNotFoundException("Repository not found with id: " + repoInfoOpt.get().id()));
+        }
+        
+        // If not found with user access, try to find by fullName only (for public repos)
+        Optional<RepositoryEntity> entityOpt = repositoryPersistenceAdapter.findEntityByFullName(repoFullName);
+        
+        if (entityOpt.isPresent()) {
+            // Repository exists but user may not have access
+            // For metrics, we allow access to public repositories
+            // If repository is private and user doesn't have access, this will be caught by domain service
+            return entityOpt.get();
+        }
+        
+        // Repository not found at all
+        throw new RepositoryNotFoundException(
+                "Repository not found with fullName: " + repoFullName + 
+                " for user: " + login + 
+                ". Please ensure the repository is initialized first.");
     }
 
     @Override

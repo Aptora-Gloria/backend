@@ -1,7 +1,9 @@
 package com.optimetric.metrics.infrastructure.persistence.adapter;
 
 import com.optimetric.auth.application.AuthServicePort;
+import com.optimetric.auth.application.dto.UserInfo;
 import com.optimetric.auth.infrastructure.persistence.entity.User;
+import com.optimetric.auth.infrastructure.persistence.jpa.repository.UserRepository;
 import com.optimetric.metrics.api.response.*;
 import com.optimetric.metrics.application.port.UserMetricsServicePort;
 import com.optimetric.github.infrastructure.persistence.entity.*;
@@ -27,6 +29,7 @@ import java.util.stream.Collectors;
 public class UserMetricsServiceAdapter implements UserMetricsServicePort {
 
     private final AuthServicePort authServicePort;
+    private final UserRepository userRepository;
     private final RepositoryRepository repositoryRepository;
     private final PullRequestRepository pullRequestRepository;
     private final PullRequestReviewRepository pullRequestReviewRepository;
@@ -36,7 +39,9 @@ public class UserMetricsServiceAdapter implements UserMetricsServicePort {
     @Override
     @Transactional(readOnly = true)
     public UserMetricsDto getUserMetrics(String login) throws UserNotFoundException {
-        User user = authServicePort.findByLoginOrThrow(login);
+        UserInfo userInfo = authServicePort.findByLoginOrThrow(login);
+        User user = userRepository.findById(userInfo.id())
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userInfo.id()));
         List<RepositoryEntity> repositories = repositoryRepository.findByUserOrderByPushedAtDesc(user);
         
         return new UserMetricsDto(
@@ -52,7 +57,9 @@ public class UserMetricsServiceAdapter implements UserMetricsServicePort {
     @Override
     @Transactional(readOnly = true)
     public PrMergeRateDto getPrMergeRate(String login) throws UserNotFoundException {
-        User user = authServicePort.findByLoginOrThrow(login);
+        UserInfo userInfo = authServicePort.findByLoginOrThrow(login);
+        User user = userRepository.findById(userInfo.id())
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userInfo.id()));
         List<RepositoryEntity> repositories = repositoryRepository.findByUserOrderByPushedAtDesc(user);
         
         List<PullRequestEntity> allPrs = repositories.stream()
@@ -89,7 +96,9 @@ public class UserMetricsServiceAdapter implements UserMetricsServicePort {
     @Override
     @Transactional(readOnly = true)
     public PrSizeDto getPrSize(String login) throws UserNotFoundException {
-        User user = authServicePort.findByLoginOrThrow(login);
+        UserInfo userInfo = authServicePort.findByLoginOrThrow(login);
+        User user = userRepository.findById(userInfo.id())
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userInfo.id()));
         List<RepositoryEntity> repositories = repositoryRepository.findByUserOrderByPushedAtDesc(user);
         
         List<PullRequestEntity> prsWithStats = repositories.stream()
@@ -149,7 +158,9 @@ public class UserMetricsServiceAdapter implements UserMetricsServicePort {
     @Override
     @Transactional(readOnly = true)
     public ReviewStatsDto getReviewStats(String login) throws UserNotFoundException {
-        User user = authServicePort.findByLoginOrThrow(login);
+        UserInfo userInfo = authServicePort.findByLoginOrThrow(login);
+        User user = userRepository.findById(userInfo.id())
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userInfo.id()));
         List<RepositoryEntity> repositories = repositoryRepository.findByUserOrderByPushedAtDesc(user);
         
         List<PullRequestEntity> allPrs = repositories.stream()
@@ -197,7 +208,9 @@ public class UserMetricsServiceAdapter implements UserMetricsServicePort {
     @Override
     @Transactional(readOnly = true)
     public CommitTimeAnalysisDto getCommitTimeAnalysis(String login) throws UserNotFoundException {
-        User user = authServicePort.findByLoginOrThrow(login);
+        UserInfo userInfo = authServicePort.findByLoginOrThrow(login);
+        User user = userRepository.findById(userInfo.id())
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userInfo.id()));
         List<RepositoryEntity> repositories = repositoryRepository.findByUserOrderByPushedAtDesc(user);
         
         List<CommitEntity> allCommits = repositories.stream()
@@ -260,7 +273,9 @@ public class UserMetricsServiceAdapter implements UserMetricsServicePort {
     @Override
     @Transactional(readOnly = true)
     public LanguageDiversityDto getLanguageDiversity(String login) throws UserNotFoundException {
-        User user = authServicePort.findByLoginOrThrow(login);
+        UserInfo userInfo = authServicePort.findByLoginOrThrow(login);
+        User user = userRepository.findById(userInfo.id())
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userInfo.id()));
         List<RepositoryEntity> repositories = repositoryRepository.findByUserOrderByPushedAtDesc(user);
         
         Map<RepositoryEntity, List<LanguageEntity>> repoLanguages = repositories.stream()
@@ -350,7 +365,9 @@ public class UserMetricsServiceAdapter implements UserMetricsServicePort {
     @Override
     @Transactional(readOnly = true)
     public ActivityTrendDto getActivityTrend(String login) throws UserNotFoundException {
-        User user = authServicePort.findByLoginOrThrow(login);
+        UserInfo userInfo = authServicePort.findByLoginOrThrow(login);
+        User user = userRepository.findById(userInfo.id())
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userInfo.id()));
         List<RepositoryEntity> repositories = repositoryRepository.findByUserOrderByPushedAtDesc(user);
         
         OffsetDateTime now = OffsetDateTime.now();
