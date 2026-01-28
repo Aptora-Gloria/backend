@@ -6,7 +6,6 @@ import com.optimetric.github.api.response.LanguageUiDto;
 import com.optimetric.github.application.client.LanguageClientPort;
 import com.optimetric.github.application.port.LanguageServicePort;
 import com.optimetric.github.infrastructure.core.mapper.LanguageMapper;
-import com.optimetric.github.infrastructure.persistence.adapter.RepositoryPersistenceAdapter;
 import com.optimetric.github.infrastructure.persistence.entity.LanguageEntity;
 import com.optimetric.github.infrastructure.persistence.entity.RepositoryEntity;
 import com.optimetric.github.infrastructure.persistence.jpa.LanguageRepository;
@@ -16,7 +15,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +35,8 @@ public class LanguageServiceAdapter implements LanguageServicePort {
 
     /**
      * Fetches languages from GitHub API and saves them to database.
+     * This method is now idempotent: calling it multiple times for the same repository
+     * will update existing language records instead of creating duplicates.
      * 
      * @param login User login
      * @param repoFullName Repository full name (e.g., "owner/repo")
@@ -49,13 +57,61 @@ public class LanguageServiceAdapter implements LanguageServicePort {
         String repoName = repository.getName();
         LanguageDto dto = languageClient.getRepoLanguages(accessToken, owner, repoName);
 
-        // Delete old languages for this repository
-        languageRepository.deleteByRepository_FullName(repoFullName);
+        // Get existing languages from database
+        List<LanguageEntity> existingLanguages = languageRepository.findAllByRepository_Id(repository.getId());
 
-        // Save new languages
-        List<LanguageEntity> entities = LanguageMapper.toEntities(dto, repository);
-        if (!entities.isEmpty()) {
-            languageRepository.saveAll(entities);
+        // Calculate total bytes for percentage calculation
+        Map<String, Long> languages = dto.languages();
+        if (languages == null || languages.isEmpty()) {
+            // If GitHub returns no languages, delete all existing ones
+            languageRepository.deleteByRepository_Id(repository.getId());
+            return dto;
+        }
+
+        long totalBytes = languages.values().stream()
+                .mapToLong(Long::longValue)
+                .sum();
+
+        // Upsert languages: update existing or create new
+        OffsetDateTime now = OffsetDateTime.now();
+        for (Map.Entry<String, Long> entry : languages.entrySet()) {
+            String languageName = entry.getKey();
+            Long bytes = entry.getValue();
+            BigDecimal percentage = totalBytes > 0 
+                    ? BigDecimal.valueOf(bytes * 100.0 / totalBytes)
+                            .setScale(2, RoundingMode.HALF_UP)
+                    : BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+
+            Optional<LanguageEntity> existing = languageRepository
+                    .findByRepository_IdAndLanguageName(repository.getId(), languageName);
+
+            if (existing.isPresent()) {
+                // Update existing language
+                LanguageEntity entity = existing.get();
+                entity.setBytes(bytes);
+                entity.setPercentage(percentage);
+                entity.setLastSyncedAt(now);
+                languageRepository.save(entity);
+            } else {
+                // Create new language
+                LanguageEntity entity = LanguageEntity.builder()
+                        .languageName(languageName)
+                        .bytes(bytes)
+                        .percentage(percentage)
+                        .repository(repository)
+                        .lastSyncedAt(now)
+                        .build();
+                languageRepository.save(entity);
+            }
+        }
+
+        // Delete languages that are no longer in GitHub response
+        Set<String> githubLanguageNames = languages.keySet();
+        List<LanguageEntity> toDelete = existingLanguages.stream()
+                .filter(lang -> !githubLanguageNames.contains(lang.getLanguageName()))
+                .collect(Collectors.toList());
+        if (!toDelete.isEmpty()) {
+            languageRepository.deleteAll(toDelete);
         }
 
         return dto;
