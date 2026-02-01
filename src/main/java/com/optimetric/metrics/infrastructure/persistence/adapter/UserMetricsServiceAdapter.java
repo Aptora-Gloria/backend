@@ -167,9 +167,10 @@ public class UserMetricsServiceAdapter implements UserMetricsServicePort {
             .flatMap(repo -> pullRequestRepository.findByRepositoryOrderByCreatedAtDesc(repo).stream())
             .toList();
         
-        List<PullRequestReviewEntity> allReviews = allPrs.stream()
-            .flatMap(pr -> pullRequestReviewRepository.findByPullRequestOrderBySubmittedAtAsc(pr).stream())
-            .toList();
+        List<Long> repoIds = repositories.stream().map(RepositoryEntity::getId).toList();
+        List<PullRequestReviewEntity> allReviews = repoIds.isEmpty()
+            ? List.of()
+            : pullRequestReviewRepository.findByPullRequest_Repository_IdIn(repoIds);
         
         long total = allReviews.size();
         long approved = allReviews.stream().filter(r -> "APPROVED".equals(r.getState())).count();
@@ -191,8 +192,11 @@ public class UserMetricsServiceAdapter implements UserMetricsServicePort {
                 Collectors.counting()
             ));
         
+        java.util.Set<Long> prIdsWithReviews = allReviews.stream()
+            .map(r -> r.getPullRequest().getId())
+            .collect(Collectors.toSet());
         long prsWithoutReviews = allPrs.stream()
-            .filter(pr -> pullRequestReviewRepository.findByPullRequestOrderBySubmittedAtAsc(pr).isEmpty())
+            .filter(pr -> !prIdsWithReviews.contains(pr.getId()))
             .count();
         
         BigDecimal prsWithReviewsPct = allPrs.isEmpty()
@@ -386,10 +390,12 @@ public class UserMetricsServiceAdapter implements UserMetricsServicePort {
             .filter(pr -> pr.getCreatedAt() != null && pr.getCreatedAt().isAfter(twelveWeeksAgo))
             .toList();
         
-        List<PullRequestReviewEntity> reviews = prs.stream()
-            .flatMap(pr -> pullRequestReviewRepository.findByPullRequestOrderBySubmittedAtAsc(pr).stream())
-            .filter(r -> r.getSubmittedAt() != null && r.getSubmittedAt().isAfter(twelveWeeksAgo))
-            .toList();
+        List<Long> repoIdsForTrend = repositories.stream().map(RepositoryEntity::getId).toList();
+        List<PullRequestReviewEntity> reviews = repoIdsForTrend.isEmpty()
+            ? List.of()
+            : pullRequestReviewRepository.findByPullRequest_Repository_IdIn(repoIdsForTrend).stream()
+                .filter(r -> r.getSubmittedAt() != null && r.getSubmittedAt().isAfter(twelveWeeksAgo))
+                .toList();
         
         // Weekly trend (last 12 weeks)
         List<ActivityTrendDto.WeeklyActivityDto> weeklyTrend = new ArrayList<>();

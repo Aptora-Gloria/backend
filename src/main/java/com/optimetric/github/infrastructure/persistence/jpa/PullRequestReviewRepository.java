@@ -1,5 +1,6 @@
 package com.optimetric.github.infrastructure.persistence.jpa;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -46,4 +47,17 @@ public interface PullRequestReviewRepository extends JpaRepository<PullRequestRe
            "JOIN r.pullRequest p " +
            "WHERE p.repository.id = :repositoryId")
     boolean existsByRepositoryId(@Param("repositoryId") Long repositoryId);
+
+    /**
+     * Loads all reviews for a repository in one query (avoids N+1 when iterating PRs).
+     * Used by metrics adapters instead of findByPullRequestOrderBySubmittedAtAsc per PR.
+     */
+    @Query("SELECT r FROM PullRequestReviewEntity r JOIN FETCH r.pullRequest p WHERE p.repository.id = :repositoryId")
+    List<PullRequestReviewEntity> findByPullRequest_Repository_Id(@Param("repositoryId") Long repositoryId);
+
+    /**
+     * Loads all reviews for multiple repositories in one query (avoids N+1 for user-level metrics).
+     */
+    @Query("SELECT r FROM PullRequestReviewEntity r JOIN FETCH r.pullRequest p WHERE p.repository.id IN :repositoryIds")
+    List<PullRequestReviewEntity> findByPullRequest_Repository_IdIn(@Param("repositoryIds") Collection<Long> repositoryIds);
 }

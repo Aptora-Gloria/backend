@@ -14,7 +14,8 @@ import com.optimetric.github.infrastructure.core.config.GitHubOAuthProperties;
 		"com.optimetric.github",
 		"com.optimetric.Gemini",
 		"com.optimetric.auth",
-		"com.optimetric.metrics"
+		"com.optimetric.metrics",
+		"com.optimetric.shared"
 	})
 public class BackendApplication {
 

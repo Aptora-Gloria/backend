@@ -348,10 +348,7 @@ public class RepositoryMetricsServiceAdapter implements RepositoryMetricsService
             throws RepositoryNotFoundException, UserNotFoundException {
         RepositoryEntity repository = getRepositoryEntity(login, repoFullName);
         List<PullRequestEntity> allPrs = pullRequestRepository.findByRepositoryOrderByCreatedAtDesc(repository);
-        
-        List<PullRequestReviewEntity> allReviews = allPrs.stream()
-            .flatMap(pr -> pullRequestReviewRepository.findByPullRequestOrderBySubmittedAtAsc(pr).stream())
-            .toList();
+        List<PullRequestReviewEntity> allReviews = pullRequestReviewRepository.findByPullRequest_Repository_Id(repository.getId());
         
         long total = allReviews.size();
         long approved = allReviews.stream().filter(r -> "APPROVED".equals(r.getState())).count();
@@ -376,8 +373,11 @@ public class RepositoryMetricsServiceAdapter implements RepositoryMetricsService
         BigDecimal avgReviewsPerPr = allPrs.isEmpty() ? BigDecimal.ZERO :
             BigDecimal.valueOf(total).divide(BigDecimal.valueOf(allPrs.size()), 2, RoundingMode.HALF_UP);
         
+        java.util.Set<Long> prIdsWithReviews = allReviews.stream()
+            .map(r -> r.getPullRequest().getId())
+            .collect(Collectors.toSet());
         long prsWithoutReviews = allPrs.stream()
-            .filter(pr -> pullRequestReviewRepository.findByPullRequestOrderBySubmittedAtAsc(pr).isEmpty())
+            .filter(pr -> !prIdsWithReviews.contains(pr.getId()))
             .count();
         
         BigDecimal prsWithReviewsPct = allPrs.isEmpty() ? BigDecimal.ZERO :
@@ -564,8 +564,7 @@ public class RepositoryMetricsServiceAdapter implements RepositoryMetricsService
             .filter(pr -> pr.getCreatedAt() != null && pr.getCreatedAt().isAfter(twelveWeeksAgo))
             .toList();
         
-        List<PullRequestReviewEntity> reviews = prs.stream()
-            .flatMap(pr -> pullRequestReviewRepository.findByPullRequestOrderBySubmittedAtAsc(pr).stream())
+        List<PullRequestReviewEntity> reviews = pullRequestReviewRepository.findByPullRequest_Repository_Id(repository.getId()).stream()
             .filter(r -> r.getSubmittedAt() != null && r.getSubmittedAt().isAfter(twelveWeeksAgo))
             .toList();
         
@@ -700,14 +699,16 @@ public class RepositoryMetricsServiceAdapter implements RepositoryMetricsService
             BigDecimal.valueOf(merged).divide(BigDecimal.valueOf(allPrs.size()), 4, RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100));
         
-        long totalReviews = allPrs.stream()
-            .mapToLong(pr -> pullRequestReviewRepository.findByPullRequestOrderBySubmittedAtAsc(pr).size())
-            .sum();
+        List<PullRequestReviewEntity> repoReviews = pullRequestReviewRepository.findByPullRequest_Repository_Id(repository.getId());
+        long totalReviews = repoReviews.size();
+        java.util.Set<Long> prIdsWithReviewsForQuality = repoReviews.stream()
+            .map(r -> r.getPullRequest().getId())
+            .collect(Collectors.toSet());
         BigDecimal avgReviewsPerPr = allPrs.isEmpty() ? BigDecimal.ZERO :
             BigDecimal.valueOf(totalReviews).divide(BigDecimal.valueOf(allPrs.size()), 2, RoundingMode.HALF_UP);
         
         long prsWithoutReviews = allPrs.stream()
-            .filter(pr -> pullRequestReviewRepository.findByPullRequestOrderBySubmittedAtAsc(pr).isEmpty())
+            .filter(pr -> !prIdsWithReviewsForQuality.contains(pr.getId()))
             .count();
         BigDecimal prsWithoutReviewsPct = allPrs.isEmpty() ? BigDecimal.ZERO :
             BigDecimal.valueOf(prsWithoutReviews).divide(BigDecimal.valueOf(allPrs.size()), 4, RoundingMode.HALF_UP)
@@ -790,9 +791,7 @@ public class RepositoryMetricsServiceAdapter implements RepositoryMetricsService
         
         List<CommitEntity> allCommits = commitRepository.findByRepository(repository);
         List<PullRequestEntity> allPrs = pullRequestRepository.findByRepositoryOrderByCreatedAtDesc(repository);
-        List<PullRequestReviewEntity> allReviews = allPrs.stream()
-            .flatMap(pr -> pullRequestReviewRepository.findByPullRequestOrderBySubmittedAtAsc(pr).stream())
-            .toList();
+        List<PullRequestReviewEntity> allReviews = pullRequestReviewRepository.findByPullRequest_Repository_Id(repository.getId());
         
         // Collect all contributors
         Set<String> allContributors = new HashSet<>();
