@@ -1,7 +1,7 @@
-package com.optimetric.github.infrastructure.http;
+package com.optimetric.github.infrastructure.http.adapter;
 
 import com.optimetric.github.api.response.LanguageDto;
-import com.optimetric.github.application.client.LanguageClientPort;
+import com.optimetric.github.application.port.out.LanguageClientPort;
 import com.optimetric.github.infrastructure.core.constant.GitHubConstants;
 import com.optimetric.github.infrastructure.util.GitHubUtil;
 import com.optimetric.github.infrastructure.util.UrlBuilder;

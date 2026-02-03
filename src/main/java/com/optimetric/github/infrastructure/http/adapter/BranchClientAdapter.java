@@ -1,4 +1,4 @@
-package com.optimetric.github.infrastructure.http;
+package com.optimetric.github.infrastructure.http.adapter;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.optimetric.github.api.response.BranchDto;
-import com.optimetric.github.application.client.BranchClientPort;
+import com.optimetric.github.application.port.out.BranchClientPort;
 import com.optimetric.github.infrastructure.core.constant.GitHubConstants;
 import com.optimetric.github.infrastructure.util.GitHubUtil;
 import com.optimetric.github.infrastructure.util.UrlBuilder;

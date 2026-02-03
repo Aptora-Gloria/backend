@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.optimetric.github.application.dto.RepositoryInitData;
+import com.optimetric.github.application.port.in.InitializeUserRepositoriesPort;
 import com.optimetric.github.application.port.out.GitHubRepoQueryPort;
 import com.optimetric.github.application.port.out.RepositoryPersistencePort;
 import com.optimetric.github.application.port.out.UserContextPort;
@@ -18,24 +19,13 @@ import lombok.RequiredArgsConstructor;
  */
 @Service
 @RequiredArgsConstructor
-public class InitializeUserRepositoriesUseCase {
+public class InitializeUserRepositoriesUseCase implements InitializeUserRepositoriesPort {
 
     private final UserContextPort userContextPort;
     private final GitHubRepoQueryPort githubRepoQueryPort;
     private final RepositoryPersistencePort repositoryPersistencePort;
 
-    /**
-     * Initializes user repositories by fetching from GitHub API and saving to database.
-     *
-     * @param login User login
-     * @return List of repository initialization data
-     * @throws UserNotFoundException if user not found
-     */
-
-    //TODO aplication katmanı altıngeni oluşturan kırmızı çizgilerden bahsediyorsak eğer yani orkestra sınıfı ise
-    //TODO 1- doğrudan infra ya erişemez
-    //TODO 2. buranın bağımlılığı domaine bağımlı olmak zorunda
-    //TODO 3. doamin katmanı infara gitmeli
+    @Override
     public List<RepositoryInitData> execute(String login) throws UserNotFoundException {
         // Get user context (userId, login, accessToken) through port
         var userContextOpt = userContextPort.getContextByLogin(login);

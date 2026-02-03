@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.optimetric.auth.application.AuthServicePort;
 import com.optimetric.auth.application.dto.UserInfo;
 import com.optimetric.github.application.dto.RepositoryInfo;
+import com.optimetric.github.application.port.in.QueryRepositoriesPort;
 import com.optimetric.github.application.port.out.RepositoryPersistencePort;
 import com.optimetric.github.domain.service.RepositoryDomainService;
 import com.optimetric.shared.domain.OwnerType;
@@ -22,7 +23,7 @@ import lombok.RequiredArgsConstructor;
  */
 @Service
 @RequiredArgsConstructor
-public class QueryRepositoriesUseCase {
+public class QueryRepositoriesUseCase implements QueryRepositoriesPort {
 
     private final AuthServicePort authServicePort;
     private final RepositoryPersistencePort repositoryPersistencePort;
@@ -37,6 +38,7 @@ public class QueryRepositoriesUseCase {
      * @return List of repository information
      * @throws UserNotFoundException if user not found
      */
+    @Override
     public List<RepositoryInfo> execute(String login, OwnerType ownerType, String ownerLogin) 
             throws UserNotFoundException {
         // Get user info (Application DTO, not entity)

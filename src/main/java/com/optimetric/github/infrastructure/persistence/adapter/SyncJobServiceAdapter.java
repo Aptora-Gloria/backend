@@ -1,7 +1,7 @@
 package com.optimetric.github.infrastructure.persistence.adapter;
 
 import com.optimetric.auth.application.AuthServicePort;
-import com.optimetric.github.application.client.PullRequestClientPort;
+import com.optimetric.github.application.port.out.PullRequestClientPort;
 import com.optimetric.github.application.port.SyncJobServicePort;
 import com.optimetric.github.infrastructure.http.dto.*;
 import com.optimetric.github.infrastructure.persistence.entity.*;
@@ -10,6 +10,7 @@ import com.optimetric.shared.exception.GitHubApiException;
 import com.optimetric.shared.exception.SyncJobException;
 import com.optimetric.shared.exception.InvalidRepositoryFormatException;
 import com.optimetric.github.infrastructure.core.mapper.GitHubResponseMapper;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -36,7 +37,8 @@ public class SyncJobServiceAdapter implements SyncJobServicePort {
     private final RepositoryRepository repositoryRepository;
     private final PullRequestClientPort pullRequestClientPort;
     private final AuthServicePort authServicePort;
-    
+    private final EntityManager entityManager;
+
     // Configuration constants for retry and scheduling logic
     private static final int MAX_RETRY_ATTEMPTS = 3;
     private static final int RETRY_DELAY_MINUTES = 5;
@@ -571,32 +573,39 @@ public class SyncJobServiceAdapter implements SyncJobServicePort {
      */
     private void upsertBasicPullRequest(RepositoryEntity repository, GitHubPullRequestResponse prResponse) {
         log.debug("Upserting basic PR data for github_pr_id: {}", prResponse.id());
-        
-        // Find existing PR by github_pr_id
-        Optional<PullRequestEntity> existingPr = pullRequestRepository.findByGithubPrId(prResponse.id());
-        
         PullRequestEntity pullRequest = null;
-        if (existingPr.isPresent()) {
-            pullRequest = existingPr.get();
-            
-            // Check if PR needs synchronization based on updated_at timestamp
-            if (prResponse.updatedAt() != null && pullRequest.getLastSyncedAt() != null &&
-                !prResponse.updatedAt().isAfter(pullRequest.getLastSyncedAt())) {
-                log.debug("PR {} is up to date, skipping", prResponse.id());
-                return;
+        try {
+            // Find existing PR by github_pr_id
+            Optional<PullRequestEntity> existingPr = pullRequestRepository.findByGithubPrId(prResponse.id());
+
+            if (existingPr.isPresent()) {
+                pullRequest = existingPr.get();
+
+                // Check if PR needs synchronization based on updated_at timestamp
+                if (prResponse.updatedAt() != null && pullRequest.getLastSyncedAt() != null &&
+                    !prResponse.updatedAt().isAfter(pullRequest.getLastSyncedAt())) {
+                    log.debug("PR {} is up to date, skipping", prResponse.id());
+                    return;
+                }
+
+                log.debug("Updating existing PR: {}", prResponse.id());
+            } else {
+                log.debug("Creating new PR: {}", prResponse.id());
             }
-            
-            log.debug("Updating existing PR: {}", prResponse.id());
-        } else {
-            log.debug("Creating new PR: {}", prResponse.id());
+
+            // Use mapper to create or update entity
+            pullRequest = GitHubResponseMapper.toPullRequestEntity(prResponse, repository, pullRequest);
+
+            pullRequestRepository.save(pullRequest);
+            log.debug("Upserted PR: {} (#{}) for repository: {}",
+                    prResponse.id(), prResponse.number(), repository.getFullName());
+        } catch (Exception e) {
+            // Prevent null-id entity from remaining in session (causes AssertionFailure on next flush)
+            if (pullRequest != null && pullRequest.getId() == null) {
+                entityManager.detach(pullRequest);
+            }
+            throw e;
         }
-        
-        // Use mapper to create or update entity
-        pullRequest = GitHubResponseMapper.toPullRequestEntity(prResponse, repository, pullRequest);
-        
-        pullRequestRepository.save(pullRequest);
-        log.debug("Upserted PR: {} (#{}) for repository: {}", 
-                 prResponse.id(), prResponse.number(), repository.getFullName());
     }
 
     /**

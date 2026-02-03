@@ -6,11 +6,11 @@ import com.optimetric.github.infrastructure.core.mapper.GitHubResponseMapper;
 import com.optimetric.github.infrastructure.core.mapper.PullRequestMapper;
 import com.optimetric.github.infrastructure.core.mapper.SyncJobMapper;
 import com.optimetric.github.infrastructure.http.dto.GitHubPullRequestResponse;
+import com.optimetric.github.domain.enumeration.SyncJobStatus;
 import com.optimetric.github.infrastructure.persistence.entity.DataLevel;
 import com.optimetric.github.infrastructure.persistence.entity.PullRequestEntity;
 import com.optimetric.github.infrastructure.persistence.entity.RepositoryEntity;
 import com.optimetric.github.infrastructure.persistence.entity.SyncJobEntity;
-import com.optimetric.github.infrastructure.persistence.entity.SyncJobStatus;
 import com.optimetric.github.infrastructure.persistence.entity.SyncJobType;
 import org.junit.jupiter.api.Test;
 
@@ -50,7 +50,7 @@ class MapperTest {
         assertEquals(entity.getGithubPrId(), dto.githubPrId());
         assertEquals(entity.getPrNumber(), dto.prNumber());
         assertEquals("owner/repo", dto.repoFullName());
-        assertEquals(DataLevel.BASIC, dto.dataLevel());
+        assertEquals(com.optimetric.github.domain.enumeration.DataLevel.BASIC, dto.dataLevel());
         assertEquals("open", dto.state());
         assertEquals("Test PR", dto.title());
         assertEquals("testuser", dto.authorLogin());
@@ -65,19 +65,19 @@ class MapperTest {
 
     @Test
     void testSyncJobMapper() {
-        // Create test sync job entity
+        // Create test sync job entity (entity uses persistence enums)
         SyncJobEntity entity = new SyncJobEntity();
-        entity.setJobType(SyncJobType.PR_LIST);
-        entity.setStatus(SyncJobStatus.COMPLETED);
+        entity.setJobType(com.optimetric.github.infrastructure.persistence.entity.SyncJobType.PR_LIST);
+        entity.setStatus(com.optimetric.github.infrastructure.persistence.entity.SyncJobStatus.COMPLETED);
         entity.setAttemptCount(1);
         entity.setStartedAt(OffsetDateTime.now().minusMinutes(5));
         entity.setCompletedAt(OffsetDateTime.now());
 
-        // Test mapping to DTO
+        // Test mapping to DTO (DTO uses domain enums)
         SyncStatusDto.JobStatusDto dto = SyncJobMapper.toJobStatusDto(entity);
 
         assertNotNull(dto);
-        assertEquals(SyncJobType.PR_LIST, dto.jobType());
+        assertEquals(com.optimetric.github.domain.enumeration.SyncJobType.PR_LIST, dto.jobType());
         assertEquals(SyncJobStatus.COMPLETED, dto.status());
         assertEquals(1, dto.attemptCount());
         assertNotNull(dto.startedAt());
@@ -86,12 +86,12 @@ class MapperTest {
 
     @Test
     void testSyncJobMapperOverallStatus() {
-        // Test with running job
+        // Test with running job (entity uses persistence enum)
         SyncJobEntity runningJob = new SyncJobEntity();
-        runningJob.setStatus(SyncJobStatus.RUNNING);
+        runningJob.setStatus(com.optimetric.github.infrastructure.persistence.entity.SyncJobStatus.RUNNING);
 
         SyncJobEntity completedJob = new SyncJobEntity();
-        completedJob.setStatus(SyncJobStatus.COMPLETED);
+        completedJob.setStatus(com.optimetric.github.infrastructure.persistence.entity.SyncJobStatus.COMPLETED);
 
         SyncJobStatus overallStatus = SyncJobMapper.determineOverallSyncStatus(runningJob, completedJob);
         assertEquals(SyncJobStatus.RUNNING, overallStatus);
@@ -102,7 +102,7 @@ class MapperTest {
 
         // Test with failed job
         SyncJobEntity failedJob = new SyncJobEntity();
-        failedJob.setStatus(SyncJobStatus.FAILED);
+        failedJob.setStatus(com.optimetric.github.infrastructure.persistence.entity.SyncJobStatus.FAILED);
 
         overallStatus = SyncJobMapper.determineOverallSyncStatus(completedJob, failedJob);
         assertEquals(SyncJobStatus.FAILED, overallStatus);

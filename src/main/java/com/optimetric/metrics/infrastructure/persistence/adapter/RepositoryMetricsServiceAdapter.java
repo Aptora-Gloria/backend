@@ -482,52 +482,48 @@ public class RepositoryMetricsServiceAdapter implements RepositoryMetricsService
             throws RepositoryNotFoundException, UserNotFoundException {
         RepositoryEntity repository = getRepositoryEntity(login, repoFullName);
         List<LanguageEntity> languages = languageRepository.findAllByRepository_FullName(repoFullName);
+        // Aggregate by language name (sum bytes) to handle duplicate rows for same language
+        Map<String, Long> languageBytes = languages.stream()
+            .collect(Collectors.groupingBy(LanguageEntity::getLanguageName, Collectors.summingLong(LanguageEntity::getBytes)));
         
-        int totalLanguages = languages.size();
+        int totalLanguages = languageBytes.size();
         
-        if (languages.isEmpty()) {
+        if (languageBytes.isEmpty()) {
             return new RepositoryLanguageMetricsDto(
                 0, null, BigDecimal.ZERO, Map.of(), Map.of(), List.of(), false, BigDecimal.ZERO
             );
         }
         
-        String primaryLanguage = languages.stream()
-            .max(Comparator.comparing(LanguageEntity::getBytes))
-            .map(LanguageEntity::getLanguageName)
+        long totalBytes = languageBytes.values().stream().mapToLong(Long::longValue).sum();
+        String primaryLanguage = languageBytes.entrySet().stream()
+            .max(Comparator.comparingLong(Map.Entry::getValue))
+            .map(Map.Entry::getKey)
             .orElse(null);
         
-        long totalBytes = languages.stream().mapToLong(LanguageEntity::getBytes).sum();
-        
         BigDecimal primaryLanguagePercentage = totalBytes > 0 && primaryLanguage != null
-            ? BigDecimal.valueOf(languages.stream()
-                .filter(l -> l.getLanguageName().equals(primaryLanguage))
-                .mapToLong(LanguageEntity::getBytes)
-                .sum())
+            ? BigDecimal.valueOf(languageBytes.getOrDefault(primaryLanguage, 0L))
                 .divide(BigDecimal.valueOf(totalBytes), 4, RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100))
             : BigDecimal.ZERO;
         
-        Map<String, BigDecimal> languageDistribution = languages.stream()
+        Map<String, BigDecimal> languageDistribution = languageBytes.entrySet().stream()
             .collect(Collectors.toMap(
-                LanguageEntity::getLanguageName,
-                l -> totalBytes > 0
-                    ? BigDecimal.valueOf(l.getBytes()).divide(BigDecimal.valueOf(totalBytes), 4, RoundingMode.HALF_UP)
+                Map.Entry::getKey,
+                e -> totalBytes > 0
+                    ? BigDecimal.valueOf(e.getValue()).divide(BigDecimal.valueOf(totalBytes), 4, RoundingMode.HALF_UP)
                         .multiply(BigDecimal.valueOf(100))
                     : BigDecimal.ZERO
             ));
         
-        Map<String, Long> languageBytes = languages.stream()
-            .collect(Collectors.toMap(LanguageEntity::getLanguageName, LanguageEntity::getBytes));
-        
-        List<RepositoryLanguageMetricsDto.LanguageStatsDto> topLanguages = languages.stream()
-            .sorted(Comparator.comparing(LanguageEntity::getBytes).reversed())
+        List<RepositoryLanguageMetricsDto.LanguageStatsDto> topLanguages = languageBytes.entrySet().stream()
+            .sorted(Comparator.<Map.Entry<String, Long>>comparingLong(Map.Entry::getValue).reversed())
             .limit(10)
-            .map(l -> {
+            .map(e -> {
                 BigDecimal percentage = totalBytes > 0
-                    ? BigDecimal.valueOf(l.getBytes()).divide(BigDecimal.valueOf(totalBytes), 4, RoundingMode.HALF_UP)
+                    ? BigDecimal.valueOf(e.getValue()).divide(BigDecimal.valueOf(totalBytes), 4, RoundingMode.HALF_UP)
                         .multiply(BigDecimal.valueOf(100))
                     : BigDecimal.ZERO;
-                return new RepositoryLanguageMetricsDto.LanguageStatsDto(l.getLanguageName(), l.getBytes(), percentage);
+                return new RepositoryLanguageMetricsDto.LanguageStatsDto(e.getKey(), e.getValue(), percentage);
             })
             .toList();
         

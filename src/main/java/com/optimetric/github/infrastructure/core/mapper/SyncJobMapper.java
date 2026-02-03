@@ -1,8 +1,10 @@
 package com.optimetric.github.infrastructure.core.mapper;
 
 import com.optimetric.github.api.response.SyncStatusDto;
+import com.optimetric.github.application.dto.SyncStatusInfo;
+import com.optimetric.github.domain.enumeration.SyncJobStatus;
+import com.optimetric.github.domain.enumeration.SyncJobType;
 import com.optimetric.github.infrastructure.persistence.entity.SyncJobEntity;
-import com.optimetric.github.infrastructure.persistence.entity.SyncJobStatus;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -28,8 +30,8 @@ public final class SyncJobMapper {
         }
 
         return new SyncStatusDto.JobStatusDto(
-                entity.getJobType(),
-                entity.getStatus(),
+                entity.getJobType() != null ? SyncJobType.valueOf(entity.getJobType().name()) : null,
+                entity.getStatus() != null ? SyncJobStatus.valueOf(entity.getStatus().name()) : null,
                 entity.getAttemptCount(),
                 entity.getErrorMessage(),
                 entity.getStartedAt(),
@@ -90,10 +92,12 @@ public final class SyncJobMapper {
         for (SyncJobEntity job : jobs) {
             if (job == null) continue;
             
-            switch (job.getStatus()) {
-                case RUNNING -> hasRunning = true;
-                case FAILED -> hasFailed = true;
-                case COMPLETED -> hasCompleted = true;
+            var status = job.getStatus();
+            if (status == null) continue;
+            switch (status.name()) {
+                case "RUNNING" -> hasRunning = true;
+                case "FAILED" -> hasFailed = true;
+                case "COMPLETED" -> hasCompleted = true;
             }
         }
         
@@ -126,5 +130,30 @@ public final class SyncJobMapper {
         }
         
         return lastTime;
+    }
+
+    // --- Application DTO (Port/In response) ---
+
+    public static SyncStatusInfo.JobStatusInfo toJobStatusInfo(SyncJobEntity entity) {
+        if (entity == null) throw new IllegalArgumentException("Entity cannot be null");
+        SyncJobType jobType = entity.getJobType() != null ? SyncJobType.valueOf(entity.getJobType().name()) : null;
+        SyncJobStatus status = entity.getStatus() != null ? SyncJobStatus.valueOf(entity.getStatus().name()) : null;
+        return new SyncStatusInfo.JobStatusInfo(
+                jobType,
+                status,
+                entity.getAttemptCount(),
+                entity.getErrorMessage(),
+                entity.getStartedAt(),
+                entity.getCompletedAt(),
+                entity.getNextRunAt()
+        );
+    }
+
+    public static SyncStatusInfo toSyncStatusInfo(String repoFullName, SyncJobStatus overallStatus,
+                                                  List<SyncJobEntity> jobs, OffsetDateTime lastSyncTime) {
+        List<SyncStatusInfo.JobStatusInfo> jobInfos = jobs == null ? List.of() : jobs.stream()
+                .map(SyncJobMapper::toJobStatusInfo)
+                .collect(Collectors.toList());
+        return new SyncStatusInfo(repoFullName, overallStatus, jobInfos, lastSyncTime);
     }
 }

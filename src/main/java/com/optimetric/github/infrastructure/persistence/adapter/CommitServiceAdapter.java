@@ -2,8 +2,9 @@ package com.optimetric.github.infrastructure.persistence.adapter;
 
 import com.optimetric.auth.application.AuthServicePort;
 import com.optimetric.github.api.response.CommitDto;
-import com.optimetric.github.application.client.CommitClientPort;
-import com.optimetric.github.application.port.CommitServicePort;
+import com.optimetric.github.application.dto.CommitInfo;
+import com.optimetric.github.application.port.out.CommitClientPort;
+import com.optimetric.github.application.port.out.CommitQueryPort;
 import com.optimetric.github.application.usecase.GetRepositoryForCurrentUserUseCase;
 import com.optimetric.github.infrastructure.core.mapper.CommitMapper;
 import com.optimetric.shared.exception.BranchNotFoundException;
@@ -26,7 +27,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class CommitServiceAdapter implements CommitServicePort {
+public class CommitServiceAdapter implements CommitQueryPort {
 
     private final CommitClientPort commitClient;
     private final AuthServicePort authServicePort;
@@ -37,7 +38,7 @@ public class CommitServiceAdapter implements CommitServicePort {
 
     @Override
     @Transactional
-    public List<CommitDto> initCommits(String login, String fullName, String branchName, String since) 
+    public List<CommitInfo> initCommits(String login, String fullName, String branchName, String since)
             throws RepositoryNotFoundException, BranchNotFoundException, UserNotFoundException {
         String accessToken = authServicePort.getAccessTokenFromLogin(login);
         com.optimetric.github.application.dto.RepositoryInfo repoInfo = getRepositoryForCurrentUserUseCase.executeOrThrow(login, fullName);
@@ -51,12 +52,12 @@ public class CommitServiceAdapter implements CommitServicePort {
 
         saveCommits(commits, repository, branch);
 
-        return commits;
+        return CommitMapper.fromApiDtos(commits);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<CommitDto> getCommits(String login, String fullName, String branchName) 
+    public List<CommitInfo> getCommits(String login, String fullName, String branchName)
             throws RepositoryNotFoundException, BranchNotFoundException, UserNotFoundException {
         com.optimetric.github.application.dto.RepositoryInfo repoInfo = getRepositoryForCurrentUserUseCase.executeOrThrow(login, fullName);
         RepositoryEntity repository = repositoryPersistenceAdapter.findEntityById(repoInfo.id())
@@ -64,12 +65,12 @@ public class CommitServiceAdapter implements CommitServicePort {
 
         if (branchName == null || branchName.isBlank()) {
             List<CommitEntity> commits = commitRepository.findByRepository(repository);
-            return CommitMapper.toDtos(commits);
+            return CommitMapper.toCommitInfos(commits);
         }
 
         BranchEntity branch = findBranchOrThrow(repository, branchName, fullName);
         List<CommitEntity> commits = commitRepository.findByRepositoryAndBranch(repository, branch);
-        return CommitMapper.toDtos(commits);
+        return CommitMapper.toCommitInfos(commits);
     }
 
     private void saveCommits(List<CommitDto> commits, RepositoryEntity repository, BranchEntity branch) {

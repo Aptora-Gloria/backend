@@ -1,9 +1,9 @@
-package com.optimetric.github.infrastructure.http;
+package com.optimetric.github.infrastructure.http.adapter;
 
 import com.optimetric.auth.api.dto.GitHubAccessTokenResponse;
 import com.optimetric.auth.api.dto.GitHubUserDto;
 import com.optimetric.auth.api.dto.GitHubUserResponse;
-import com.optimetric.github.application.client.AuthClientPort;
+import com.optimetric.github.application.port.out.AuthClientPort;
 import com.optimetric.github.infrastructure.core.config.GitHubOAuthProperties;
 import com.optimetric.github.infrastructure.core.constant.GitHubConstants;
 import com.optimetric.github.infrastructure.util.GitHubUtil;

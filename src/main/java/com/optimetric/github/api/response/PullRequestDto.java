@@ -1,6 +1,6 @@
 package com.optimetric.github.api.response;
 
-import com.optimetric.github.infrastructure.persistence.entity.DataLevel;
+import com.optimetric.github.domain.enumeration.DataLevel;
 
 import java.time.OffsetDateTime;
 

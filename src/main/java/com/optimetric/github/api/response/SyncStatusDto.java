@@ -1,7 +1,7 @@
 package com.optimetric.github.api.response;
 
-import com.optimetric.github.infrastructure.persistence.entity.SyncJobStatus;
-import com.optimetric.github.infrastructure.persistence.entity.SyncJobType;
+import com.optimetric.github.domain.enumeration.SyncJobStatus;
+import com.optimetric.github.domain.enumeration.SyncJobType;
 
 import java.time.OffsetDateTime;
 import java.util.List;

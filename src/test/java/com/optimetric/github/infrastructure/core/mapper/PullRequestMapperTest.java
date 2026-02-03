@@ -105,7 +105,7 @@ class PullRequestMapperTest {
         assertThat(dto.githubPrId()).isEqualTo(entity.getGithubPrId());
         assertThat(dto.prNumber()).isEqualTo(entity.getPrNumber());
         assertThat(dto.repoFullName()).isEqualTo(entity.getRepository().getFullName());
-        assertThat(dto.dataLevel()).isEqualTo(entity.getDataLevel());
+        assertThat(dto.dataLevel().name()).isEqualTo(entity.getDataLevel().name());
         assertThat(dto.state()).isEqualTo(entity.getState());
         assertThat(dto.draft()).isEqualTo(entity.getDraft());
         assertThat(dto.title()).isEqualTo(entity.getTitle());

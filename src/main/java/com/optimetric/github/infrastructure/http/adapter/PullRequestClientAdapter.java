@@ -1,6 +1,6 @@
-package com.optimetric.github.infrastructure.http;
+package com.optimetric.github.infrastructure.http.adapter;
 
-import com.optimetric.github.application.client.PullRequestClientPort;
+import com.optimetric.github.application.port.out.PullRequestClientPort;
 import com.optimetric.github.infrastructure.core.constant.GitHubConstants;
 import com.optimetric.github.infrastructure.http.dto.GitHubPullRequestResponse;
 import com.optimetric.github.infrastructure.http.dto.GitHubPullRequestDetailResponse;

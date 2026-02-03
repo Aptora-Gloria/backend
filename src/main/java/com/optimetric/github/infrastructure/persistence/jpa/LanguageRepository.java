@@ -38,6 +38,12 @@ public interface LanguageRepository extends JpaRepository<LanguageEntity, Long> 
     Optional<LanguageEntity> findByRepository_IdAndLanguageName(Long repositoryId, String languageName);
 
     /**
+     * Finds all language rows by repository ID and language name.
+     * Returns a list to tolerate duplicate (repository_id, language_name) rows; caller should merge or deduplicate.
+     */
+    List<LanguageEntity> findAllByRepository_IdAndLanguageName(Long repositoryId, String languageName);
+
+    /**
      * Checks if any language exists for the given repository ID.
      * Used for readiness checks (EXISTS with LIMIT 1 for performance).
      */

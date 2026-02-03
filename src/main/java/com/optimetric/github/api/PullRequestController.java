@@ -1,5 +1,6 @@
 package com.optimetric.github.api;
 
+import com.optimetric.github.api.mapper.PullRequestApiMapper;
 import com.optimetric.github.api.request.GetPullRequestRequest;
 import com.optimetric.github.api.request.GetPullRequestsRequest;
 import com.optimetric.github.api.request.GetSyncStatusRequest;
@@ -8,7 +9,12 @@ import com.optimetric.github.api.response.PullRequestDto;
 import com.optimetric.github.api.response.ReviewCommentDto;
 import com.optimetric.github.api.response.ReviewDto;
 import com.optimetric.github.api.response.SyncStatusDto;
-import com.optimetric.github.application.port.PullRequestServicePort;
+import com.optimetric.github.application.port.in.GetPullRequestCommitsPort;
+import com.optimetric.github.application.port.in.GetPullRequestPort;
+import com.optimetric.github.application.port.in.GetPullRequestReviewsPort;
+import com.optimetric.github.application.port.in.GetPullRequestsPort;
+import com.optimetric.github.application.port.in.GetSyncStatusPort;
+import com.optimetric.github.application.port.in.InitiatePullRequestSyncPort;
 import com.optimetric.shared.exception.RepositoryNotFoundException;
 import com.optimetric.shared.exception.UserNotFoundException;
 import jakarta.validation.Valid;
@@ -21,15 +27,19 @@ import java.util.List;
 
 /**
  * REST Controller for Pull Request operations.
- * Provides endpoints for retrieving PR data, managing synchronization, and accessing PR details.
- * All endpoints require authentication and validate repository access.
+ * API sadece al/ver: isteği alır, Port/In çağırır, Application DTO'yu ApiMapper ile API DTO'ya çevirip döner.
  */
 @RestController
 @RequestMapping("/api/github/pull-requests")
 @RequiredArgsConstructor
 public class PullRequestController {
 
-    private final PullRequestServicePort pullRequestService;
+    private final GetPullRequestsPort getPullRequestsPort;
+    private final GetPullRequestPort getPullRequestPort;
+    private final GetPullRequestReviewsPort getPullRequestReviewsPort;
+    private final GetPullRequestCommitsPort getPullRequestCommitsPort;
+    private final InitiatePullRequestSyncPort initiatePullRequestSyncPort;
+    private final GetSyncStatusPort getSyncStatusPort;
 
     /**
      * Retrieves all Pull Requests for a specific repository.
@@ -45,11 +55,8 @@ public class PullRequestController {
             @AuthenticationPrincipal String login,
             @RequestBody @Valid GetPullRequestsRequest request
     ) throws UserNotFoundException, RepositoryNotFoundException {
-        List<PullRequestDto> pullRequests = pullRequestService.getPullRequestsForRepository(
-                login, 
-                request.repoFullName()
-        );
-        return ResponseEntity.ok(pullRequests);
+        var list = getPullRequestsPort.getPullRequestsForRepository(login, request.repoFullName());
+        return ResponseEntity.ok(PullRequestApiMapper.toPullRequestDtos(list));
     }
 
     /**
@@ -66,12 +73,8 @@ public class PullRequestController {
             @AuthenticationPrincipal String login,
             @RequestBody @Valid GetPullRequestRequest request
     ) throws UserNotFoundException, RepositoryNotFoundException {
-        PullRequestDto pullRequest = pullRequestService.getPullRequest(
-                login, 
-                request.repoFullName(), 
-                request.prNumber()
-        );
-        return ResponseEntity.ok(pullRequest);
+        var info = getPullRequestPort.getPullRequest(login, request.repoFullName(), request.prNumber());
+        return ResponseEntity.ok(PullRequestApiMapper.toPullRequestDto(info));
     }
 
     /**
@@ -88,12 +91,8 @@ public class PullRequestController {
             @AuthenticationPrincipal String login,
             @RequestBody @Valid GetPullRequestRequest request
     ) throws UserNotFoundException, RepositoryNotFoundException {
-        List<ReviewDto> reviews = pullRequestService.getPullRequestReviews(
-                login, 
-                request.repoFullName(), 
-                request.prNumber()
-        );
-        return ResponseEntity.ok(reviews);
+        var list = getPullRequestReviewsPort.getPullRequestReviews(login, request.repoFullName(), request.prNumber());
+        return ResponseEntity.ok(PullRequestApiMapper.toReviewDtos(list));
     }
 
     /**
@@ -110,12 +109,8 @@ public class PullRequestController {
             @AuthenticationPrincipal String login,
             @RequestBody @Valid GetPullRequestRequest request
     ) throws UserNotFoundException, RepositoryNotFoundException {
-        List<ReviewCommentDto> commits = pullRequestService.getPullRequestCommits(
-                login, 
-                request.repoFullName(), 
-                request.prNumber()
-        );
-        return ResponseEntity.ok(commits);
+        var list = getPullRequestCommitsPort.getPullRequestCommits(login, request.repoFullName(), request.prNumber());
+        return ResponseEntity.ok(PullRequestApiMapper.toReviewCommentDtos(list));
     }
 
     /**
@@ -133,7 +128,7 @@ public class PullRequestController {
             @AuthenticationPrincipal String login,
             @RequestBody @Valid InitiatePullRequestSyncRequest request
     ) throws UserNotFoundException, RepositoryNotFoundException {
-        pullRequestService.initiatePullRequestSync(login, request.repoFullName());
+        initiatePullRequestSyncPort.initiatePullRequestSync(login, request.repoFullName());
         return ResponseEntity.ok().build();
     }
 
@@ -152,7 +147,7 @@ public class PullRequestController {
             @AuthenticationPrincipal String login,
             @RequestBody @Valid GetSyncStatusRequest request
     ) throws UserNotFoundException, RepositoryNotFoundException {
-        SyncStatusDto syncStatus = pullRequestService.getSyncStatus(login, request.repoFullName());
-        return ResponseEntity.ok(syncStatus);
+        var info = getSyncStatusPort.getSyncStatus(login, request.repoFullName());
+        return ResponseEntity.ok(PullRequestApiMapper.toSyncStatusDto(info));
     }
 }

@@ -1,6 +1,7 @@
 package com.optimetric.github.infrastructure.core.mapper;
 
 import com.optimetric.github.api.response.CommitDto;
+import com.optimetric.github.application.dto.CommitInfo;
 import com.optimetric.github.infrastructure.persistence.entity.BranchEntity;
 import com.optimetric.github.infrastructure.persistence.entity.CommitEntity;
 import com.optimetric.github.infrastructure.persistence.entity.RepositoryEntity;
@@ -127,6 +128,55 @@ public final class CommitMapper {
         return entities.stream()
                 .map(CommitMapper::toDto)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Maps CommitEntity to application CommitInfo.
+     */
+    public static CommitInfo toCommitInfo(CommitEntity entity) {
+        if (entity == null) return null;
+        return new CommitInfo(
+                entity.getSha(),
+                entity.getNodeId(),
+                entity.getMessage(),
+                entity.getAuthorLogin(),
+                entity.getCommitterLogin(),
+                null, // parentShas not stored in entity
+                entity.getHtmlUrl(),
+                entity.getApiUrl()
+        );
+    }
+
+    public static List<CommitInfo> toCommitInfos(List<CommitEntity> entities) {
+        return entities == null ? List.of() : entities.stream().map(CommitMapper::toCommitInfo).collect(Collectors.toList());
+    }
+
+    /**
+     * Maps API CommitDto to application CommitInfo.
+     */
+    public static CommitInfo fromApiDto(CommitDto dto) {
+        if (dto == null) return null;
+        List<String> parentShas = dto.parents() == null ? List.of() : dto.parents().stream()
+                .map(p -> p != null ? p.sha() : null)
+                .filter(java.util.Objects::nonNull)
+                .collect(Collectors.toList());
+        String message = dto.commit() != null ? dto.commit().message() : null;
+        String authorLogin = dto.author() != null ? dto.author().login() : null;
+        String committerLogin = dto.committer() != null ? dto.committer().login() : null;
+        return new CommitInfo(
+                dto.sha(),
+                dto.nodeId(),
+                message,
+                authorLogin,
+                committerLogin,
+                parentShas,
+                dto.htmlUrl(),
+                dto.apiUrl()
+        );
+    }
+
+    public static List<CommitInfo> fromApiDtos(List<CommitDto> dtos) {
+        return dtos == null ? List.of() : dtos.stream().map(CommitMapper::fromApiDto).collect(Collectors.toList());
     }
 
     /**

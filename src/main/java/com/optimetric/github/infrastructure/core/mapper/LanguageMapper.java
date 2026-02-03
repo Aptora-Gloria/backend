@@ -2,6 +2,7 @@ package com.optimetric.github.infrastructure.core.mapper;
 
 import com.optimetric.github.api.response.LanguageDto;
 import com.optimetric.github.api.response.LanguageUiDto;
+import com.optimetric.github.application.dto.LanguageInfo;
 import com.optimetric.github.infrastructure.persistence.entity.LanguageEntity;
 import com.optimetric.github.infrastructure.persistence.entity.RepositoryEntity;
 
@@ -110,5 +111,20 @@ public final class LanguageMapper {
                 .collect(Collectors.toList());
 
         return new LanguageUiDto(items, totalBytes);
+    }
+
+    /**
+     * Maps list of LanguageEntity to LanguageInfo (application DTO).
+     */
+    public static LanguageInfo toLanguageInfo(List<LanguageEntity> entities) {
+        if (entities == null || entities.isEmpty()) {
+            return new LanguageInfo(Map.of());
+        }
+        Map<String, Long> map = entities.stream()
+                .collect(Collectors.toMap(
+                        LanguageEntity::getLanguageName,
+                        LanguageEntity::getBytes,
+                        (existing, replacement) -> existing));
+        return new LanguageInfo(map);
     }
 }

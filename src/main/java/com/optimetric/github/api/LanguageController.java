@@ -7,29 +7,35 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.optimetric.github.api.mapper.LanguageApiMapper;
 import com.optimetric.github.api.request.GetLanguagesRequest;
 import com.optimetric.github.api.request.LanguageInitRequest;
 import com.optimetric.github.api.response.LanguageDto;
 import com.optimetric.github.api.response.LanguageUiDto;
-import com.optimetric.github.application.port.LanguageServicePort;
+import com.optimetric.github.application.port.in.GetLanguagesPort;
+import com.optimetric.github.application.port.in.InitLanguagesPort;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * API sadece al/ver: Port/In (use case) çağırır, Application DTO'yu ApiMapper ile API DTO'ya çevirir.
+ */
 @RestController
 @RequestMapping("/api/github")
 @RequiredArgsConstructor
 public class LanguageController {
 
-    private final LanguageServicePort languageService;
+    private final InitLanguagesPort initLanguagesPort;
+    private final GetLanguagesPort getLanguagesPort;
 
     @PostMapping("/languages/init")
     public ResponseEntity<LanguageDto> initLanguages(
             @AuthenticationPrincipal String login,
             @RequestBody @Valid LanguageInitRequest request
     ) {
-        LanguageDto dto = languageService.initRepoLanguages(login, request.repoFullName());
-        return ResponseEntity.ok(dto);
+        var info = initLanguagesPort.initLanguages(login, request.repoFullName());
+        return ResponseEntity.ok(LanguageApiMapper.toLanguageDto(info));
     }
 
     @PostMapping("/languages/query")
@@ -37,8 +43,8 @@ public class LanguageController {
             @AuthenticationPrincipal String login,
             @RequestBody @Valid GetLanguagesRequest request
     ) {
-        LanguageDto dto = languageService.getLanguagesFromDb(request.repoFullName());
-        return ResponseEntity.ok(dto);
+        var info = getLanguagesPort.getLanguages(request.repoFullName());
+        return ResponseEntity.ok(LanguageApiMapper.toLanguageDto(info));
     }
 
     @PostMapping("/languages/query/ui")
@@ -46,7 +52,7 @@ public class LanguageController {
             @AuthenticationPrincipal String login,
             @RequestBody @Valid GetLanguagesRequest request
     ) {
-        LanguageUiDto uiDto = languageService.getLanguagesForUi(request.repoFullName());
-        return ResponseEntity.ok(uiDto);
+        var info = getLanguagesPort.getLanguages(request.repoFullName());
+        return ResponseEntity.ok(LanguageApiMapper.toLanguageUiDto(info));
     }
 }

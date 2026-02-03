@@ -7,9 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.optimetric.auth.application.AuthServicePort;
-import com.optimetric.github.api.response.BranchDto;
-import com.optimetric.github.application.client.BranchClientPort;
-import com.optimetric.github.application.port.BranchServicePort;
+import com.optimetric.github.application.dto.BranchInfo;
+import com.optimetric.github.application.port.out.BranchClientPort;
+import com.optimetric.github.application.port.out.BranchQueryPort;
 import com.optimetric.github.application.usecase.GetRepositoryForCurrentUserUseCase;
 import com.optimetric.github.infrastructure.core.mapper.BranchMapper;
 import com.optimetric.github.infrastructure.persistence.entity.BranchEntity;
@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class BranchServiceAdapter implements BranchServicePort {
+public class BranchServiceAdapter implements BranchQueryPort {
 
     private final BranchRepository branchRepository;
     private final RepositoryPersistenceAdapter repositoryPersistenceAdapter;
@@ -33,7 +33,7 @@ public class BranchServiceAdapter implements BranchServicePort {
 
     @Override
     @Transactional
-    public List<BranchDto> initRepoBranches(String login, String fullName) 
+    public List<BranchInfo> initRepoBranches(String login, String fullName)
             throws RepositoryNotFoundException, UserNotFoundException {
         String accessToken = authServicePort.getAccessTokenFromLogin(login);
         com.optimetric.github.application.dto.RepositoryInfo repoInfo = getRepositoryForCurrentUserUseCase.executeOrThrow(login, fullName);
@@ -44,23 +44,23 @@ public class BranchServiceAdapter implements BranchServicePort {
         List<String> branchNames = branchClient.getRepoBranchNames(accessToken, owner, repo.getName());
 
         saveBranches(branchNames, repo);
-        return getBranchesByRepository(repo);
+        return getBranchInfosByRepository(repo);
     }
 
-    private List<BranchDto> getBranchesByRepository(RepositoryEntity repo) {
+    private List<BranchInfo> getBranchInfosByRepository(RepositoryEntity repo) {
         List<BranchEntity> branches = branchRepository.findByRepository(repo);
-        return BranchMapper.toDtos(branches);
+        return BranchMapper.toBranchInfos(branches);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<BranchDto> getBranchesByFullName(String login, String fullName) 
+    public List<BranchInfo> getBranchesByFullName(String login, String fullName)
             throws RepositoryNotFoundException, UserNotFoundException {
         com.optimetric.github.application.dto.RepositoryInfo repoInfo = getRepositoryForCurrentUserUseCase.executeOrThrow(login, fullName);
         RepositoryEntity repo = repositoryPersistenceAdapter.findEntityById(repoInfo.id())
                 .orElseThrow(() -> new RepositoryNotFoundException("Repository not found with id: " + repoInfo.id()));
         List<BranchEntity> branches = branchRepository.findByRepository(repo);
-        return BranchMapper.toDtos(branches);
+        return BranchMapper.toBranchInfos(branches);
     }
 
     private void saveBranches(List<String> branchNames, RepositoryEntity repo) {

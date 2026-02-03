@@ -3,17 +3,30 @@ package com.optimetric.github.infrastructure.persistence.adapter;
 import com.optimetric.auth.application.AuthServicePort;
 import com.optimetric.auth.infrastructure.persistence.entity.User;
 import com.optimetric.auth.infrastructure.persistence.jpa.repository.UserRepository;
-import com.optimetric.github.api.response.*;
-import com.optimetric.github.application.port.PullRequestServicePort;
+import com.optimetric.github.application.dto.PullRequestInfo;
+import com.optimetric.github.application.dto.ReviewCommentInfo;
+import com.optimetric.github.application.dto.ReviewInfo;
+import com.optimetric.github.application.dto.SyncStatusInfo;
+import com.optimetric.github.application.port.out.PullRequestQueryPort;
 import com.optimetric.github.application.port.SyncJobServicePort;
-import com.optimetric.github.infrastructure.persistence.entity.*;
-import com.optimetric.github.infrastructure.persistence.jpa.*;
-import com.optimetric.shared.exception.RepositoryNotFoundException;
-import com.optimetric.shared.exception.UserNotFoundException;
-import com.optimetric.shared.exception.PullRequestNotFoundException;
-import com.optimetric.shared.exception.InvalidRepositoryFormatException;
+import com.optimetric.github.infrastructure.persistence.entity.DataLevel;
+import com.optimetric.github.infrastructure.persistence.entity.PullRequestCommitEntity;
+import com.optimetric.github.infrastructure.persistence.entity.PullRequestEntity;
+import com.optimetric.github.infrastructure.persistence.entity.PullRequestReviewEntity;
+import com.optimetric.github.infrastructure.persistence.entity.RepositoryEntity;
+import com.optimetric.github.infrastructure.persistence.entity.SyncJobEntity;
+import com.optimetric.github.infrastructure.persistence.entity.SyncJobStatus;
+import com.optimetric.github.infrastructure.persistence.entity.SyncJobType;
+import com.optimetric.github.infrastructure.persistence.jpa.PullRequestCommitRepository;
+import com.optimetric.github.infrastructure.persistence.jpa.PullRequestRepository;
+import com.optimetric.github.infrastructure.persistence.jpa.PullRequestReviewRepository;
+import com.optimetric.github.infrastructure.persistence.jpa.RepositoryRepository;
 import com.optimetric.github.infrastructure.core.mapper.PullRequestMapper;
 import com.optimetric.github.infrastructure.core.mapper.SyncJobMapper;
+import com.optimetric.shared.exception.InvalidRepositoryFormatException;
+import com.optimetric.shared.exception.PullRequestNotFoundException;
+import com.optimetric.shared.exception.RepositoryNotFoundException;
+import com.optimetric.shared.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,13 +37,13 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Service adapter implementing Pull Request business logic.
- * Handles incremental synchronization, data level management, and repository access validation.
+ * Adapter implementing PullRequestQueryPort (outbound).
+ * Use cases call this port; returns Application DTO.
  */
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class PullRequestServiceAdapter implements PullRequestServicePort {
+public class PullRequestServiceAdapter implements PullRequestQueryPort {
 
     private final PullRequestRepository pullRequestRepository;
     private final PullRequestReviewRepository pullRequestReviewRepository;
@@ -42,24 +55,17 @@ public class PullRequestServiceAdapter implements PullRequestServicePort {
 
     @Override
     @Transactional(readOnly = true)
-    public List<PullRequestDto> getPullRequestsForRepository(String login, String repoFullName) 
+    public List<PullRequestInfo> getPullRequestsForRepository(String login, String repoFullName)
             throws UserNotFoundException, RepositoryNotFoundException {
         
         log.debug("Getting pull requests for repository: {} by user: {}", repoFullName, login);
-        
-        // Validate input parameters
         validateInputParameters(login, repoFullName);
-        
-        // Validate user and repository access
         RepositoryEntity repository = validateRepositoryAccess(login, repoFullName);
         
         try {
-            // Get all pull requests for the repository
             List<PullRequestEntity> pullRequests = pullRequestRepository.findByRepositoryOrderByCreatedAtDesc(repository);
-            
             log.debug("Found {} pull requests for repository: {}", pullRequests.size(), repoFullName);
-            
-            return PullRequestMapper.toDtos(pullRequests);
+            return PullRequestMapper.toPullRequestInfos(pullRequests);
         } catch (Exception e) {
             log.error("Failed to retrieve pull requests for repository: {} by user: {}", repoFullName, login, e);
             throw new RuntimeException("Failed to retrieve pull requests: " + e.getMessage(), e);
@@ -68,30 +74,23 @@ public class PullRequestServiceAdapter implements PullRequestServicePort {
 
     @Override
     @Transactional(readOnly = true)
-    public PullRequestDto getPullRequest(String login, String repoFullName, Integer prNumber) 
-            throws UserNotFoundException, RepositoryNotFoundException, PullRequestNotFoundException {
+    public PullRequestInfo getPullRequest(String login, String repoFullName, Integer prNumber)
+            throws UserNotFoundException, RepositoryNotFoundException {
         
         log.debug("Getting pull request #{} for repository: {} by user: {}", prNumber, repoFullName, login);
-        
-        // Validate input parameters
         validateInputParameters(login, repoFullName);
         validatePrNumber(prNumber);
-        
-        // Validate user and repository access
         RepositoryEntity repository = validateRepositoryAccess(login, repoFullName);
         
         try {
-            // Find the specific pull request
             Optional<PullRequestEntity> pullRequest = pullRequestRepository.findByRepositoryAndPrNumber(repository, prNumber);
-            
             if (pullRequest.isEmpty()) {
                 log.warn("Pull request #{} not found for repository: {}", prNumber, repoFullName);
                 throw new PullRequestNotFoundException("Pull request #" + prNumber + " not found for repository: " + repoFullName);
             }
-            
-            return PullRequestMapper.toDto(pullRequest.get());
+            return PullRequestMapper.toPullRequestInfo(pullRequest.get());
         } catch (PullRequestNotFoundException e) {
-            throw e; // Re-throw specific exception
+            throw e;
         } catch (Exception e) {
             log.error("Failed to retrieve pull request #{} for repository: {} by user: {}", prNumber, repoFullName, login, e);
             throw new RuntimeException("Failed to retrieve pull request: " + e.getMessage(), e);
@@ -100,8 +99,8 @@ public class PullRequestServiceAdapter implements PullRequestServicePort {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ReviewDto> getPullRequestReviews(String login, String repoFullName, Integer prNumber) 
-            throws UserNotFoundException, RepositoryNotFoundException, PullRequestNotFoundException {
+    public List<ReviewInfo> getPullRequestReviews(String login, String repoFullName, Integer prNumber)
+            throws UserNotFoundException, RepositoryNotFoundException {
         
         log.debug("Getting reviews for pull request #{} in repository: {} by user: {}", prNumber, repoFullName, login);
         
@@ -123,12 +122,10 @@ public class PullRequestServiceAdapter implements PullRequestServicePort {
             
             // Get reviews for the pull request
             List<PullRequestReviewEntity> reviews = pullRequestReviewRepository.findByPullRequestOrderBySubmittedAtAsc(pullRequest.get());
-            
             log.debug("Found {} reviews for pull request #{}", reviews.size(), prNumber);
-            
-            return PullRequestMapper.toReviewDtos(reviews);
+            return PullRequestMapper.toReviewInfos(reviews);
         } catch (PullRequestNotFoundException e) {
-            throw e; // Re-throw specific exception
+            throw e;
         } catch (Exception e) {
             log.error("Failed to retrieve reviews for pull request #{} in repository: {} by user: {}", prNumber, repoFullName, login, e);
             throw new RuntimeException("Failed to retrieve pull request reviews: " + e.getMessage(), e);
@@ -137,35 +134,25 @@ public class PullRequestServiceAdapter implements PullRequestServicePort {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ReviewCommentDto> getPullRequestCommits(String login, String repoFullName, Integer prNumber) 
-            throws UserNotFoundException, RepositoryNotFoundException, PullRequestNotFoundException {
+    public List<ReviewCommentInfo> getPullRequestCommits(String login, String repoFullName, Integer prNumber)
+            throws UserNotFoundException, RepositoryNotFoundException {
         
         log.debug("Getting commits for pull request #{} in repository: {} by user: {}", prNumber, repoFullName, login);
-        
-        // Validate input parameters
         validateInputParameters(login, repoFullName);
         validatePrNumber(prNumber);
-        
-        // Validate user and repository access
         RepositoryEntity repository = validateRepositoryAccess(login, repoFullName);
         
         try {
-            // Find the pull request
             Optional<PullRequestEntity> pullRequest = pullRequestRepository.findByRepositoryAndPrNumber(repository, prNumber);
-            
             if (pullRequest.isEmpty()) {
                 log.warn("Pull request #{} not found for repository: {}", prNumber, repoFullName);
                 throw new PullRequestNotFoundException("Pull request #" + prNumber + " not found for repository: " + repoFullName);
             }
-            
-            // Get commits for the pull request
             List<PullRequestCommitEntity> commits = pullRequestCommitRepository.findByPullRequestOrderByCommittedAtAsc(pullRequest.get());
-            
             log.debug("Found {} commits for pull request #{}", commits.size(), prNumber);
-            
-            return PullRequestMapper.toCommitDtos(commits);
+            return PullRequestMapper.toReviewCommentInfos(commits);
         } catch (PullRequestNotFoundException e) {
-            throw e; // Re-throw specific exception
+            throw e;
         } catch (Exception e) {
             log.error("Failed to retrieve commits for pull request #{} in repository: {} by user: {}", prNumber, repoFullName, login, e);
             throw new RuntimeException("Failed to retrieve pull request commits: " + e.getMessage(), e);
@@ -216,32 +203,24 @@ public class PullRequestServiceAdapter implements PullRequestServicePort {
 
     @Override
     @Transactional(readOnly = true)
-    public SyncStatusDto getSyncStatus(String login, String repoFullName) 
+    public SyncStatusInfo getSyncStatus(String login, String repoFullName)
             throws UserNotFoundException, RepositoryNotFoundException {
         
         log.debug("Getting sync status for repository: {} by user: {}", repoFullName, login);
-        
-        // Validate input parameters
         validateInputParameters(login, repoFullName);
-        
-        // Validate user and repository access
         validateRepositoryAccess(login, repoFullName);
         
         try {
-            // Get all sync jobs for the repository
             List<SyncJobEntity> jobs = syncJobServicePort.getJobsForRepository(repoFullName);
-            
-            // Get the latest job of each type
             SyncJobEntity latestPrListJob = syncJobServicePort.getLatestJobForRepository(repoFullName, SyncJobType.PR_LIST);
             SyncJobEntity latestPrDetailJob = syncJobServicePort.getLatestJobForRepository(repoFullName, SyncJobType.PR_DETAIL);
             SyncJobEntity latestPrReviewsJob = syncJobServicePort.getLatestJobForRepository(repoFullName, SyncJobType.PR_REVIEWS);
             SyncJobEntity latestPrCommitsJob = syncJobServicePort.getLatestJobForRepository(repoFullName, SyncJobType.PR_COMMITS);
             
-            // Determine overall sync status and create DTO using mapper
-            SyncJobStatus overallStatus = SyncJobMapper.determineOverallSyncStatus(latestPrListJob, latestPrDetailJob, latestPrReviewsJob, latestPrCommitsJob);
+            com.optimetric.github.domain.enumeration.SyncJobStatus overallStatus =
+                    SyncJobMapper.determineOverallSyncStatus(latestPrListJob, latestPrDetailJob, latestPrReviewsJob, latestPrCommitsJob);
             OffsetDateTime lastSyncTime = SyncJobMapper.getLastSyncTime(latestPrListJob, latestPrDetailJob, latestPrReviewsJob, latestPrCommitsJob);
-            
-            return SyncJobMapper.toSyncStatusDto(repoFullName, overallStatus, jobs, lastSyncTime);
+            return SyncJobMapper.toSyncStatusInfo(repoFullName, overallStatus, jobs, lastSyncTime);
         } catch (Exception e) {
             log.error("Failed to get sync status for repository: {} by user: {}", repoFullName, login, e);
             throw new RuntimeException("Failed to retrieve synchronization status: " + e.getMessage(), e);

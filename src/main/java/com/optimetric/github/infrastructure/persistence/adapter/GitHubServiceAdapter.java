@@ -2,7 +2,7 @@ package com.optimetric.github.infrastructure.persistence.adapter;
 
 import com.optimetric.auth.api.dto.GitHubAccessTokenResponse;
 import com.optimetric.auth.api.dto.GitHubUserDto;
-import com.optimetric.github.application.client.AuthClientPort;
+import com.optimetric.github.application.port.out.AuthClientPort;
 import com.optimetric.github.application.port.GitHubServicePort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
