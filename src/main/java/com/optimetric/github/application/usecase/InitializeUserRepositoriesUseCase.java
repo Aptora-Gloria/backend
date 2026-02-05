@@ -13,10 +13,6 @@ import com.optimetric.shared.exception.UserNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 
-/**
- * Use case for initializing user repositories from GitHub API.
- * Orchestrates the flow of fetching repositories from GitHub and saving them to the database.
- */
 @Service
 @RequiredArgsConstructor
 public class InitializeUserRepositoriesUseCase implements InitializeUserRepositoriesPort {
@@ -27,17 +23,17 @@ public class InitializeUserRepositoriesUseCase implements InitializeUserReposito
 
     @Override
     public List<RepositoryInitData> execute(String login) throws UserNotFoundException {
-        // Get user context (userId, login, accessToken) through port
+        // Port üzerinden kullanıcı bağlamı al (userId, login, accessToken)
         var userContextOpt = userContextPort.getContextByLogin(login);
         
-        // Handle user not found case (exception thrown by adapter, handled here)
+        // Kullanıcı bulunamadı (adapter fırlatır, burada handle edilir)
         if (userContextOpt.isEmpty()) {
             throw new UserNotFoundException("User not found with login: " + login);
         }
         
         var userContext = userContextOpt.get();
 
-        // Fetch repositories from GitHub API
+        // Repoları GitHub API'den çek
         List<RepositoryInitData> repos = githubRepoQueryPort.getUserRepos(userContext.accessToken());
 
         // Save repos using persistence port (includes deduplication logic)

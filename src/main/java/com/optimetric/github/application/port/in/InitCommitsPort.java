@@ -7,9 +7,6 @@ import com.optimetric.shared.exception.UserNotFoundException;
 
 import java.util.List;
 
-/**
- * Inbound port: initialize commits for a repository/branch from GitHub.
- */
 public interface InitCommitsPort {
 
     List<CommitInfo> initCommits(String login, String fullName, String branchName, String since)

@@ -15,12 +15,6 @@ import com.optimetric.shared.exception.UserNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 
-/**
- * Use case for querying repositories with optional filters.
- * Orchestrates the flow of retrieving repositories from the database based on user and filters.
- * 
- * Delegates business rule validation to RepositoryDomainService.
- */
 @Service
 @RequiredArgsConstructor
 public class QueryRepositoriesUseCase implements QueryRepositoriesPort {
@@ -29,28 +23,19 @@ public class QueryRepositoriesUseCase implements QueryRepositoriesPort {
     private final RepositoryPersistencePort repositoryPersistencePort;
     private final RepositoryDomainService repositoryDomainService;
 
-    /**
-     * Gets repositories for user with optional filters.
-     *
-     * @param login User login
-     * @param ownerType Owner type filter (optional)
-     * @param ownerLogin Owner login filter (optional)
-     * @return List of repository information
-     * @throws UserNotFoundException if user not found
-     */
     @Override
     public List<RepositoryInfo> execute(String login, OwnerType ownerType, String ownerLogin) 
             throws UserNotFoundException {
-        // Get user info (Application DTO, not entity)
+        // Kullanıcı bilgisini al (Application DTO, entity değil)
         UserInfo userInfo = authServicePort.findByLoginOrThrow(login);
 
-        // Query repositories with criteria using userId (not entity)
+        // userId ile kriterlere göre repoları sorgula (entity değil)
         List<RepositoryInfo> repositories = repositoryPersistencePort.findByUserWithCriteria(
                 userInfo.id(), ownerType, ownerLogin);
 
-        // Apply domain-level filtering if needed (business rule enforcement)
-        // Note: Currently filtering is done at persistence level, but domain service
-        // can be used for additional business rule validation
+        // Gerekirse domain filtrelemesi uygula (iş kuralı)
+        // Filtreleme şu an persistence katmanında; domain servisi genişletilebilir
+        // Ek iş kuralı doğrulaması için kullanılabilir
         return repositories;
     }
 }

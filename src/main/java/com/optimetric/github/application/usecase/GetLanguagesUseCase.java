@@ -6,9 +6,6 @@ import com.optimetric.github.application.port.out.LanguageQueryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-/**
- * Use case: get languages for a repository from DB.
- */
 @Service
 @RequiredArgsConstructor
 public class GetLanguagesUseCase implements GetLanguagesPort {

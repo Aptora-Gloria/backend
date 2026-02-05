@@ -21,10 +21,6 @@ import com.optimetric.shared.exception.RepositoryNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 
-/**
- * Adapter for repository sync status service.
- * Checks data readiness for repositories by querying database.
- */
 @Service
 @RequiredArgsConstructor
 public class RepoSyncStatusServiceAdapter implements RepoSyncStatusQueryPort {

@@ -1,13 +1,9 @@
 package com.optimetric.github.api.response;
 
-import com.optimetric.github.domain.enumeration.DataLevel;
-
 import java.time.OffsetDateTime;
 
-/**
- * Data Transfer Object for Pull Request information.
- * Contains all necessary data for API responses including data completeness indicators.
- */
+import com.optimetric.github.domain.enumeration.DataLevel;
+
 public record PullRequestDto(
         Long id,
         Long githubPrId,

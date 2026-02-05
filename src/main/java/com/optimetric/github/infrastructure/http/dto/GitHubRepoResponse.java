@@ -2,10 +2,6 @@ package com.optimetric.github.infrastructure.http.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-/**
- * GitHub API response DTO for repository data.
- * This is the raw response from GitHub API (snake_case).
- */
 public record GitHubRepoResponse(
         Long id,
         @JsonProperty("node_id")

@@ -7,9 +7,6 @@ import com.optimetric.shared.exception.UserNotFoundException;
 
 import java.util.List;
 
-/**
- * Outbound port for commit operations (init and query).
- */
 public interface CommitQueryPort {
 
     List<CommitInfo> initCommits(String login, String fullName, String branchName, String since)

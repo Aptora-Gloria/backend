@@ -1,18 +1,17 @@
 package com.optimetric.github.application.usecase;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import com.optimetric.github.application.dto.ReviewInfo;
 import com.optimetric.github.application.port.in.GetPullRequestReviewsPort;
 import com.optimetric.github.application.port.out.PullRequestQueryPort;
 import com.optimetric.shared.exception.RepositoryNotFoundException;
 import com.optimetric.shared.exception.UserNotFoundException;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-import java.util.List;
-
-/**
- * Use case: get reviews for a Pull Request.
- */
 @Service
 @RequiredArgsConstructor
 public class GetPullRequestReviewsUseCase implements GetPullRequestReviewsPort {

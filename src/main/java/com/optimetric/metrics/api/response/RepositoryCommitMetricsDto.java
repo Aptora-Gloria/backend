@@ -5,9 +5,6 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 
-/**
- * DTO for repository commit metrics.
- */
 public record RepositoryCommitMetricsDto(
         // Statistics
         Long totalCommits,

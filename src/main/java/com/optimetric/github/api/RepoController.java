@@ -12,17 +12,14 @@ import org.springframework.web.bind.annotation.RestController;
 import com.optimetric.github.api.request.GetReposRequest;
 import com.optimetric.github.api.request.RepoInitRequest;
 import com.optimetric.github.api.response.RepoDto;
+import com.optimetric.github.api.mapper.RepoApiMapper;
 import com.optimetric.github.application.port.in.InitializeUserRepositoriesPort;
 import com.optimetric.github.application.port.in.QueryRepositoriesPort;
-import com.optimetric.github.infrastructure.core.mapper.ApplicationToApiMapper;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-/**
- * REST Controller for Repository operations.
- * API sadece al/ver: isteği alır, Port/In (use case) çağırır, Application DTO'yu ApiMapper ile API DTO'ya çevirip döner.
- */
+// Repo işlemleri REST controller; port/use case çağırır, ApiMapper ile DTO döner.
 @RestController
 @RequestMapping("/api/github/repos")
 @RequiredArgsConstructor
@@ -36,7 +33,7 @@ public class RepoController {
             @AuthenticationPrincipal String login
     ) {
         var list = initializeUserRepositoriesPort.execute(login);
-        return ResponseEntity.ok(ApplicationToApiMapper.toRepoInitRequests(list));
+        return ResponseEntity.ok(RepoApiMapper.toRepoInitRequests(list));
     }
 
     @PostMapping("/query")
@@ -44,9 +41,9 @@ public class RepoController {
             @AuthenticationPrincipal String login,
             @RequestBody @Valid GetReposRequest request
     ) {
-        var ownerType = ApplicationToApiMapper.extractOwnerType(request);
-        var ownerLogin = ApplicationToApiMapper.extractOwnerLogin(request);
+        var ownerType = RepoApiMapper.extractOwnerType(request);
+        var ownerLogin = RepoApiMapper.extractOwnerLogin(request);
         var list = queryRepositoriesPort.execute(login, ownerType, ownerLogin);
-        return ResponseEntity.ok(ApplicationToApiMapper.toRepoDtos(list));
+        return ResponseEntity.ok(RepoApiMapper.toRepoDtos(list));
     }
 }

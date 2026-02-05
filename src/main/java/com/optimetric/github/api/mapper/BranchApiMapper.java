@@ -1,14 +1,11 @@
 package com.optimetric.github.api.mapper;
 
-import com.optimetric.github.api.response.BranchDto;
-import com.optimetric.github.application.dto.BranchInfo;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Maps Application DTO to API DTO for Branch endpoints.
- */
+import com.optimetric.github.api.response.BranchDto;
+import com.optimetric.github.application.dto.BranchInfo;
+
 public final class BranchApiMapper {
 
     private BranchApiMapper() {}

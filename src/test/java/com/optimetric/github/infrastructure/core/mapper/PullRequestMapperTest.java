@@ -1,9 +1,11 @@
 package com.optimetric.github.infrastructure.core.mapper;
 
+import com.optimetric.github.api.mapper.PullRequestApiMapper;
 import com.optimetric.github.api.response.ChangeStatsDto;
 import com.optimetric.github.api.response.PullRequestDto;
 import com.optimetric.github.api.response.ReviewDto;
 import com.optimetric.github.api.response.ReviewCommentDto;
+import com.optimetric.github.domain.enumeration.DataLevel;
 import com.optimetric.github.infrastructure.persistence.entity.*;
 import com.optimetric.auth.infrastructure.persistence.entity.User;
 import com.optimetric.shared.domain.OwnerType;
@@ -16,10 +18,6 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-/**
- * Unit tests for PullRequestMapper.
- * Tests Requirements 7.1, 7.2, and 7.5 implementation.
- */
 class PullRequestMapperTest {
 
     @Test
@@ -32,7 +30,7 @@ class PullRequestMapperTest {
         entity.setChangeStatsSyncedAt(OffsetDateTime.now());
 
         // When
-        PullRequestDto dto = PullRequestMapper.toDto(entity);
+        PullRequestDto dto = PullRequestApiMapper.toPullRequestDto(PullRequestMapper.toPullRequestInfo(entity));
 
         // Then - changeStats.available should be true
         assertThat(dto.changeStats().available()).isTrue();
@@ -52,7 +50,7 @@ class PullRequestMapperTest {
         entity.setChangeStatsSyncedAt(null);
 
         // When
-        PullRequestDto dto = PullRequestMapper.toDto(entity);
+        PullRequestDto dto = PullRequestApiMapper.toPullRequestDto(PullRequestMapper.toPullRequestInfo(entity));
 
         // Then - changeStats.available should be false
         assertThat(dto.changeStats().available()).isFalse();
@@ -72,7 +70,7 @@ class PullRequestMapperTest {
         entity.setChangeStatsSyncedAt(OffsetDateTime.now());
 
         // When
-        PullRequestDto dto = PullRequestMapper.toDto(entity);
+        PullRequestDto dto = PullRequestApiMapper.toPullRequestDto(PullRequestMapper.toPullRequestInfo(entity));
 
         // Then - changeStats.available should be false
         assertThat(dto.changeStats().available()).isFalse();
@@ -86,7 +84,7 @@ class PullRequestMapperTest {
         entity.setLastSyncedAt(lastSynced);
 
         // When
-        PullRequestDto dto = PullRequestMapper.toDto(entity);
+        PullRequestDto dto = PullRequestApiMapper.toPullRequestDto(PullRequestMapper.toPullRequestInfo(entity));
 
         // Then - lastSyncedAt should be included
         assertThat(dto.lastSyncedAt()).isEqualTo(lastSynced);
@@ -98,7 +96,7 @@ class PullRequestMapperTest {
         PullRequestEntity entity = createBasicPullRequestEntity();
 
         // When
-        PullRequestDto dto = PullRequestMapper.toDto(entity);
+        PullRequestDto dto = PullRequestApiMapper.toPullRequestDto(PullRequestMapper.toPullRequestInfo(entity));
 
         // Then
         assertThat(dto.id()).isEqualTo(entity.getId());
@@ -119,7 +117,7 @@ class PullRequestMapperTest {
         PullRequestReviewEntity entity = createReviewEntity();
 
         // When
-        ReviewDto dto = PullRequestMapper.toReviewDto(entity);
+        ReviewDto dto = PullRequestApiMapper.toReviewDto(PullRequestMapper.toReviewInfo(entity));
 
         // Then
         assertThat(dto.id()).isEqualTo(entity.getId());
@@ -139,7 +137,7 @@ class PullRequestMapperTest {
         PullRequestCommitEntity entity = createCommitEntity();
 
         // When
-        ReviewCommentDto dto = PullRequestMapper.toCommitDto(entity);
+        ReviewCommentDto dto = PullRequestApiMapper.toReviewCommentDto(PullRequestMapper.toReviewCommentInfo(entity));
 
         // Then
         assertThat(dto.id()).isEqualTo(entity.getId());
@@ -163,7 +161,7 @@ class PullRequestMapperTest {
         );
 
         // When
-        List<PullRequestDto> dtos = PullRequestMapper.toDtos(entities);
+        List<PullRequestDto> dtos = PullRequestApiMapper.toPullRequestDtos(PullRequestMapper.toPullRequestInfos(entities));
 
         // Then
         assertThat(dtos).hasSize(2);
@@ -175,21 +173,21 @@ class PullRequestMapperTest {
     void toDto_shouldThrowException_whenEntityIsNull() {
         // When & Then
         assertThrows(IllegalArgumentException.class, () -> 
-                PullRequestMapper.toDto(null));
+                PullRequestApiMapper.toPullRequestDto(PullRequestMapper.toPullRequestInfo(null)));
     }
 
     @Test
     void toReviewDto_shouldThrowException_whenEntityIsNull() {
         // When & Then
         assertThrows(IllegalArgumentException.class, () -> 
-                PullRequestMapper.toReviewDto(null));
+                PullRequestMapper.toReviewInfo(null));
     }
 
     @Test
     void toCommitDto_shouldThrowException_whenEntityIsNull() {
         // When & Then
         assertThrows(IllegalArgumentException.class, () -> 
-                PullRequestMapper.toCommitDto(null));
+                PullRequestMapper.toReviewCommentInfo(null));
     }
 
     // Helper methods
@@ -200,7 +198,7 @@ class PullRequestMapperTest {
                 .githubRepoId(12345L)
                 .name("test-repo")
                 .fullName("owner/test-repo")
-                .user(createUser())
+                .userId(createUser() != null ? createUser().getId() : null)
                 .ownerLogin("owner")
                 .ownerType(OwnerType.USER)
                 .build();

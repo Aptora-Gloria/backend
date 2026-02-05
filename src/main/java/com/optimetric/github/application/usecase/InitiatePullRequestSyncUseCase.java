@@ -1,15 +1,14 @@
 package com.optimetric.github.application.usecase;
 
+import org.springframework.stereotype.Service;
+
 import com.optimetric.github.application.port.in.InitiatePullRequestSyncPort;
 import com.optimetric.github.application.port.out.PullRequestQueryPort;
 import com.optimetric.shared.exception.RepositoryNotFoundException;
 import com.optimetric.shared.exception.UserNotFoundException;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-/**
- * Use case: initiate Pull Request sync for a repository.
- */
+import lombok.RequiredArgsConstructor;
+
 @Service
 @RequiredArgsConstructor
 public class InitiatePullRequestSyncUseCase implements InitiatePullRequestSyncPort {

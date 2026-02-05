@@ -3,6 +3,7 @@ package com.optimetric.github.api;
 import com.optimetric.shared.domain.OwnerType;
 import com.optimetric.auth.infrastructure.persistence.entity.User;
 import com.optimetric.github.api.response.*;
+import com.optimetric.github.domain.enumeration.DataLevel;
 import com.optimetric.github.infrastructure.persistence.adapter.PullRequestServiceAdapter;
 import com.optimetric.github.infrastructure.persistence.entity.*;
 import net.jqwik.api.*;
@@ -13,11 +14,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Property-based test for API response consistency.
- * **Feature: pull-request-ingestion, Property 6: API Response Consistency**
- * **Validates: Requirements 6.1, 6.2, 6.3, 6.4, 6.5**
- */
 public class ApiResponseConsistencyPropertyTest {
 
     @Property(tries = 100)
@@ -568,7 +564,7 @@ public class ApiResponseConsistencyPropertyTest {
                         .githubRepoId(githubRepoId)
                         .name(name)
                         .fullName(fullName)
-                        .user(user)
+                        .userId(user != null ? user.getId() : null)
                         .ownerLogin(ownerLogin)
                         .ownerType(ownerType)
                         .systemCreatedAt(OffsetDateTime.now(ZoneOffset.UTC))

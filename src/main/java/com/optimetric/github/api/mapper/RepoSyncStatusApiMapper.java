@@ -4,9 +4,6 @@ import com.optimetric.github.api.response.RepositoryReadinessDto;
 import com.optimetric.github.api.response.RepositoryReadinessFlags;
 import com.optimetric.github.application.dto.RepositoryReadinessInfo;
 
-/**
- * Maps Application DTO to API DTO for Repository Sync Status endpoint.
- */
 public final class RepoSyncStatusApiMapper {
 
     private RepoSyncStatusApiMapper() {}

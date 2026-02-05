@@ -1,5 +1,7 @@
 package com.optimetric.github.application.port.out;
 
+import java.util.List;
+
 import com.optimetric.github.application.dto.PullRequestInfo;
 import com.optimetric.github.application.dto.ReviewCommentInfo;
 import com.optimetric.github.application.dto.ReviewInfo;
@@ -7,12 +9,6 @@ import com.optimetric.github.application.dto.SyncStatusInfo;
 import com.optimetric.shared.exception.RepositoryNotFoundException;
 import com.optimetric.shared.exception.UserNotFoundException;
 
-import java.util.List;
-
-/**
- * Outbound port for querying Pull Request data (persistence/aggregation).
- * Use cases call this; adapter implements it.
- */
 public interface PullRequestQueryPort {
 
     List<PullRequestInfo> getPullRequestsForRepository(String login, String repoFullName)

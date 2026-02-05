@@ -2,6 +2,7 @@ package com.optimetric.github.infrastructure.persistence.adapter;
 
 import com.optimetric.shared.domain.OwnerType;
 import com.optimetric.auth.infrastructure.persistence.entity.User;
+import com.optimetric.github.domain.enumeration.DataLevel;
 import com.optimetric.github.infrastructure.http.dto.*;
 import com.optimetric.github.infrastructure.persistence.entity.*;
 import net.jqwik.api.*;
@@ -13,11 +14,6 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Property-based test for ingestion job execution completeness.
- * **Feature: pull-request-ingestion, Property 1: Ingestion Job Execution Completeness**
- * **Validates: Requirements 1.1, 1.2, 1.3, 1.4, 1.5**
- */
 public class IngestionJobCompletenessPropertyTest {
 
     @Property(tries = 100)
@@ -705,7 +701,7 @@ public class IngestionJobCompletenessPropertyTest {
                         .githubRepoId(githubRepoId)
                         .name(name)
                         .fullName(fullName)
-                        .user(user)
+                        .userId(user != null ? user.getId() : null)
                         .ownerLogin(ownerLogin)
                         .ownerType(ownerType)
                         .build()

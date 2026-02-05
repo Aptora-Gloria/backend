@@ -5,9 +5,6 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 
-/**
- * DTO for repository branch metrics.
- */
 public record RepositoryBranchMetricsDto(
         Long totalBranches,
         String defaultBranch,

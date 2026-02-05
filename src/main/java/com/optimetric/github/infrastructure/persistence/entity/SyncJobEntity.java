@@ -1,5 +1,7 @@
 package com.optimetric.github.infrastructure.persistence.entity;
 
+import com.optimetric.github.domain.enumeration.SyncJobStatus;
+import com.optimetric.github.domain.enumeration.SyncJobType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -30,7 +32,7 @@ public class SyncJobEntity {
     private SyncJobStatus status;
 
     @Column(name = "cursor", length = 500)
-    private String cursor; // For pagination
+    private String cursor; // Sayfalama için
 
     @Column(name = "current_page")
     private Integer currentPage;

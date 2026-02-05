@@ -9,10 +9,6 @@ import com.optimetric.github.application.port.out.UserContextPort;
 
 import lombok.RequiredArgsConstructor;
 
-/**
- * Infrastructure adapter for UserContextPort.
- * Implements user context retrieval using AuthenticationDomainService.
- */
 @Service
 @RequiredArgsConstructor
 public class UserContextAdapter implements UserContextPort {
@@ -31,8 +27,8 @@ public class UserContextAdapter implements UserContextPort {
                     accessToken
             ));
         } catch (com.optimetric.shared.exception.UserNotFoundException e) {
-            // User not found - return empty Optional
-            // Exception handling is done in use case layer
+            // Kullanıcı yok; boş Optional dön
+            // İstisna use case katmanında ele alınır
             return java.util.Optional.empty();
         }
     }

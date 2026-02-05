@@ -1,7 +1,6 @@
 package com.optimetric.github.infrastructure.persistence.adapter;
 
 import com.optimetric.auth.application.AuthServicePort;
-import com.optimetric.github.api.response.LanguageDto;
 import com.optimetric.github.application.dto.LanguageInfo;
 import com.optimetric.github.application.port.out.LanguageClientPort;
 import com.optimetric.github.application.port.out.LanguageQueryPort;
@@ -32,15 +31,6 @@ public class LanguageServiceAdapter implements LanguageQueryPort {
     private final LanguageRepository languageRepository;
     private final RepositoryPersistenceAdapter repositoryPersistenceAdapter;
 
-    /**
-     * Fetches languages from GitHub API and saves them to database.
-     * This method is now idempotent: calling it multiple times for the same repository
-     * will update existing language records instead of creating duplicates.
-     * 
-     * @param login User login
-     * @param repoFullName Repository full name (e.g., "owner/repo")
-     * @return LanguageDto from GitHub API
-     */
     @Override
     @Transactional
     public LanguageInfo initRepoLanguages(String login, String repoFullName)
@@ -52,11 +42,11 @@ public class LanguageServiceAdapter implements LanguageQueryPort {
 
         String owner = repository.getOwnerLogin();
         String repoName = repository.getName();
-        LanguageDto dto = languageClient.getRepoLanguages(accessToken, owner, repoName);
+        LanguageInfo info = languageClient.getRepoLanguages(accessToken, owner, repoName);
 
         List<LanguageEntity> existingLanguages = languageRepository.findAllByRepository_Id(repository.getId());
 
-        Map<String, Long> languages = dto != null ? dto.languages() : null;
+        Map<String, Long> languages = info != null ? info.languages() : null;
         if (languages == null || languages.isEmpty()) {
             languageRepository.deleteByRepository_Id(repository.getId());
             return new LanguageInfo(Map.of());
@@ -102,7 +92,7 @@ public class LanguageServiceAdapter implements LanguageQueryPort {
             }
         }
 
-        // Delete languages that are no longer in GitHub response
+        // GitHub yanıtında artık olmayan dilleri sil
         Set<String> githubLanguageNames = languages.keySet();
         List<LanguageEntity> toDelete = existingLanguages.stream()
                 .filter(lang -> !githubLanguageNames.contains(lang.getLanguageName()))

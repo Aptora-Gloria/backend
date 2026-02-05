@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.optimetric.metrics.api.mapper.UserMetricsApiMapper;
 import com.optimetric.metrics.api.request.GetUserMetricsRequest;
 import com.optimetric.metrics.api.response.ActivityTrendDto;
 import com.optimetric.metrics.api.response.CommitTimeAnalysisDto;
@@ -16,6 +17,12 @@ import com.optimetric.metrics.api.response.PrSizeDto;
 import com.optimetric.metrics.api.response.ReviewStatsDto;
 import com.optimetric.metrics.api.response.UserMetricsDto;
 import com.optimetric.metrics.application.port.UserMetricsServicePort;
+import com.optimetric.metrics.application.port.in.GetPrMergeRatePort;
+import com.optimetric.metrics.application.port.in.GetActivityTrendPort;
+import com.optimetric.metrics.application.port.in.GetCommitTimeAnalysisPort;
+import com.optimetric.metrics.application.port.in.GetLanguageDiversityPort;
+import com.optimetric.metrics.application.port.in.GetPrSizePort;
+import com.optimetric.metrics.application.port.in.GetReviewStatsPort;
 import com.optimetric.shared.exception.UserNotFoundException;
 
 import jakarta.validation.Valid;
@@ -27,14 +34,20 @@ import lombok.RequiredArgsConstructor;
 public class MetricsController {
 
     private final UserMetricsServicePort userMetricsService;
+    private final GetPrMergeRatePort getPrMergeRatePort;
+    private final GetPrSizePort getPrSizePort;
+    private final GetReviewStatsPort getReviewStatsPort;
+    private final GetCommitTimeAnalysisPort getCommitTimeAnalysisPort;
+    private final GetLanguageDiversityPort getLanguageDiversityPort;
+    private final GetActivityTrendPort getActivityTrendPort;
 
     @PostMapping("/user")
     public ResponseEntity<UserMetricsDto> getUserMetrics(
             @AuthenticationPrincipal String login,
             @RequestBody @Valid GetUserMetricsRequest request
     ) throws UserNotFoundException {
-        UserMetricsDto metrics = userMetricsService.getUserMetrics(request.login());
-        return ResponseEntity.ok(metrics);
+        var info = userMetricsService.getUserMetrics(request.login());
+        return ResponseEntity.ok(UserMetricsApiMapper.toUserMetricsDto(info));
     }
 
     @PostMapping("/pr-merge-rate")
@@ -42,8 +55,8 @@ public class MetricsController {
             @AuthenticationPrincipal String login,
             @RequestBody @Valid GetUserMetricsRequest request
     ) throws UserNotFoundException {
-        PrMergeRateDto metrics = userMetricsService.getPrMergeRate(request.login());
-        return ResponseEntity.ok(metrics);
+        var info = getPrMergeRatePort.getPrMergeRate(request.login());
+        return ResponseEntity.ok(UserMetricsApiMapper.toPrMergeRateDto(info));
     }
 
     @PostMapping("/pr-size")
@@ -51,8 +64,8 @@ public class MetricsController {
             @AuthenticationPrincipal String login,
             @RequestBody @Valid GetUserMetricsRequest request
     ) throws UserNotFoundException {
-        PrSizeDto metrics = userMetricsService.getPrSize(request.login());
-        return ResponseEntity.ok(metrics);
+        var info = getPrSizePort.getPrSize(request.login());
+        return ResponseEntity.ok(UserMetricsApiMapper.toPrSizeDto(info));
     }
 
     @PostMapping("/review-stats")
@@ -60,8 +73,8 @@ public class MetricsController {
             @AuthenticationPrincipal String login,
             @RequestBody @Valid GetUserMetricsRequest request
     ) throws UserNotFoundException {
-        ReviewStatsDto metrics = userMetricsService.getReviewStats(request.login());
-        return ResponseEntity.ok(metrics);
+        var info = getReviewStatsPort.getReviewStats(request.login());
+        return ResponseEntity.ok(UserMetricsApiMapper.toReviewStatsDto(info));
     }
 
     @PostMapping("/commit-time-analysis")
@@ -69,8 +82,8 @@ public class MetricsController {
             @AuthenticationPrincipal String login,
             @RequestBody @Valid GetUserMetricsRequest request
     ) throws UserNotFoundException {
-        CommitTimeAnalysisDto metrics = userMetricsService.getCommitTimeAnalysis(request.login());
-        return ResponseEntity.ok(metrics);
+        var info = getCommitTimeAnalysisPort.getCommitTimeAnalysis(request.login());
+        return ResponseEntity.ok(UserMetricsApiMapper.toCommitTimeAnalysisDto(info));
     }
 
     @PostMapping("/language-diversity")
@@ -78,8 +91,8 @@ public class MetricsController {
             @AuthenticationPrincipal String login,
             @RequestBody @Valid GetUserMetricsRequest request
     ) throws UserNotFoundException {
-        LanguageDiversityDto metrics = userMetricsService.getLanguageDiversity(request.login());
-        return ResponseEntity.ok(metrics);
+        var info = getLanguageDiversityPort.getLanguageDiversity(request.login());
+        return ResponseEntity.ok(UserMetricsApiMapper.toLanguageDiversityDto(info));
     }
 
     @PostMapping("/activity-trend")
@@ -87,8 +100,8 @@ public class MetricsController {
             @AuthenticationPrincipal String login,
             @RequestBody @Valid GetUserMetricsRequest request
     ) throws UserNotFoundException {
-        ActivityTrendDto metrics = userMetricsService.getActivityTrend(request.login());
-        return ResponseEntity.ok(metrics);
+        var info = getActivityTrendPort.getActivityTrend(request.login());
+        return ResponseEntity.ok(UserMetricsApiMapper.toActivityTrendDto(info));
     }
 }
 

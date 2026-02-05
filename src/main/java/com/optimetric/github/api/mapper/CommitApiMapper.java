@@ -6,9 +6,6 @@ import com.optimetric.github.application.dto.CommitInfo;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Maps Application DTO to API DTO for Commit endpoints.
- */
 public final class CommitApiMapper {
 
     private CommitApiMapper() {}

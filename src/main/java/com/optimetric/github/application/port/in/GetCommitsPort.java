@@ -7,9 +7,6 @@ import com.optimetric.shared.exception.UserNotFoundException;
 
 import java.util.List;
 
-/**
- * Inbound port: get commits for a repository/branch.
- */
 public interface GetCommitsPort {
 
     List<CommitInfo> getCommits(String login, String fullName, String branchName)

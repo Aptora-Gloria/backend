@@ -2,10 +2,6 @@ package com.optimetric.shared.exception;
 
 import java.time.OffsetDateTime;
 
-/**
- * Exception thrown when GitHub API rate limit is exceeded.
- * Contains information about when the rate limit resets.
- */
 public class GitHubRateLimitException extends GitHubApiException {
     
     private final OffsetDateTime resetTime;

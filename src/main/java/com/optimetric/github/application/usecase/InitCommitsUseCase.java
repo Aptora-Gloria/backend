@@ -11,9 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-/**
- * Use case: initialize commits for a repository/branch from GitHub.
- */
 @Service
 @RequiredArgsConstructor
 public class InitCommitsUseCase implements InitCommitsPort {

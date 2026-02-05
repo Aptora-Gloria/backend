@@ -10,8 +10,8 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.optimetric.github.api.response.BranchDto;
 import com.optimetric.github.application.port.out.BranchClientPort;
+import com.optimetric.github.infrastructure.http.dto.GitHubBranchResponse;
 import com.optimetric.github.infrastructure.core.constant.GitHubConstants;
 import com.optimetric.github.infrastructure.util.GitHubUtil;
 import com.optimetric.github.infrastructure.util.UrlBuilder;
@@ -37,7 +37,7 @@ public class BranchClientAdapter implements BranchClientPort {
                     ownerLogin, repoName, perPage, page
             ).buildUri();
 
-            List<BranchDto> pageData = githubWebClient
+            List<GitHubBranchResponse> pageData = githubWebClient
                     .get()
                     .uri(uri)
                     .headers(h -> {
@@ -49,14 +49,14 @@ public class BranchClientAdapter implements BranchClientPort {
                     .onStatus(HttpStatusCode::isError, res ->
                             res.bodyToMono(String.class).map(body ->
                                     new GitHubApiException(GitHubConstants.ERROR_REPO_FETCH_FAILED + body)))
-                    .bodyToFlux(BranchDto.class)
+                    .bodyToFlux(GitHubBranchResponse.class)
                     .collectList()
                     .block();
 
             if (pageData == null || pageData.isEmpty()) break;
 
             List<String> branchNames = pageData.stream()
-                    .map(BranchDto::name)
+                    .map(GitHubBranchResponse::name)
                     .filter(Objects::nonNull)
                     .filter(name -> !name.isBlank())
                     .toList();

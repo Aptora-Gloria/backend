@@ -1,7 +1,6 @@
 package com.optimetric.github.infrastructure.persistence.adapter;
 
 import com.optimetric.auth.application.AuthServicePort;
-import com.optimetric.github.api.response.CommitDto;
 import com.optimetric.github.application.dto.CommitInfo;
 import com.optimetric.github.application.port.out.CommitClientPort;
 import com.optimetric.github.application.port.out.CommitQueryPort;
@@ -48,11 +47,11 @@ public class CommitServiceAdapter implements CommitQueryPort {
 
         String owner = repository.getOwnerLogin();
         String repoName = repository.getName();
-        List<CommitDto> commits = commitClient.getCommits(accessToken, owner, repoName, branchName, since);
+        List<CommitInfo> commits = commitClient.getCommits(accessToken, owner, repoName, branchName, since);
 
         saveCommits(commits, repository, branch);
 
-        return CommitMapper.fromApiDtos(commits);
+        return commits;
     }
 
     @Override
@@ -73,7 +72,7 @@ public class CommitServiceAdapter implements CommitQueryPort {
         return CommitMapper.toCommitInfos(commits);
     }
 
-    private void saveCommits(List<CommitDto> commits, RepositoryEntity repository, BranchEntity branch) {
+    private void saveCommits(List<CommitInfo> commits, RepositoryEntity repository, BranchEntity branch) {
         if (commits == null || commits.isEmpty()) {
             return;
         }
@@ -84,16 +83,16 @@ public class CommitServiceAdapter implements CommitQueryPort {
                 .collect(Collectors.toSet());
 
         List<CommitEntity> toSave = new ArrayList<>();
-        for (CommitDto dto : commits) {
-            if (dto.sha() == null || dto.sha().isBlank()) {
+        for (CommitInfo info : commits) {
+            if (info.sha() == null || info.sha().isBlank()) {
                 continue;
             }
 
-            if (existingShasInBranch.contains(dto.sha())) {
+            if (existingShasInBranch.contains(info.sha())) {
                 continue;
             }
 
-            CommitEntity entity = CommitMapper.toEntity(dto, repository, branch);
+            CommitEntity entity = CommitMapper.toEntity(info, repository, branch);
             toSave.add(entity);
         }
 

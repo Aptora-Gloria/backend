@@ -1,23 +1,18 @@
 package com.optimetric.github.api.mapper;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.optimetric.github.api.response.ChangeStatsDto;
 import com.optimetric.github.api.response.PullRequestDto;
 import com.optimetric.github.api.response.ReviewCommentDto;
 import com.optimetric.github.api.response.ReviewDto;
 import com.optimetric.github.api.response.SyncStatusDto;
-import com.optimetric.github.application.dto.ChangeStatsInfo;
 import com.optimetric.github.application.dto.PullRequestInfo;
 import com.optimetric.github.application.dto.ReviewCommentInfo;
 import com.optimetric.github.application.dto.ReviewInfo;
 import com.optimetric.github.application.dto.SyncStatusInfo;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-/**
- * Maps Application DTOs to API DTOs for Pull Request endpoints.
- * Used only in API (controller) layer – API sadece al/ver + bu mapper.
- */
 public final class PullRequestApiMapper {
 
     private PullRequestApiMapper() {}

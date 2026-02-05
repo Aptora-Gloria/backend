@@ -11,10 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
-/**
- * Infrastructure adapter for user persistence operations.
- * Implements UserPersistencePort using JPA UserRepository.
- */
+// Kullanıcı kalıcılığı için altyapı adapter'ı; UserPersistencePort, JPA ile uygular.
 @Component
 @RequiredArgsConstructor
 public class UserPersistenceAdapter implements UserPersistencePort {
@@ -23,7 +20,7 @@ public class UserPersistenceAdapter implements UserPersistencePort {
 
     @Override
     public UserInfo save(UserInfo userInfo) {
-        // Find existing user by ID, GitHub user ID, or login
+        // Mevcut kullanıcıyı id, github user id veya login ile ara
         User entity = null;
         if (userInfo.id() != null) {
             entity = userRepository.findById(userInfo.id()).orElse(null);
@@ -37,14 +34,14 @@ public class UserPersistenceAdapter implements UserPersistencePort {
             entity = userRepository.findByLogin(userInfo.login()).orElse(null);
         }
 
-        // Create or update entity
+        // Entity yoksa yeni oluştur, varsa güncelle
         if (entity == null) {
             entity = UserMapper.toNewEntity(userInfo);
         } else {
             UserMapper.updateEntityFromUserInfo(userInfo, entity);
         }
 
-        // Save and convert back to DTO
+        // Kaydet ve DTO'ya çevir
         User savedEntity = userRepository.save(entity);
         return UserMapper.toUserInfo(savedEntity);
     }
@@ -58,6 +55,12 @@ public class UserPersistenceAdapter implements UserPersistencePort {
     @Override
     public Optional<UserInfo> findByGithubUserId(Long githubUserId) {
         return userRepository.findByGithubUserId(githubUserId)
+                .map(UserMapper::toUserInfo);
+    }
+
+    @Override
+    public Optional<UserInfo> findById(Long id) {
+        return userRepository.findById(id)
                 .map(UserMapper::toUserInfo);
     }
 }

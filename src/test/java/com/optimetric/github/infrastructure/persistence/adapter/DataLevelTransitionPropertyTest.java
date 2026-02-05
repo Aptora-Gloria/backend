@@ -2,6 +2,8 @@ package com.optimetric.github.infrastructure.persistence.adapter;
 
 import com.optimetric.shared.domain.OwnerType;
 import com.optimetric.auth.infrastructure.persistence.entity.User;
+import com.optimetric.github.domain.enumeration.DataLevel;
+import com.optimetric.github.domain.enumeration.SyncJobType;
 import com.optimetric.github.infrastructure.persistence.entity.*;
 import net.jqwik.api.*;
 
@@ -11,11 +13,6 @@ import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Property-based test for data level transition accuracy.
- * **Feature: pull-request-ingestion, Property 7: Data Level Transition Accuracy**
- * **Validates: Requirements 7.3, 7.4**
- */
 public class DataLevelTransitionPropertyTest {
 
     @Property(tries = 100)
@@ -184,10 +181,6 @@ public class DataLevelTransitionPropertyTest {
         assertThat(pullRequest.getChangeStatsSyncedAt()).isNotNull();
     }
 
-    /**
-     * Simulates the data level determination logic that should be implemented
-     * in the PullRequestServiceAdapter based on requirements 7.3 and 7.4.
-     */
     private DataLevel determineDataLevel(PullRequestEntity pullRequest, 
                                        List<PullRequestReviewEntity> reviews, 
                                        List<PullRequestCommitEntity> commits) {
@@ -476,7 +469,7 @@ public class DataLevelTransitionPropertyTest {
                         .githubRepoId(githubRepoId)
                         .name(name)
                         .fullName(fullName)
-                        .user(user)
+                        .userId(user != null ? user.getId() : null)
                         .ownerLogin(ownerLogin)
                         .ownerType(ownerType)
                         .build()

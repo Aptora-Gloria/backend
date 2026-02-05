@@ -1,12 +1,13 @@
 package com.optimetric.github.infrastructure.http.adapter;
 
-import com.optimetric.auth.api.dto.GitHubAccessTokenResponse;
-import com.optimetric.auth.api.dto.GitHubUserDto;
-import com.optimetric.auth.api.dto.GitHubUserResponse;
+import com.optimetric.github.application.dto.GitHubOAuthResult;
+import com.optimetric.github.application.dto.GitHubUserFromApi;
 import com.optimetric.github.application.port.out.AuthClientPort;
 import com.optimetric.github.infrastructure.core.config.GitHubOAuthProperties;
 import com.optimetric.github.infrastructure.core.constant.GitHubConstants;
 import com.optimetric.github.infrastructure.util.GitHubUtil;
+import com.optimetric.github.infrastructure.http.dto.GitHubTokenApiResponse;
+import com.optimetric.github.infrastructure.http.dto.GitHubUserApiResponse;
 import com.optimetric.shared.exception.GitHubApiException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -26,13 +27,13 @@ public class AuthClientAdapter implements AuthClientPort {
     private final GitHubOAuthProperties properties;
 
     @Override
-    public GitHubAccessTokenResponse getAccessToken(String code) {
+    public GitHubOAuthResult getAccessToken(String code) {
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("client_id", properties.getClientId());
         formData.add("client_secret", properties.getClientSecret());
         formData.add("code", code);
 
-        return githubWebClient
+        GitHubTokenApiResponse response = githubWebClient
                 .post()
                 .uri(GitHubConstants.TOKEN_ENDPOINT)
                 .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
@@ -42,13 +43,14 @@ public class AuthClientAdapter implements AuthClientPort {
                 .onStatus(HttpStatusCode::isError, res ->
                         res.bodyToMono(String.class).map(body ->
                                 new GitHubApiException(GitHubConstants.ERROR_TOKEN_FETCH_FAILED + body)))
-                .bodyToMono(GitHubAccessTokenResponse.class)
+                .bodyToMono(GitHubTokenApiResponse.class)
                 .block();
+        return response != null ? new GitHubOAuthResult(response.accessToken()) : null;
     }
 
     @Override
-    public GitHubUserDto getUserInfo(String accessToken) {
-        GitHubUserResponse response = githubWebClient
+    public GitHubUserFromApi getUserInfo(String accessToken) {
+        GitHubUserApiResponse response = githubWebClient
                 .get()
                 .uri(GitHubConstants.USER_ENDPOINT)
                 .headers(h -> h.set(HttpHeaders.AUTHORIZATION, GitHubUtil.buildBearerHeader(accessToken)))
@@ -56,23 +58,20 @@ public class AuthClientAdapter implements AuthClientPort {
                 .onStatus(HttpStatusCode::isError, res ->
                         res.bodyToMono(String.class).map(body ->
                                 new GitHubApiException(GitHubConstants.ERROR_USER_INFO_FAILED + body)))
-                .bodyToMono(GitHubUserResponse.class)
+                .bodyToMono(GitHubUserApiResponse.class)
                 .block();
 
         if (response == null) {
             throw new GitHubApiException("GitHub user info response is null");
         }
 
-        return new GitHubUserDto(
-                null,
+        return new GitHubUserFromApi(
                 response.id(),
                 response.login(),
-                null,
                 response.name(),
-                response.avatar_url(),
+                response.avatarUrl(),
                 response.htmlUrl(),
-                response.type(),
-                null
+                response.type()
         );
     }
 }

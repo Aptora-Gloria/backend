@@ -1,6 +1,9 @@
 package com.optimetric.github.application.dto;
 
-/**
- * Application DTO for Branch information.
- */
-public record BranchInfo(String name) {}
+import java.time.OffsetDateTime;
+
+public record BranchInfo(
+        String name,
+        Long commitCount,
+        OffsetDateTime lastCommitDate
+) {}

@@ -1,14 +1,11 @@
 package com.optimetric.github.application.dto;
 
-import com.optimetric.github.domain.enumeration.SyncJobStatus;
-import com.optimetric.github.domain.enumeration.SyncJobType;
-
 import java.time.OffsetDateTime;
 import java.util.List;
 
-/**
- * Application DTO for synchronization status.
- */
+import com.optimetric.github.domain.enumeration.SyncJobStatus;
+import com.optimetric.github.domain.enumeration.SyncJobType;
+
 public record SyncStatusInfo(
         String repoFullName,
         SyncJobStatus overallStatus,

@@ -2,10 +2,6 @@ package com.optimetric.github.application.dto;
 
 import java.time.OffsetDateTime;
 
-/**
- * Application DTO for Pull Request change statistics.
- * Used by application and domain layers only; not exposed in API.
- */
 public record ChangeStatsInfo(
         Integer additions,
         Integer deletions,

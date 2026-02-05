@@ -1,6 +1,6 @@
 package com.optimetric.github.infrastructure.http.adapter;
 
-import com.optimetric.github.api.response.LanguageDto;
+import com.optimetric.github.application.dto.LanguageInfo;
 import com.optimetric.github.application.port.out.LanguageClientPort;
 import com.optimetric.github.infrastructure.core.constant.GitHubConstants;
 import com.optimetric.github.infrastructure.util.GitHubUtil;
@@ -22,7 +22,7 @@ public class LanguageClientAdapter implements LanguageClientPort {
     private final WebClient githubWebClient;
 
     @Override
-    public LanguageDto getRepoLanguages(String accessToken, String owner, String repo) {
+    public LanguageInfo getRepoLanguages(String accessToken, String owner, String repo) {
         URI uri = UrlBuilder.fromTemplate(
                 GitHubConstants.REPO_LANGUAGES_ENDPOINT_TEMPLATE, owner, repo
         ).buildUri();
@@ -40,7 +40,7 @@ public class LanguageClientAdapter implements LanguageClientPort {
                 .block();
 
         if (languages == null || languages.isEmpty()) {
-            return new LanguageDto(Map.of());
+            return new LanguageInfo(Map.of());
         }
 
         Map<String, Long> casted = languages.entrySet().stream()
@@ -49,7 +49,7 @@ public class LanguageClientAdapter implements LanguageClientPort {
                         e -> ((Number) e.getValue()).longValue()
                 ));
 
-        return new LanguageDto(casted);
+        return new LanguageInfo(casted);
     }
 }
 

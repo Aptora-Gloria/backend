@@ -1,13 +1,9 @@
 package com.optimetric.github.application.dto;
 
-import com.optimetric.github.domain.enumeration.DataLevel;
-
 import java.time.OffsetDateTime;
 
-/**
- * Application DTO for Pull Request information.
- * Used by application and domain layers only; not exposed in API.
- */
+import com.optimetric.github.domain.enumeration.DataLevel;
+
 public record PullRequestInfo(
         Long id,
         Long githubPrId,

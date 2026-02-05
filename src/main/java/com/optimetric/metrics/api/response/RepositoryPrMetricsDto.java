@@ -4,9 +4,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-/**
- * DTO for repository Pull Request metrics.
- */
 public record RepositoryPrMetricsDto(
         // Statistics
         Long totalPullRequests,

@@ -1,8 +1,8 @@
 package com.optimetric.github.infrastructure.persistence.adapter;
 
 import com.optimetric.github.infrastructure.persistence.entity.SyncJobEntity;
-import com.optimetric.github.infrastructure.persistence.entity.SyncJobStatus;
-import com.optimetric.github.infrastructure.persistence.entity.SyncJobType;
+import com.optimetric.github.domain.enumeration.SyncJobStatus;
+import com.optimetric.github.domain.enumeration.SyncJobType;
 import net.jqwik.api.*;
 
 import java.time.OffsetDateTime;
@@ -12,11 +12,6 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Property-based test for job state management.
- * **Feature: pull-request-ingestion, Property 4: Job State Management**
- * **Validates: Requirements 3.4, 3.5, 5.1, 5.2, 5.3, 5.4, 5.5**
- */
 public class JobStateManagementPropertyTest {
 
     @Property(tries = 100)
@@ -24,12 +19,12 @@ public class JobStateManagementPropertyTest {
             @ForAll("validSyncJobEntity") SyncJobEntity job,
             @ForAll("validStateTransitionSequence") List<SyncJobStatus> stateSequence) {
         
-        // Simulate in-memory job storage for state management
+        // Durum yönetimi için bellek içi job deposu benzetimi
         Map<Long, SyncJobEntity> jobStorage = new HashMap<>();
         Long jobId = job.getId() != null ? job.getId() : 1L;
         job.setId(jobId);
         
-        // Start with PENDING status
+        // PENDING durumu ile başla
         job.setStatus(SyncJobStatus.PENDING);
         job.setAttemptCount(0);
         jobStorage.put(jobId, job);
@@ -39,7 +34,7 @@ public class JobStateManagementPropertyTest {
         for (SyncJobStatus targetStatus : stateSequence) {
             SyncJobEntity currentJob = jobStorage.get(jobId);
             
-            // Apply state transition logic based on target status
+            // Hedef duruma göre geçiş mantığını uygula
             switch (targetStatus) {
                 case RUNNING -> {
                     if (previousStatus == SyncJobStatus.PENDING) {
@@ -61,7 +56,7 @@ public class JobStateManagementPropertyTest {
                         currentJob.setCompletedAt(OffsetDateTime.now());
                         currentJob.setErrorMessage("Test error message");
                         
-                        // Schedule retry if under max attempts (3)
+                        // Maks deneme altındaysa yeniden dene (3)
                         if (currentJob.getAttemptCount() < 3) {
                             currentJob.setNextRunAt(OffsetDateTime.now().plusMinutes(5 * currentJob.getAttemptCount()));
                             currentJob.setStatus(SyncJobStatus.PENDING); // Reset to pending for retry
@@ -73,11 +68,11 @@ public class JobStateManagementPropertyTest {
             previousStatus = currentJob.getStatus();
         }
         
-        // Verify final state is valid
+        // Son durumun geçerli olduğunu doğrula
         SyncJobEntity finalJob = jobStorage.get(jobId);
         assertThat(finalJob.getStatus()).isIn((Object[]) SyncJobStatus.values());
         
-        // Verify state transition rules
+        // Durum geçiş kurallarını doğrula
         if (finalJob.getStatus() == SyncJobStatus.RUNNING) {
             assertThat(finalJob.getStartedAt()).isNotNull();
             assertThat(finalJob.getAttemptCount()).isGreaterThan(0);
@@ -99,26 +94,26 @@ public class JobStateManagementPropertyTest {
             @ForAll("validSyncJobEntity") SyncJobEntity job,
             @ForAll("validPaginationUpdates") List<PaginationUpdate> paginationUpdates) {
         
-        // Simulate in-memory job storage
+        // Bellek içi job deposu benzetimi
         Map<Long, SyncJobEntity> jobStorage = new HashMap<>();
         Long jobId = job.getId() != null ? job.getId() : 1L;
         job.setId(jobId);
         jobStorage.put(jobId, job);
         
-        // Apply pagination updates sequentially
+        // Sayfalama güncellemelerini sırayla uygula
         for (PaginationUpdate update : paginationUpdates) {
             SyncJobEntity currentJob = jobStorage.get(jobId);
             
-            // Update pagination state
+            // Sayfalama durumunu güncelle
             currentJob.setCursor(update.cursor());
             currentJob.setCurrentPage(update.currentPage());
             
-            // Verify pagination information is properly stored
+            // Sayfalama bilgisinin doğru saklandığını doğrula
             assertThat(currentJob.getCursor()).isEqualTo(update.cursor());
             assertThat(currentJob.getCurrentPage()).isEqualTo(update.currentPage());
         }
         
-        // Verify final pagination state is maintained
+        // Son sayfalama durumunun korunduğunu doğrula
         SyncJobEntity finalJob = jobStorage.get(jobId);
         if (!paginationUpdates.isEmpty()) {
             PaginationUpdate lastUpdate = paginationUpdates.get(paginationUpdates.size() - 1);
@@ -126,7 +121,7 @@ public class JobStateManagementPropertyTest {
             assertThat(finalJob.getCurrentPage()).isEqualTo(lastUpdate.currentPage());
         }
         
-        // Verify pagination supports resumable GitHub API operations
+        // Sayfalamanın sürdürülebilir GitHub API'yi desteklediğini doğrula
         if (finalJob.getCursor() != null) {
             assertThat(finalJob.getCursor()).isNotEmpty();
             assertThat(finalJob.getCursor().length()).isLessThanOrEqualTo(500); // Database constraint
@@ -142,7 +137,7 @@ public class JobStateManagementPropertyTest {
             @ForAll("validSyncJobEntity") SyncJobEntity job,
             @ForAll("validErrorMessages") List<String> errorMessages) {
         
-        // Simulate in-memory job storage
+        // Bellek içi job deposu benzetimi
         Map<Long, SyncJobEntity> jobStorage = new HashMap<>();
         Long jobId = job.getId() != null ? job.getId() : 1L;
         job.setId(jobId);
@@ -206,7 +201,7 @@ public class JobStateManagementPropertyTest {
             @ForAll("validSyncJobEntity") SyncJobEntity job,
             @ForAll("validRetryScenarios") List<RetryScenario> retryScenarios) {
         
-        // Simulate in-memory job storage with scheduling
+        // Bellek içi job deposu benzetimi with scheduling
         Map<Long, SyncJobEntity> jobStorage = new HashMap<>();
         Long jobId = job.getId() != null ? job.getId() : 1L;
         job.setId(jobId);
@@ -357,7 +352,7 @@ public class JobStateManagementPropertyTest {
         assertThat(finalJob.getJobType()).isEqualTo(lifecycle.jobType());
         assertThat(finalJob.getRepoFullName()).isEqualTo(lifecycle.repoFullName());
         
-        // Verify final state is valid
+        // Son durumun geçerli olduğunu doğrula
         assertThat(finalJob.getStatus()).isIn((Object[]) SyncJobStatus.values());
         
         if (finalJob.getStatus() == SyncJobStatus.COMPLETED) {

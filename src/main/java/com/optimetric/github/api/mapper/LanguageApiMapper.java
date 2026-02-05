@@ -8,9 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * Maps Application DTO to API DTO for Language endpoints.
- */
 public final class LanguageApiMapper {
 
     private LanguageApiMapper() {}

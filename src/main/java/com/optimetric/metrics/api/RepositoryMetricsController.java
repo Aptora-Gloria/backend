@@ -1,8 +1,19 @@
 package com.optimetric.metrics.api;
 
+import com.optimetric.metrics.api.mapper.RepositoryMetricsApiMapper;
 import com.optimetric.metrics.api.request.GetRepositoryMetricsRequest;
 import com.optimetric.metrics.api.response.*;
 import com.optimetric.metrics.application.port.RepositoryMetricsServicePort;
+import com.optimetric.metrics.application.port.in.GetBranchMetricsPort;
+import com.optimetric.metrics.application.port.in.GetCodeQualityPort;
+import com.optimetric.metrics.application.port.in.GetCommitMetricsPort;
+import com.optimetric.metrics.application.port.in.GetContributorMetricsPort;
+import com.optimetric.metrics.application.port.in.GetHealthScorePort;
+import com.optimetric.metrics.application.port.in.GetLanguageMetricsPort;
+import com.optimetric.metrics.application.port.in.GetOverviewPort;
+import com.optimetric.metrics.application.port.in.GetPullRequestMetricsPort;
+import com.optimetric.metrics.application.port.in.GetRepositoryActivityTrendPort;
+import com.optimetric.metrics.application.port.in.GetReviewMetricsPort;
 import com.optimetric.shared.exception.RepositoryNotFoundException;
 import com.optimetric.shared.exception.UserNotFoundException;
 import jakarta.validation.Valid;
@@ -17,15 +28,24 @@ import org.springframework.web.bind.annotation.*;
 public class RepositoryMetricsController {
 
     private final RepositoryMetricsServicePort repositoryMetricsService;
+    private final GetOverviewPort getOverviewPort;
+    private final GetLanguageMetricsPort getLanguageMetricsPort;
+    private final GetHealthScorePort getHealthScorePort;
+    private final GetReviewMetricsPort getReviewMetricsPort;
+    private final GetBranchMetricsPort getBranchMetricsPort;
+    private final GetPullRequestMetricsPort getPullRequestMetricsPort;
+    private final GetCommitMetricsPort getCommitMetricsPort;
+    private final GetRepositoryActivityTrendPort getRepositoryActivityTrendPort;
+    private final GetCodeQualityPort getCodeQualityPort;
+    private final GetContributorMetricsPort getContributorMetricsPort;
 
     @PostMapping
     public ResponseEntity<RepositoryMetricsDto> getRepositoryMetrics(
             @AuthenticationPrincipal String login,
             @RequestBody @Valid GetRepositoryMetricsRequest request
     ) throws RepositoryNotFoundException, UserNotFoundException {
-        RepositoryMetricsDto metrics = repositoryMetricsService.getRepositoryMetrics(
-                login, request.repoFullName());
-        return ResponseEntity.ok(metrics);
+        var info = repositoryMetricsService.getRepositoryMetrics(login, request.repoFullName());
+        return ResponseEntity.ok(RepositoryMetricsApiMapper.toRepositoryMetricsDto(info));
     }
 
     @PostMapping("/overview")
@@ -33,9 +53,8 @@ public class RepositoryMetricsController {
             @AuthenticationPrincipal String login,
             @RequestBody @Valid GetRepositoryMetricsRequest request
     ) throws RepositoryNotFoundException, UserNotFoundException {
-        RepositoryOverviewDto metrics = repositoryMetricsService.getOverview(
-                login, request.repoFullName());
-        return ResponseEntity.ok(metrics);
+        var info = getOverviewPort.getOverview(login, request.repoFullName());
+        return ResponseEntity.ok(RepositoryMetricsApiMapper.toOverviewDto(info));
     }
 
     @PostMapping("/pull-requests")
@@ -43,9 +62,8 @@ public class RepositoryMetricsController {
             @AuthenticationPrincipal String login,
             @RequestBody @Valid GetRepositoryMetricsRequest request
     ) throws RepositoryNotFoundException, UserNotFoundException {
-        RepositoryPrMetricsDto metrics = repositoryMetricsService.getPullRequestMetrics(
-                login, request.repoFullName());
-        return ResponseEntity.ok(metrics);
+        var info = getPullRequestMetricsPort.getPullRequestMetrics(login, request.repoFullName());
+        return ResponseEntity.ok(RepositoryMetricsApiMapper.toPrMetricsDto(info));
     }
 
     @PostMapping("/commits")
@@ -53,9 +71,8 @@ public class RepositoryMetricsController {
             @AuthenticationPrincipal String login,
             @RequestBody @Valid GetRepositoryMetricsRequest request
     ) throws RepositoryNotFoundException, UserNotFoundException {
-        RepositoryCommitMetricsDto metrics = repositoryMetricsService.getCommitMetrics(
-                login, request.repoFullName());
-        return ResponseEntity.ok(metrics);
+        var info = getCommitMetricsPort.getCommitMetrics(login, request.repoFullName());
+        return ResponseEntity.ok(RepositoryMetricsApiMapper.toCommitMetricsDto(info));
     }
 
     @PostMapping("/reviews")
@@ -63,9 +80,8 @@ public class RepositoryMetricsController {
             @AuthenticationPrincipal String login,
             @RequestBody @Valid GetRepositoryMetricsRequest request
     ) throws RepositoryNotFoundException, UserNotFoundException {
-        RepositoryReviewMetricsDto metrics = repositoryMetricsService.getReviewMetrics(
-                login, request.repoFullName());
-        return ResponseEntity.ok(metrics);
+        var info = getReviewMetricsPort.getReviewMetrics(login, request.repoFullName());
+        return ResponseEntity.ok(RepositoryMetricsApiMapper.toReviewMetricsDto(info));
     }
 
     @PostMapping("/branches")
@@ -73,9 +89,8 @@ public class RepositoryMetricsController {
             @AuthenticationPrincipal String login,
             @RequestBody @Valid GetRepositoryMetricsRequest request
     ) throws RepositoryNotFoundException, UserNotFoundException {
-        RepositoryBranchMetricsDto metrics = repositoryMetricsService.getBranchMetrics(
-                login, request.repoFullName());
-        return ResponseEntity.ok(metrics);
+        var info = getBranchMetricsPort.getBranchMetrics(login, request.repoFullName());
+        return ResponseEntity.ok(RepositoryMetricsApiMapper.toBranchMetricsDto(info));
     }
 
     @PostMapping("/languages")
@@ -83,9 +98,8 @@ public class RepositoryMetricsController {
             @AuthenticationPrincipal String login,
             @RequestBody @Valid GetRepositoryMetricsRequest request
     ) throws RepositoryNotFoundException, UserNotFoundException {
-        RepositoryLanguageMetricsDto metrics = repositoryMetricsService.getLanguageMetrics(
-                login, request.repoFullName());
-        return ResponseEntity.ok(metrics);
+        var info = getLanguageMetricsPort.getLanguageMetrics(login, request.repoFullName());
+        return ResponseEntity.ok(RepositoryMetricsApiMapper.toLanguageMetricsDto(info));
     }
 
     @PostMapping("/activity")
@@ -93,9 +107,8 @@ public class RepositoryMetricsController {
             @AuthenticationPrincipal String login,
             @RequestBody @Valid GetRepositoryMetricsRequest request
     ) throws RepositoryNotFoundException, UserNotFoundException {
-        RepositoryActivityTrendDto metrics = repositoryMetricsService.getActivityTrend(
-                login, request.repoFullName());
-        return ResponseEntity.ok(metrics);
+        var info = getRepositoryActivityTrendPort.getActivityTrend(login, request.repoFullName());
+        return ResponseEntity.ok(RepositoryMetricsApiMapper.toActivityTrendDto(info));
     }
 
     @PostMapping("/code-quality")
@@ -103,9 +116,8 @@ public class RepositoryMetricsController {
             @AuthenticationPrincipal String login,
             @RequestBody @Valid GetRepositoryMetricsRequest request
     ) throws RepositoryNotFoundException, UserNotFoundException {
-        RepositoryCodeQualityDto metrics = repositoryMetricsService.getCodeQuality(
-                login, request.repoFullName());
-        return ResponseEntity.ok(metrics);
+        var info = getCodeQualityPort.getCodeQuality(login, request.repoFullName());
+        return ResponseEntity.ok(RepositoryMetricsApiMapper.toCodeQualityDto(info));
     }
 
     @PostMapping("/contributors")
@@ -113,9 +125,8 @@ public class RepositoryMetricsController {
             @AuthenticationPrincipal String login,
             @RequestBody @Valid GetRepositoryMetricsRequest request
     ) throws RepositoryNotFoundException, UserNotFoundException {
-        RepositoryContributorMetricsDto metrics = repositoryMetricsService.getContributorMetrics(
-                login, request.repoFullName());
-        return ResponseEntity.ok(metrics);
+        var info = getContributorMetricsPort.getContributorMetrics(login, request.repoFullName());
+        return ResponseEntity.ok(RepositoryMetricsApiMapper.toContributorMetricsDto(info));
     }
 
     @PostMapping("/health")
@@ -123,9 +134,8 @@ public class RepositoryMetricsController {
             @AuthenticationPrincipal String login,
             @RequestBody @Valid GetRepositoryMetricsRequest request
     ) throws RepositoryNotFoundException, UserNotFoundException {
-        RepositoryHealthScoreDto metrics = repositoryMetricsService.getHealthScore(
-                login, request.repoFullName());
-        return ResponseEntity.ok(metrics);
+        var info = getHealthScorePort.getHealthScore(login, request.repoFullName());
+        return ResponseEntity.ok(RepositoryMetricsApiMapper.toHealthScoreDto(info));
     }
 }
 

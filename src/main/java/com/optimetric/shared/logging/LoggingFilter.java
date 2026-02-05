@@ -13,10 +13,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.UUID;
 
-/**
- * Servlet filter that adds correlation IDs to all HTTP requests for better log tracing.
- * This helps track requests through the entire system including GitHub API calls and database operations.
- */
 @Component
 @Order(1)
 @Slf4j
@@ -32,7 +28,7 @@ public class LoggingFilter extends OncePerRequestFilter {
         // Generate or extract correlation ID
         String correlationId = getOrGenerateCorrelationId(request);
         
-        // Add to MDC for logging
+        // Loglama için MDC'ye ekle
         MDC.put(CORRELATION_ID_MDC_KEY, correlationId);
         
         // Add to response headers

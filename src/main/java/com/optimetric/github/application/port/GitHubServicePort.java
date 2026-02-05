@@ -1,13 +1,10 @@
 package com.optimetric.github.application.port;
 
-import com.optimetric.auth.api.dto.GitHubAccessTokenResponse;
-import com.optimetric.auth.api.dto.GitHubUserDto;
+import com.optimetric.github.application.dto.GitHubOAuthResult;
+import com.optimetric.github.application.dto.GitHubUserFromApi;
 
+// GitHub OAuth ve kullanıcı bilgisi; token ve user döner.
 public interface GitHubServicePort {
-    GitHubAccessTokenResponse getAccessTokenFromCode(String code);
-    GitHubUserDto getUserInfo(String accessToken);
-
-
-
-
+    GitHubOAuthResult getAccessTokenFromCode(String code);
+    GitHubUserFromApi getUserInfo(String accessToken);
 }

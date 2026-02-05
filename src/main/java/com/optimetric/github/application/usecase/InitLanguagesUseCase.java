@@ -8,9 +8,6 @@ import com.optimetric.shared.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-/**
- * Use case: initialize languages for a repository from GitHub.
- */
 @Service
 @RequiredArgsConstructor
 public class InitLanguagesUseCase implements InitLanguagesPort {

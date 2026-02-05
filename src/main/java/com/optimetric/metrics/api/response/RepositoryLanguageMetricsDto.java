@@ -4,9 +4,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-/**
- * DTO for repository language metrics.
- */
 public record RepositoryLanguageMetricsDto(
         Integer totalLanguages,
         String primaryLanguage,

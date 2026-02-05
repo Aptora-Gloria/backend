@@ -1,18 +1,17 @@
 package com.optimetric.github.application.usecase;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import com.optimetric.github.application.dto.BranchInfo;
 import com.optimetric.github.application.port.in.GetBranchesPort;
 import com.optimetric.github.application.port.out.BranchQueryPort;
 import com.optimetric.shared.exception.RepositoryNotFoundException;
 import com.optimetric.shared.exception.UserNotFoundException;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-import java.util.List;
-
-/**
- * Use case: get branches for a repository.
- */
 @Service
 @RequiredArgsConstructor
 public class GetBranchesUseCase implements GetBranchesPort {

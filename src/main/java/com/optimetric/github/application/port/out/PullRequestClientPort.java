@@ -1,18 +1,15 @@
 package com.optimetric.github.application.port.out;
 
-import com.optimetric.github.infrastructure.http.dto.GitHubPullRequestCommitResponse;
-import com.optimetric.github.infrastructure.http.dto.GitHubPullRequestDetailResponse;
-import com.optimetric.github.infrastructure.http.dto.GitHubPullRequestResponse;
-import com.optimetric.github.infrastructure.http.dto.GitHubPullRequestReviewResponse;
-
 import java.util.List;
 
-/**
- * Outbound port for fetching Pull Request data from GitHub API.
- */
+import com.optimetric.github.application.dto.PullRequestCommitFromApi;
+import com.optimetric.github.application.dto.PullRequestDetailFromApi;
+import com.optimetric.github.application.dto.PullRequestFromApi;
+import com.optimetric.github.application.dto.PullRequestReviewFromApi;
+
 public interface PullRequestClientPort {
-    List<GitHubPullRequestResponse> getPullRequests(String accessToken, String owner, String repo, int page);
-    GitHubPullRequestDetailResponse getPullRequestDetails(String accessToken, String owner, String repo, int prNumber);
-    List<GitHubPullRequestReviewResponse> getPullRequestReviews(String accessToken, String owner, String repo, int prNumber);
-    List<GitHubPullRequestCommitResponse> getPullRequestCommits(String accessToken, String owner, String repo, int prNumber);
+    List<PullRequestFromApi> getPullRequests(String accessToken, String owner, String repo, int page);
+    PullRequestDetailFromApi getPullRequestDetails(String accessToken, String owner, String repo, int prNumber);
+    List<PullRequestReviewFromApi> getPullRequestReviews(String accessToken, String owner, String repo, int prNumber);
+    List<PullRequestCommitFromApi> getPullRequestCommits(String accessToken, String owner, String repo, int prNumber);
 }

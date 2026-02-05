@@ -5,9 +5,6 @@ import com.optimetric.github.domain.enumeration.ReadinessState;
 
 import java.util.List;
 
-/**
- * Application DTO for repository sync/readiness status.
- */
 public record RepositoryReadinessInfo(
         ReadinessState state,
         List<MissingComponent> missing,

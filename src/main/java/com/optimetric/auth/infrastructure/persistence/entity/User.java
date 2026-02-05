@@ -25,18 +25,18 @@ public class User {
     @Column(name = "github_user_id", nullable = false,unique = true)
     private Long githubUserId;
 
-    // GitHub kullanıcı adı (örnek: arifferarslan)
+    // GitHub kullanıcı adı
     @Column(name = "login", nullable = false, length = 100)
     private String login;
 
-    //github acesstoken
+    // GitHub OAuth access token
     private String accessToken;
 
-    // Case-insensitive kıyaslama için küçük harf versiyonu
+    // Case-insensitive arama için login'in küçük harf kopyası
     @Column(name = "login_ci", nullable = false, length = 100)
     private String loginCi;
 
-    // Kullanıcının tam adı (örnek: Arif Erarslan)
+    // Görünen ad
     @Column(name = "name", length = 200)
     private String name;
 
@@ -53,7 +53,7 @@ public class User {
     @Column(name = "owner_type", nullable = false, length = 16)
     private OwnerType ownerType;
 
-    // Kayıt oluşturulma zamanı (bizim sistemimizde)
+    // Oluşturulma zamanı
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
@@ -61,11 +61,11 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
-    // GitHub’dan en son ne zaman veri çekildi
+    // Son GitHub veri senkronizasyon zamanı
     @Column(name = "last_synced_at")
     private OffsetDateTime lastSyncedAt;
 
-    // Veritabanına ilk eklenmeden önce otomatik değer atama
+    // Persist öncesi created_at, updated_at ve login_ci atanır.
     @PrePersist
     void prePersist() {
         var now = OffsetDateTime.now();
@@ -74,7 +74,7 @@ public class User {
         if (login != null) loginCi = login.toLowerCase();
     }
 
-    // Güncelleme öncesinde tarih ve login_ci güncellemesi
+    // Update öncesi updated_at ve login_ci güncellenir.
     @PreUpdate
     void preUpdate() {
         updatedAt = OffsetDateTime.now();

@@ -8,9 +8,11 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.optimetric.github.api.response.CommitDto;
+import com.optimetric.github.application.dto.CommitInfo;
 import com.optimetric.github.application.port.out.CommitClientPort;
+import com.optimetric.github.infrastructure.core.mapper.CommitMapper;
 import com.optimetric.github.infrastructure.core.constant.GitHubConstants;
+import com.optimetric.github.infrastructure.http.dto.GitHubCommitResponse;
 import com.optimetric.github.infrastructure.util.GitHubUtil;
 import com.optimetric.github.infrastructure.util.UrlBuilder;
 import com.optimetric.shared.exception.GitHubApiException;
@@ -24,13 +26,13 @@ public class CommitClientAdapter implements CommitClientPort {
     private final WebClient githubWebClient;
 
     @Override
-    public List<CommitDto> getCommits(String accessToken, String owner, String repo, String branch, String since) {
+    public List<CommitInfo> getCommits(String accessToken, String owner, String repo, String branch, String since) {
         URI uri = UrlBuilder.fromTemplate(GitHubConstants.REPO_COMMITS_ENDPOINT_TEMPLATE, owner, repo)
                 .addQueryParam("sha", branch)
                 .addQueryParam("since", since)
                 .buildUri();
-        
-        return githubWebClient
+
+        List<GitHubCommitResponse> raw = githubWebClient
                 .get()
                 .uri(uri)
                 .headers(h -> h.set(HttpHeaders.AUTHORIZATION, GitHubUtil.buildBearerHeader(accessToken)))
@@ -38,9 +40,10 @@ public class CommitClientAdapter implements CommitClientPort {
                 .onStatus(HttpStatusCode::isError, res ->
                         res.bodyToMono(String.class).map(body ->
                                 new GitHubApiException(GitHubConstants.ERROR_COMMIT_FETCH_FAILED + body)))
-                .bodyToFlux(CommitDto.class)
+                .bodyToFlux(GitHubCommitResponse.class)
                 .collectList()
                 .block();
+        return CommitMapper.fromGitHubResponses(raw != null ? raw : List.of());
     }
 }
 

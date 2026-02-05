@@ -16,10 +16,6 @@ public interface BranchRepository extends JpaRepository<BranchEntity, Long> {
     List<BranchEntity> findByRepository(RepositoryEntity repository);
     Optional<BranchEntity> findByRepositoryAndName(RepositoryEntity repository, String name);
 
-    /**
-     * Checks if any branch exists for the given repository ID.
-     * Used for readiness checks (EXISTS with LIMIT 1 for performance).
-     */
     @Query("SELECT CASE WHEN COUNT(b) > 0 THEN true ELSE false END " +
            "FROM BranchEntity b WHERE b.repository.id = :repositoryId")
     boolean existsByRepositoryId(@Param("repositoryId") Long repositoryId);

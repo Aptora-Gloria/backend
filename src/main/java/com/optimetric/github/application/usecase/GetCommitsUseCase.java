@@ -11,9 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-/**
- * Use case: get commits for a repository/branch.
- */
 @Service
 @RequiredArgsConstructor
 public class GetCommitsUseCase implements GetCommitsPort {

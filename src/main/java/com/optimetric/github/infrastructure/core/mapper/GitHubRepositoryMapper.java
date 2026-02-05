@@ -6,14 +6,8 @@ import com.optimetric.github.infrastructure.http.dto.GitHubRepoResponse;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Mapper for converting GitHub API responses to application DTOs.
- */
 public class GitHubRepositoryMapper {
 
-    /**
-     * Maps GitHubRepoResponse (GitHub API) to RepositoryInitData (application).
-     */
     public static RepositoryInitData toRepositoryInitData(GitHubRepoResponse response) {
         if (response == null) return null;
         return new RepositoryInitData(
@@ -50,9 +44,6 @@ public class GitHubRepositoryMapper {
         );
     }
 
-    /**
-     * Maps list of GitHubRepoResponse to list of RepositoryInitData.
-     */
     public static List<RepositoryInitData> toRepositoryInitDataList(List<GitHubRepoResponse> responses) {
         return responses.stream()
                 .map(GitHubRepositoryMapper::toRepositoryInitData)

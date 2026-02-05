@@ -4,10 +4,6 @@ import java.time.OffsetDateTime;
 
 import com.optimetric.shared.domain.OwnerType;
 
-/**
- * Application layer DTO for repository information.
- * This is the contract between application and infrastructure layers.
- */
 public record RepositoryInfo(
         Long id,
         Long githubRepoId,

@@ -1,16 +1,15 @@
 package com.optimetric.github.application.usecase;
 
+import org.springframework.stereotype.Service;
+
 import com.optimetric.github.application.dto.PullRequestInfo;
 import com.optimetric.github.application.port.in.GetPullRequestPort;
 import com.optimetric.github.application.port.out.PullRequestQueryPort;
 import com.optimetric.shared.exception.RepositoryNotFoundException;
 import com.optimetric.shared.exception.UserNotFoundException;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-/**
- * Use case: get a single Pull Request by repo and PR number.
- */
+import lombok.RequiredArgsConstructor;
+
 @Service
 @RequiredArgsConstructor
 public class GetPullRequestUseCase implements GetPullRequestPort {

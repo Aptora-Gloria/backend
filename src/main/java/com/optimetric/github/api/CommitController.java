@@ -19,9 +19,6 @@ import com.optimetric.github.application.port.in.InitCommitsPort;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-/**
- * API sadece al/ver: Port/In (use case) çağırır, Application DTO'yu ApiMapper ile API DTO'ya çevirir.
- */
 @RestController
 @RequestMapping("/api/github/commits")
 @RequiredArgsConstructor

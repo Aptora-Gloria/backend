@@ -5,9 +5,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 
-/**
- * Request DTO for retrieving a specific Pull Request.
- */
 public record GetPullRequestRequest(
         @NotBlank(message = "repoFullName is required")
         @Pattern(regexp = "^[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+$", 

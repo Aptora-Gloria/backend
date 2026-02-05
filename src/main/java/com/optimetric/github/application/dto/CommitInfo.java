@@ -1,11 +1,8 @@
 package com.optimetric.github.application.dto;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
-/**
- * Application DTO for Commit information (application layer).
- * Not to be confused with API CommitDto structure; this is minimal for application/domain use.
- */
 public record CommitInfo(
         String sha,
         String nodeId,
@@ -14,5 +11,7 @@ public record CommitInfo(
         String committerLogin,
         List<String> parentShas,
         String htmlUrl,
-        String apiUrl
+        String apiUrl,
+        OffsetDateTime committedAt,
+        Boolean mergeCommit
 ) {}

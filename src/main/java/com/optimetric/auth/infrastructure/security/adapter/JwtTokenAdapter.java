@@ -12,10 +12,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 
-/**
- * Infrastructure adapter for JWT token operations.
- * Implements JwtTokenPort using JWT library.
- */
 @Component
 public class JwtTokenAdapter implements JwtTokenPort {
 

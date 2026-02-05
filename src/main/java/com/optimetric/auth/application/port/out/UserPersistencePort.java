@@ -4,33 +4,18 @@ import com.optimetric.auth.application.dto.UserInfo;
 
 import java.util.Optional;
 
-/**
- * Outbound port for user persistence operations.
- * This port abstracts database access from the application layer.
- */
+// Kullanıcı kalıcılık outbound portu; veritabanı erişimini soyutlar.
 public interface UserPersistencePort {
 
-    /**
-     * Saves or updates a user.
-     * 
-     * @param userInfo User information to save or update
-     * @return Saved user information
-     */
+    // Kullanıcı kaydeder veya günceller.
     UserInfo save(UserInfo userInfo);
 
-    /**
-     * Finds user by login.
-     * 
-     * @param login User login
-     * @return Optional user information
-     */
+    // Login ile kullanıcı arar.
     Optional<UserInfo> findByLogin(String login);
 
-    /**
-     * Finds user by GitHub user ID.
-     * 
-     * @param githubUserId GitHub user ID
-     * @return Optional user information
-     */
+    // GitHub kullanıcı id ile kullanıcı arar.
     Optional<UserInfo> findByGithubUserId(Long githubUserId);
+
+    // Dahili id ile kullanıcı arar; diğer modüller için.
+    Optional<UserInfo> findById(Long id);
 }

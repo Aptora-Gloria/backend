@@ -2,9 +2,6 @@ package com.optimetric.github.application.dto;
 
 import java.time.OffsetDateTime;
 
-/**
- * Application DTO for Pull Request Review information.
- */
 public record ReviewInfo(
         Long id,
         Long githubReviewId,

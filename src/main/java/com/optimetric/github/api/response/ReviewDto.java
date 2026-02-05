@@ -2,9 +2,6 @@ package com.optimetric.github.api.response;
 
 import java.time.OffsetDateTime;
 
-/**
- * Data Transfer Object for Pull Request Review information.
- */
 public record ReviewDto(
         Long id,
         Long githubReviewId,
@@ -15,9 +12,6 @@ public record ReviewDto(
         OffsetDateTime submittedAt,
         String htmlUrl
 ) {
-    /**
-     * Nested record for reviewer information.
-     */
     public record ReviewerInfo(
             String login,
             Long githubId

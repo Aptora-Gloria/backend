@@ -14,11 +14,7 @@ import com.optimetric.github.infrastructure.util.TokenUtil;
 
 import lombok.RequiredArgsConstructor;
 
-/**
- * Infrastructure adapter for AuthServicePort.
- * This is a facade adapter that delegates to AuthenticationDomainService.
- * Kept for backward compatibility with other modules.
- */
+// AuthServicePort adapter'ı; AuthenticationDomainService'e delege eder, uyumluluk için.
 @Service
 @RequiredArgsConstructor
 public class AuthServiceAdapter implements AuthServicePort {
@@ -63,5 +59,10 @@ public class AuthServiceAdapter implements AuthServicePort {
     @Override
     public UserInfo findByLoginOrThrow(String login) {
         return authenticationDomainService.findByLoginOrThrow(login);
+    }
+
+    @Override
+    public Optional<UserInfo> findById(Long id) {
+        return authenticationDomainService.findById(id);
     }
 }

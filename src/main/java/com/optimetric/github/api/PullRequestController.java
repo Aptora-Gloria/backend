@@ -1,5 +1,14 @@
 package com.optimetric.github.api;
 
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.optimetric.github.api.mapper.PullRequestApiMapper;
 import com.optimetric.github.api.request.GetPullRequestRequest;
 import com.optimetric.github.api.request.GetPullRequestsRequest;
@@ -17,18 +26,11 @@ import com.optimetric.github.application.port.in.GetSyncStatusPort;
 import com.optimetric.github.application.port.in.InitiatePullRequestSyncPort;
 import com.optimetric.shared.exception.RepositoryNotFoundException;
 import com.optimetric.shared.exception.UserNotFoundException;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
-/**
- * REST Controller for Pull Request operations.
- * API sadece al/ver: isteği alır, Port/In çağırır, Application DTO'yu ApiMapper ile API DTO'ya çevirip döner.
- */
+// Pull request işlemleri REST controller; port çağırır, ApiMapper ile DTO döner.
 @RestController
 @RequestMapping("/api/github/pull-requests")
 @RequiredArgsConstructor
@@ -41,15 +43,7 @@ public class PullRequestController {
     private final InitiatePullRequestSyncPort initiatePullRequestSyncPort;
     private final GetSyncStatusPort getSyncStatusPort;
 
-    /**
-     * Retrieves all Pull Requests for a specific repository.
-     * 
-     * @param login Authenticated user login
-     * @param request Request containing repository full name
-     * @return List of Pull Request DTOs with data level and sync status
-     * @throws UserNotFoundException if user not found
-     * @throws RepositoryNotFoundException if repository not found or not accessible
-     */
+    // Belirtilen repo için tüm PR'ları döner (data level ve sync durumu ile).
     @PostMapping("/query")
     public ResponseEntity<List<PullRequestDto>> getPullRequests(
             @AuthenticationPrincipal String login,
@@ -59,15 +53,7 @@ public class PullRequestController {
         return ResponseEntity.ok(PullRequestApiMapper.toPullRequestDtos(list));
     }
 
-    /**
-     * Retrieves a specific Pull Request by repository and PR number.
-     * 
-     * @param login Authenticated user login
-     * @param request Request containing repository full name and PR number
-     * @return Pull Request DTO with complete information
-     * @throws UserNotFoundException if user not found
-     * @throws RepositoryNotFoundException if repository not found or not accessible
-     */
+    // Repo ve PR numarasıyla tekil PR döner.
     @PostMapping("/query/single")
     public ResponseEntity<PullRequestDto> getPullRequest(
             @AuthenticationPrincipal String login,
@@ -77,15 +63,7 @@ public class PullRequestController {
         return ResponseEntity.ok(PullRequestApiMapper.toPullRequestDto(info));
     }
 
-    /**
-     * Retrieves all reviews for a specific Pull Request.
-     * 
-     * @param login Authenticated user login
-     * @param request Request containing repository full name and PR number
-     * @return List of Review DTOs
-     * @throws UserNotFoundException if user not found
-     * @throws RepositoryNotFoundException if repository not found or not accessible
-     */
+    // Belirtilen PR için tüm incelemeleri (review) döner.
     @PostMapping("/reviews")
     public ResponseEntity<List<ReviewDto>> getPullRequestReviews(
             @AuthenticationPrincipal String login,
@@ -95,15 +73,7 @@ public class PullRequestController {
         return ResponseEntity.ok(PullRequestApiMapper.toReviewDtos(list));
     }
 
-    /**
-     * Retrieves all commits for a specific Pull Request.
-     * 
-     * @param login Authenticated user login
-     * @param request Request containing repository full name and PR number
-     * @return List of Commit DTOs (represented as ReviewCommentDto)
-     * @throws UserNotFoundException if user not found
-     * @throws RepositoryNotFoundException if repository not found or not accessible
-     */
+    // Belirtilen PR için tüm commit'leri döner (ReviewCommentDto olarak).
     @PostMapping("/commits")
     public ResponseEntity<List<ReviewCommentDto>> getPullRequestCommits(
             @AuthenticationPrincipal String login,
@@ -113,16 +83,7 @@ public class PullRequestController {
         return ResponseEntity.ok(PullRequestApiMapper.toReviewCommentDtos(list));
     }
 
-    /**
-     * Initiates Pull Request synchronization for a repository.
-     * Starts the ingestion pipeline to collect PR data from GitHub API.
-     * 
-     * @param login Authenticated user login
-     * @param request Request containing repository full name
-     * @return Success response
-     * @throws UserNotFoundException if user not found
-     * @throws RepositoryNotFoundException if repository not found or not accessible
-     */
+    // Repo için PR senkronizasyonunu başlatır; GitHub API'den veri toplar.
     @PostMapping("/sync/initiate")
     public ResponseEntity<Void> initiatePullRequestSync(
             @AuthenticationPrincipal String login,
@@ -132,16 +93,7 @@ public class PullRequestController {
         return ResponseEntity.ok().build();
     }
 
-    /**
-     * Gets the synchronization status for a repository.
-     * Provides detailed information about ongoing and completed sync jobs.
-     * 
-     * @param login Authenticated user login
-     * @param request Request containing repository full name
-     * @return Sync status DTO with job details and timestamps
-     * @throws UserNotFoundException if user not found
-     * @throws RepositoryNotFoundException if repository not found or not accessible
-     */
+    // Repo için sync durumunu döner; devam eden ve tamamlanan job bilgisi.
     @PostMapping("/sync/status")
     public ResponseEntity<SyncStatusDto> getSyncStatus(
             @AuthenticationPrincipal String login,

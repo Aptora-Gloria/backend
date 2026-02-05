@@ -8,58 +8,50 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.optimetric.github.infrastructure.persistence.entity.DataLevel;
+import com.optimetric.github.domain.enumeration.DataLevel;
 import com.optimetric.github.infrastructure.persistence.entity.PullRequestEntity;
 import com.optimetric.github.infrastructure.persistence.entity.RepositoryEntity;
 
 public interface PullRequestRepository extends JpaRepository<PullRequestEntity, Long> {
 
-    // Find by GitHub PR ID for idempotent operations
+    // İdempotent işlemler için GitHub PR id ile bul
     Optional<PullRequestEntity> findByGithubPrId(Long githubPrId);
 
-    // Find by repository and PR number for API access
+    // API erişimi için repo ve PR numarası ile bul
     Optional<PullRequestEntity> findByRepositoryAndPrNumber(RepositoryEntity repository, Integer prNumber);
 
-    // Find all PRs for a repository, ordered by creation date
+    // Repo için tüm PR'ları oluşturulma tarihine göre getir
     List<PullRequestEntity> findByRepositoryOrderByCreatedAtDesc(RepositoryEntity repository);
 
-    // Find PRs by repository and state
+    // Repo ve state ile PR'ları getir
     List<PullRequestEntity> findByRepositoryAndStateOrderByCreatedAtDesc(RepositoryEntity repository, String state);
 
-    // Find PRs by data level for processing
+    // İşleme için data level ile PR'ları getir
     List<PullRequestEntity> findByDataLevel(DataLevel dataLevel);
 
-    // Find PRs that need synchronization (updated after last sync)
+    // Senkronizasyon gerektiren PR'lar (son sync'ten sonra güncellenen)
     @Query("SELECT pr FROM PullRequestEntity pr WHERE pr.repository = :repository " +
            "AND (pr.lastSyncedAt IS NULL OR pr.updatedAt > pr.lastSyncedAt)")
     List<PullRequestEntity> findPullRequestsNeedingSync(@Param("repository") RepositoryEntity repository);
 
-    // Find PRs by repository and data level
+    // Repo ve data level ile PR'ları getir
     List<PullRequestEntity> findByRepositoryAndDataLevel(RepositoryEntity repository, DataLevel dataLevel);
 
-    // Find PRs updated after a specific timestamp
+    // Belirli zamandan sonra güncellenen PR'lar
     List<PullRequestEntity> findByRepositoryAndUpdatedAtAfter(RepositoryEntity repository, OffsetDateTime updatedAfter);
 
-    // Count PRs by repository and state
+    // Repo ve state ile PR sayısı
     long countByRepositoryAndState(RepositoryEntity repository, String state);
 
-    // Find PRs with missing change statistics (for PR_DETAIL job scheduling)
+    // Değişiklik istatistiği eksik PR'lar (PR_DETAIL job planlaması için)
     @Query("SELECT pr FROM PullRequestEntity pr WHERE pr.repository = :repository " +
            "AND (pr.additions IS NULL OR pr.deletions IS NULL OR pr.changedFiles IS NULL)")
     List<PullRequestEntity> findPullRequestsWithoutChangeStats(@Param("repository") RepositoryEntity repository);
 
-    /**
-     * Checks if any pull request exists for the given repository ID.
-     * Used for readiness checks (EXISTS with LIMIT 1 for performance).
-     */
     @Query("SELECT CASE WHEN COUNT(pr) > 0 THEN true ELSE false END " +
            "FROM PullRequestEntity pr WHERE pr.repository.id = :repositoryId")
     boolean existsByRepositoryId(@Param("repositoryId") Long repositoryId);
 
-    /**
-     * Checks if any pull request with details (additions IS NOT NULL) exists for the given repository ID.
-     * Used for PR_DETAILS readiness checks.
-     */
     @Query("SELECT CASE WHEN COUNT(pr) > 0 THEN true ELSE false END " +
            "FROM PullRequestEntity pr WHERE pr.repository.id = :repositoryId " +
            "AND pr.additions IS NOT NULL")

@@ -7,20 +7,9 @@ public class GitHubUtil {
     private GitHubUtil() {
         // Utility class, instantiation not allowed
     }
-    /**
-     * Builds a complete "Bearer" Authorization header value from token.
-     * @param token GitHub access token
-     * @return "Bearer <token>"
-     */
     public static String buildBearerHeader(String token) {
         return "Bearer " + token;
     }
-    /**
-     * Decodes a Base64 encoded string content.
-     * @param content The Base64 encoded string.
-     * @param encoding The encoding type (e.g., "base64").
-     * @return The decoded string content.
-     */
     public static String decodeBase64(String content, String encoding) {
         if ("base64".equals(encoding)) {
             // MIME Decoder, RFC 2045 uyumlu Base64 verilerini işler

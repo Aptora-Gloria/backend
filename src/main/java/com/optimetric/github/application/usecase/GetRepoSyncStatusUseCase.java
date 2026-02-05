@@ -7,9 +7,6 @@ import com.optimetric.shared.exception.RepositoryNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-/**
- * Use case: get repository sync/readiness status.
- */
 @Service
 @RequiredArgsConstructor
 public class GetRepoSyncStatusUseCase implements GetRepoSyncStatusPort {

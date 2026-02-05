@@ -2,6 +2,7 @@ package com.optimetric.github.infrastructure.persistence.adapter;
 
 import com.optimetric.shared.domain.OwnerType;
 import com.optimetric.auth.infrastructure.persistence.entity.User;
+import com.optimetric.github.domain.enumeration.DataLevel;
 import com.optimetric.github.infrastructure.persistence.entity.*;
 import net.jqwik.api.*;
 
@@ -12,11 +13,6 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Property-based test for incremental synchronization behavior.
- * **Feature: pull-request-ingestion, Property 3: Incremental Synchronization Behavior**
- * **Validates: Requirements 3.1, 3.2, 3.3**
- */
 public class IncrementalSynchronizationPropertyTest {
 
     @Property(tries = 100)
@@ -186,10 +182,6 @@ public class IncrementalSynchronizationPropertyTest {
         assertThat(processedPrs.size() + skippedPrs.size()).isEqualTo(pullRequests.size());
     }
 
-    /**
-     * Implements the same logic as PullRequestServiceAdapter.needsSynchronization()
-     * to test the incremental sync behavior.
-     */
     private boolean needsSynchronization(PullRequestEntity pullRequest) {
         if (pullRequest == null) {
             return false;
@@ -337,7 +329,7 @@ public class IncrementalSynchronizationPropertyTest {
                         .githubRepoId(githubRepoId)
                         .name(name)
                         .fullName(fullName)
-                        .user(user)
+                        .userId(user != null ? user.getId() : null)
                         .ownerLogin(ownerLogin)
                         .ownerType(ownerType)
                         .build()
