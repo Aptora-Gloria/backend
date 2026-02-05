@@ -2,10 +2,6 @@ package com.optimetric.metrics.api.response;
 
 import java.time.OffsetDateTime;
 
-/**
- * DTO for repository overview metrics.
- * Contains basic information, popularity metrics, and repository properties.
- */
 public record RepositoryOverviewDto(
         String fullName,
         String name,

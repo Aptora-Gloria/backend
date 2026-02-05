@@ -2,6 +2,9 @@ package com.optimetric.github.infrastructure.persistence.entity;
 
 import com.optimetric.shared.domain.OwnerType;
 import com.optimetric.auth.infrastructure.persistence.entity.User;
+import com.optimetric.github.domain.enumeration.DataLevel;
+import com.optimetric.github.domain.enumeration.SyncJobStatus;
+import com.optimetric.github.domain.enumeration.SyncJobType;
 import net.jqwik.api.*;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
@@ -11,11 +14,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Property-based test for comprehensive data storage.
- * **Feature: pull-request-ingestion, Property 5: Comprehensive Data Storage**
- * **Validates: Requirements 4.1, 4.2, 4.3, 4.4, 4.5**
- */
 @SpringJUnitConfig
 public class ComprehensiveDataStoragePropertyTest {
 
@@ -287,7 +285,7 @@ public class ComprehensiveDataStoragePropertyTest {
                         .githubRepoId(githubRepoId)
                         .name(name)
                         .fullName(fullName)
-                        .user(user)
+                        .userId(user != null ? user.getId() : null)
                         .ownerLogin(ownerLogin)
                         .ownerType(ownerType)
                         .build()

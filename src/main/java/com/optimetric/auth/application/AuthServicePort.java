@@ -6,70 +6,30 @@ import com.optimetric.auth.application.dto.UserInfo;
 
 import java.util.Optional;
 
-/**
- * Application port for authentication operations.
- * This port uses Application DTOs, not API DTOs.
- * 
- * Note: This port will be replaced by Use Cases in PHASE 4.
- * For now, it's updated to use Application DTOs instead of API DTOs.
- */
+// Kimlik doğrulama işlemleri için uygulama portu; Application DTO kullanır.
 public interface AuthServicePort {
 
-    /**
-     * Performs user login with GitHub OAuth code.
-     * 
-     * @param command Login command containing OAuth code
-     * @return Login result containing JWT access token
-     */
+    // GitHub OAuth kodu ile giriş; JWT döner.
     LoginResult login(LoginCommand command);
 
-    /**
-     * Gets current user information from JWT token.
-     * 
-     * @param token JWT token
-     * @return User information
-     */
+    // JWT ile mevcut kullanıcı bilgisini döner.
     UserInfo getCurrentUser(String token);
 
-    /**
-     * Finds user by login.
-     * 
-     * @param login User login
-     * @return Optional user information
-     */
+    // Login ile kullanıcı arar.
     Optional<UserInfo> findByLogin(String login);
 
-    /**
-     * Extracts login from JWT token.
-     * 
-     * @param token JWT token
-     * @return User login
-     */
+    // JWT'den login çıkarır.
     String getLoginFromToken(String token);
 
-    /**
-     * Gets GitHub access token from JWT token.
-     * 
-     * @param jwtToken JWT token
-     * @return GitHub access token
-     */
+    // JWT'den GitHub access token döner.
     String getAccessTokenFromToken(String jwtToken);
 
-    /**
-     * Gets GitHub access token from user login.
-     * 
-     * @param login User login
-     * @return GitHub access token
-     */
+    // Login ile kullanıcının GitHub access token'ını döner.
     String getAccessTokenFromLogin(String login);
-    
-    /**
-     * Gets user by login or throws UserNotFoundException.
-     * This method should be used when user existence is required.
-     * 
-     * @param login User login
-     * @return User information
-     * @throws com.optimetric.shared.exception.UserNotFoundException if user not found
-     */
+
+    // Login ile kullanıcı arar; yoksa UserNotFoundException fırlatır.
     UserInfo findByLoginOrThrow(String login);
+
+    // Dahili id ile kullanıcı arar; diğer modüller için.
+    Optional<UserInfo> findById(Long id);
 }

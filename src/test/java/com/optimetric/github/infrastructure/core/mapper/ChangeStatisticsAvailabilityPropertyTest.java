@@ -1,7 +1,9 @@
 package com.optimetric.github.infrastructure.core.mapper;
 
+import com.optimetric.github.api.mapper.PullRequestApiMapper;
 import com.optimetric.github.api.response.ChangeStatsDto;
 import com.optimetric.github.api.response.PullRequestDto;
+import com.optimetric.github.domain.enumeration.DataLevel;
 import com.optimetric.github.infrastructure.persistence.entity.*;
 import com.optimetric.auth.infrastructure.persistence.entity.User;
 import com.optimetric.shared.domain.OwnerType;
@@ -12,11 +14,6 @@ import java.time.ZoneOffset;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Property-based test for change statistics availability indicator.
- * **Feature: pull-request-ingestion, Property 8: Change Statistics Availability Indicator**
- * **Validates: Requirements 7.1, 7.2, 7.5**
- */
 public class ChangeStatisticsAvailabilityPropertyTest {
 
     @Property(tries = 100)
@@ -24,7 +21,7 @@ public class ChangeStatisticsAvailabilityPropertyTest {
             @ForAll("validPullRequestEntityWithCompleteChangeStats") PullRequestEntity pullRequest) {
         
         // When - mapping entity to DTO
-        PullRequestDto dto = PullRequestMapper.toDto(pullRequest);
+        PullRequestDto dto = PullRequestApiMapper.toPullRequestDto(PullRequestMapper.toPullRequestInfo(pullRequest));
         
         // Then - changeStats.available should be true (Requirement 7.1)
         assertThat(dto.changeStats().available()).isTrue();
@@ -44,7 +41,7 @@ public class ChangeStatisticsAvailabilityPropertyTest {
             @ForAll("validPullRequestEntityWithIncompleteChangeStats") PullRequestEntity pullRequest) {
         
         // When - mapping entity to DTO
-        PullRequestDto dto = PullRequestMapper.toDto(pullRequest);
+        PullRequestDto dto = PullRequestApiMapper.toPullRequestDto(PullRequestMapper.toPullRequestInfo(pullRequest));
         
         // Then - changeStats.available should be false (Requirement 7.2)
         assertThat(dto.changeStats().available()).isFalse();
@@ -61,7 +58,7 @@ public class ChangeStatisticsAvailabilityPropertyTest {
             @ForAll("validPullRequestEntityWithNullChangeStats") PullRequestEntity pullRequest) {
         
         // When - mapping entity to DTO
-        PullRequestDto dto = PullRequestMapper.toDto(pullRequest);
+        PullRequestDto dto = PullRequestApiMapper.toPullRequestDto(PullRequestMapper.toPullRequestInfo(pullRequest));
         
         // Then - changeStats.available should be false (Requirement 7.2)
         assertThat(dto.changeStats().available()).isFalse();
@@ -82,7 +79,7 @@ public class ChangeStatisticsAvailabilityPropertyTest {
             @ForAll("validPullRequestEntityWithTimestamp") PullRequestEntity pullRequest) {
         
         // When - mapping entity to DTO
-        PullRequestDto dto = PullRequestMapper.toDto(pullRequest);
+        PullRequestDto dto = PullRequestApiMapper.toPullRequestDto(PullRequestMapper.toPullRequestInfo(pullRequest));
         
         // Then - lastSyncedAt should be included (Requirement 7.5)
         assertThat(dto.lastSyncedAt()).isEqualTo(pullRequest.getLastSyncedAt());
@@ -94,7 +91,7 @@ public class ChangeStatisticsAvailabilityPropertyTest {
             @ForAll("validPullRequestEntityWithRandomChangeStats") PullRequestEntity pullRequest) {
         
         // When - mapping entity to DTO
-        PullRequestDto dto = PullRequestMapper.toDto(pullRequest);
+        PullRequestDto dto = PullRequestApiMapper.toPullRequestDto(PullRequestMapper.toPullRequestInfo(pullRequest));
         
         // Then - availability should match the presence of all statistics
         boolean expectedAvailable = pullRequest.getAdditions() != null && 
@@ -123,7 +120,7 @@ public class ChangeStatisticsAvailabilityPropertyTest {
             @ForAll("validPullRequestEntityWithChangeStatsSyncedAt") PullRequestEntity pullRequest) {
         
         // When - mapping entity to DTO
-        PullRequestDto dto = PullRequestMapper.toDto(pullRequest);
+        PullRequestDto dto = PullRequestApiMapper.toPullRequestDto(PullRequestMapper.toPullRequestInfo(pullRequest));
         
         // Then - syncedAt should always match the entity value (Requirement 7.5)
         assertThat(dto.changeStats().syncedAt()).isEqualTo(pullRequest.getChangeStatsSyncedAt());
@@ -279,7 +276,7 @@ public class ChangeStatisticsAvailabilityPropertyTest {
                         .githubRepoId(githubRepoId)
                         .name(name)
                         .fullName(fullName)
-                        .user(user)
+                        .userId(user != null ? user.getId() : null)
                         .ownerLogin(ownerLogin)
                         .ownerType(ownerType)
                         .build()

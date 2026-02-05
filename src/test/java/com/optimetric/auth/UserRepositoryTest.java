@@ -20,7 +20,7 @@ public class UserRepositoryTest {
 
     @Test
     void itShouldFindUserByLogin() {
-        // given
+        // verilen
         var now = OffsetDateTime.now();
         User user = User.builder()
                 .githubUserId(12345L)
@@ -37,10 +37,10 @@ public class UserRepositoryTest {
 
         userRepository.save(user);
 
-        // when
+        // işlem
         Optional<User> foundUser = userRepository.findByLogin("mehmetarif");
 
-        // then
+        // sonuç
         assertTrue(foundUser.isPresent());
         assertEquals("Mehmet Arif", foundUser.get().getName());
         assertEquals("mehmetarif", foundUser.get().getLogin());

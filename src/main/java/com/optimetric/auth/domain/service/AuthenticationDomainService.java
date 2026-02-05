@@ -14,10 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-/**
- * Domain service for authentication business logic.
- * This service contains business rules and orchestrates authentication operations.
- */
+// Kimlik doğrulama iş kuralları ve orkestrasyonu.
 @Service
 @RequiredArgsConstructor
 public class AuthenticationDomainService {
@@ -26,79 +23,42 @@ public class AuthenticationDomainService {
     private final UserPersistencePort userPersistencePort;
     private final JwtTokenPort jwtTokenPort;
 
-    /**
-     * Performs user login with GitHub OAuth code.
-     * Business logic:
-     * 1. Exchange code for access token
-     * 2. Fetch user info from GitHub
-     * 3. Save or update user in database
-     * 4. Generate JWT token
-     * 
-     * @param code GitHub OAuth authorization code
-     * @return JWT token
-     */
+    // GitHub OAuth kodu ile giriş: token al, kullanıcı bilgisi al, kaydet, JWT üret.
     public String login(String code) {
-        // 1. Exchange code for access token
         String accessToken = exchangeCodeForToken(code);
-        
-        // 2. Fetch user info from GitHub
         GitHubUserDto githubUser = fetchUserInfo(accessToken);
-        
-        // 3. Save or update user
         User user = saveOrUpdateUser(githubUser, accessToken);
-        
-        // 4. Generate JWT token
         return jwtTokenPort.createToken(user.getLogin());
     }
 
-    /**
-     * Gets current user information from JWT token.
-     * 
-     * @param token JWT token
-     * @return User information
-     * @throws UserNotFoundException if user not found
-     */
+    // JWT token ile mevcut kullanıcı bilgisini döner.
     public UserInfo getCurrentUser(String token) {
         String login = jwtTokenPort.extractLoginFromToken(token);
         return userPersistencePort.findByLogin(login)
                 .orElseThrow(() -> new UserNotFoundException("User not found: " + login));
     }
 
-    /**
-     * Finds user by login.
-     * 
-     * @param login User login
-     * @return Optional user information
-     */
+    // Login ile kullanıcı arar; yoksa boş döner.
     public Optional<UserInfo> findByLogin(String login) {
         return userPersistencePort.findByLogin(login);
     }
 
-    /**
-     * Finds user by login or throws exception.
-     * 
-     * @param login User login
-     * @return User information
-     * @throws UserNotFoundException if user not found
-     */
+    // Login ile kullanıcı arar; yoksa UserNotFoundException fırlatır.
     public UserInfo findByLoginOrThrow(String login) {
         return userPersistencePort.findByLogin(login)
                 .orElseThrow(() -> new UserNotFoundException("User not found: " + login));
     }
 
-    /**
-     * Gets GitHub access token from user login.
-     * 
-     * @param login User login
-     * @return GitHub access token
-     * @throws UserNotFoundException if user not found
-     */
+    // Login ile kullanıcının GitHub access token'ını döner.
     public String getAccessTokenFromLogin(String login) {
         UserInfo userInfo = findByLoginOrThrow(login);
         return userInfo.accessToken();
     }
 
-    // Private helper methods
+    // Dahili id ile kullanıcı arar; diğer modüller için.
+    public Optional<UserInfo> findById(Long id) {
+        return userPersistencePort.findById(id);
+    }
 
     private String exchangeCodeForToken(String code) {
         GitHubAccessTokenResponse tokenResponse;
@@ -134,7 +94,6 @@ public class AuthenticationDomainService {
 
         User user;
         if (existingUser.isPresent()) {
-            // Update existing user
             UserInfo userInfo = existingUser.get();
             user = User.fromExisting(
                     userInfo.id(),
@@ -150,7 +109,6 @@ public class AuthenticationDomainService {
                     userInfo.lastSyncedAt()
             );
         } else {
-            // Create new user
             user = User.fromGitHubData(
                     githubUser.githubUserId(),
                     githubUser.login(),
@@ -164,7 +122,6 @@ public class AuthenticationDomainService {
             );
         }
 
-        // Save to persistence
         UserInfo userInfo = toUserInfo(user);
         UserInfo savedUserInfo = userPersistencePort.save(userInfo);
         

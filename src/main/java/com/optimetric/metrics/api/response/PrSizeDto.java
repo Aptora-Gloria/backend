@@ -2,9 +2,6 @@ package com.optimetric.metrics.api.response;
 
 import java.math.BigDecimal;
 
-/**
- * DTO for Pull Request size metrics.
- */
 public record PrSizeDto(
         BigDecimal averageAdditions,
         BigDecimal averageDeletions,

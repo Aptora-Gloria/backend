@@ -4,10 +4,6 @@ import com.optimetric.shared.domain.OwnerType;
 
 import java.time.OffsetDateTime;
 
-/**
- * Domain model for User.
- * This is a domain entity that contains business logic and validation rules.
- */
 public class User {
 
     private Long id;
@@ -20,12 +16,9 @@ public class User {
     private OwnerType ownerType;
     private OffsetDateTime lastSyncedAt;
 
-    // Private constructor to enforce creation through factory methods
+    // Factory metotlarla oluşturma zorunluluğu için private kurucu
     private User() {}
 
-    /**
-     * Factory method to create a new user from GitHub data.
-     */
     public static User fromGitHubData(
             Long githubUserId,
             String login,
@@ -47,9 +40,6 @@ public class User {
         return user;
     }
 
-    /**
-     * Factory method to create a user from existing data (for updates).
-     */
     public static User fromExisting(
             Long id,
             Long githubUserId,
@@ -74,9 +64,6 @@ public class User {
         return user;
     }
 
-    /**
-     * Updates user information from GitHub data.
-     */
     public void updateFromGitHubData(
             String accessToken,
             String name,
@@ -92,9 +79,6 @@ public class User {
         this.lastSyncedAt = OffsetDateTime.now();
     }
 
-    /**
-     * Validates login format (business rule).
-     */
     private static String validateLogin(String login) {
         if (login == null || login.trim().isEmpty()) {
             throw new IllegalArgumentException("Login cannot be null or empty");

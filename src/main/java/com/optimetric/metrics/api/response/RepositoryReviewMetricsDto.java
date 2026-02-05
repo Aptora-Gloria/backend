@@ -4,9 +4,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-/**
- * DTO for repository review metrics.
- */
 public record RepositoryReviewMetricsDto(
         // Statistics
         Long totalReviews,
@@ -29,7 +26,7 @@ public record RepositoryReviewMetricsDto(
         Map<String, Long> reviewsByReviewer,  // reviewer -> count
         Map<String, Long> approvalsByReviewer  // reviewer -> approval count
         
-        // Timing metrics (optional, can be added later)
+        // Zamanlama metrikleri (opsiyonel, sonra eklenebilir)
         // BigDecimal averageReviewTimeHours  // PR created -> first review
 ) {
     public record ReviewerStatsDto(

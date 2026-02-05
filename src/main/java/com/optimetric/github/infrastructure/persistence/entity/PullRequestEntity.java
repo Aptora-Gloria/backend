@@ -1,6 +1,7 @@
 package com.optimetric.github.infrastructure.persistence.entity;
 
 import com.optimetric.auth.infrastructure.persistence.entity.User;
+import com.optimetric.github.domain.enumeration.DataLevel;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -46,7 +47,7 @@ public class PullRequestEntity {
     @Column(name = "change_stats_synced_at")
     private OffsetDateTime changeStatsSyncedAt;
 
-    // Standard PR fields
+    // Standart PR alanları
     @Column(name = "state", length = 20)
     private String state; // open, closed
 
@@ -71,7 +72,7 @@ public class PullRequestEntity {
     @Column(name = "merge_commit_sha", length = 40)
     private String mergeCommitSha;
 
-    // Timestamps from GitHub
+    // GitHub'dan gelen zaman damgaları
     @Column(name = "created_at")
     private OffsetDateTime createdAt;
 

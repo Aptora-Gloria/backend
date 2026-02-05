@@ -9,30 +9,30 @@ import java.util.Optional;
 
 public interface PullRequestCommitRepository extends JpaRepository<PullRequestCommitEntity, Long> {
 
-    // Find by composite unique key (github_repo_id, sha) for idempotent operations
+    // İdempotent işlemler için (github_repo_id, sha) ile bul
     Optional<PullRequestCommitEntity> findByGithubRepoIdAndSha(Long githubRepoId, String sha);
 
-    // Find all commits for a specific pull request
+    // Belirli bir PR için tüm commit'leri getir
     List<PullRequestCommitEntity> findByPullRequestOrderByCommittedAtAsc(PullRequestEntity pullRequest);
 
-    // Find commits by pull request and author
+    // PR ve yazar ile commit'leri getir
     List<PullRequestCommitEntity> findByPullRequestAndAuthorLoginOrderByCommittedAtAsc(PullRequestEntity pullRequest, String authorLogin);
 
-    // Find commits by SHA (across all repos)
+    // SHA ile commit'leri getir (tüm repolarda)
     List<PullRequestCommitEntity> findBySha(String sha);
 
-    // Find commits by GitHub repository ID
+    // GitHub repo id ile commit'leri getir
     List<PullRequestCommitEntity> findByGithubRepoIdOrderByCommittedAtDesc(Long githubRepoId);
 
-    // Find commits by author login
+    // Yazar login ile commit'leri getir
     List<PullRequestCommitEntity> findByAuthorLoginOrderByCommittedAtDesc(String authorLogin);
 
-    // Count commits by pull request
+    // PR başına commit sayısı
     long countByPullRequest(PullRequestEntity pullRequest);
 
-    // Count commits by pull request and author
+    // PR ve yazar başına commit sayısı
     long countByPullRequestAndAuthorLogin(PullRequestEntity pullRequest, String authorLogin);
 
-    // Find commits by author email
+    // Yazar e-posta ile commit'leri getir
     List<PullRequestCommitEntity> findByAuthorEmailOrderByCommittedAtDesc(String authorEmail);
 }

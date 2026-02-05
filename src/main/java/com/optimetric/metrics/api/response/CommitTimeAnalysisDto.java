@@ -3,9 +3,6 @@ package com.optimetric.metrics.api.response;
 import java.math.BigDecimal;
 import java.util.Map;
 
-/**
- * DTO for commit time analysis metrics.
- */
 public record CommitTimeAnalysisDto(
         Map<Integer, Long> commitsByHour,  // hour (0-23) -> count
         Map<String, Long> commitsByDayOfWeek,  // MONDAY, TUESDAY, etc. -> count

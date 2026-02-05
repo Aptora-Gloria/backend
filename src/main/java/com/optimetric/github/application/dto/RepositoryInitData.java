@@ -1,9 +1,5 @@
 package com.optimetric.github.application.dto;
 
-/**
- * Application layer DTO for repository initialization data from GitHub API.
- * This is the contract between application and infrastructure layers.
- */
 public record RepositoryInitData(
         Long id,
         String nodeId,
@@ -21,7 +17,7 @@ public record RepositoryInitData(
         Integer size,
         String language,
         String defaultBranch,
-        String createdAt,    // ISO date-time string from GitHub
+        String createdAt,    // GitHub'dan gelen ISO tarih-saat
         String updatedAt,
         String pushedAt,
         Permissions permissions

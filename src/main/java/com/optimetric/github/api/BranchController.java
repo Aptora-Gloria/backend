@@ -10,8 +10,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.optimetric.github.api.mapper.BranchApiMapper;
 import com.optimetric.github.api.response.BranchDto;
-import com.optimetric.github.application.port.BranchServicePort;
+import com.optimetric.github.application.port.in.GetBranchesPort;
+import com.optimetric.github.application.port.in.InitBranchesPort;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,16 +22,16 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class BranchController {
 
-    private final BranchServicePort branchService;
+    private final InitBranchesPort initBranchesPort;
+    private final GetBranchesPort getBranchesPort;
 
     @PostMapping("/init")
     public ResponseEntity<List<BranchDto>> initBranches(
             @AuthenticationPrincipal String login,
             @RequestParam("fullName") String fullName
     ) {
-        return ResponseEntity.ok(
-                branchService.initRepoBranches(login, fullName)
-        );
+        var list = initBranchesPort.initBranches(login, fullName);
+        return ResponseEntity.ok(BranchApiMapper.toBranchDtos(list));
     }
 
     @GetMapping("/query")
@@ -37,8 +39,7 @@ public class BranchController {
             @AuthenticationPrincipal String login,
             @RequestParam("fullName") String fullName
     ) {
-        return ResponseEntity.ok(
-                branchService.getBranchesByFullName(login, fullName)
-        );
+        var list = getBranchesPort.getBranches(login, fullName);
+        return ResponseEntity.ok(BranchApiMapper.toBranchDtos(list));
     }
 }

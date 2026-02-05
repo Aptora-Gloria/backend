@@ -2,9 +2,6 @@ package com.optimetric.metrics.api.response;
 
 import java.math.BigDecimal;
 
-/**
- * DTO for repository code quality metrics.
- */
 public record RepositoryCodeQualityDto(
         // PR Quality indicators
         BigDecimal averagePrSize,  // Smaller is better

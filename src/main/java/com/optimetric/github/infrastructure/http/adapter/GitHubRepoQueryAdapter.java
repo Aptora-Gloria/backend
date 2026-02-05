@@ -17,10 +17,6 @@ import com.optimetric.shared.exception.GitHubApiException;
 
 import lombok.RequiredArgsConstructor;
 
-/**
- * Infrastructure adapter for GitHub repository query operations.
- * Implements GitHubRepoQueryPort using WebClient to access GitHub API.
- */
 @Service
 @RequiredArgsConstructor
 public class GitHubRepoQueryAdapter implements GitHubRepoQueryPort {

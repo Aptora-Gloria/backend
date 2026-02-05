@@ -1,80 +1,21 @@
 package com.optimetric.metrics.application.port;
 
-import com.optimetric.metrics.api.response.ActivityTrendDto;
-import com.optimetric.metrics.api.response.CommitTimeAnalysisDto;
-import com.optimetric.metrics.api.response.LanguageDiversityDto;
-import com.optimetric.metrics.api.response.PrMergeRateDto;
-import com.optimetric.metrics.api.response.PrSizeDto;
-import com.optimetric.metrics.api.response.ReviewStatsDto;
-import com.optimetric.metrics.api.response.UserMetricsDto;
+import com.optimetric.metrics.application.dto.*;
 import com.optimetric.shared.exception.UserNotFoundException;
 
-/**
- * Service port for user metrics calculations.
- */
 public interface UserMetricsServicePort {
-    
-    /**
-     * Gets comprehensive user metrics including all metric types.
-     * 
-     * @param login User login
-     * @return UserMetricsDto containing all metrics
-     * @throws UserNotFoundException if user not found
-     */
-    UserMetricsDto getUserMetrics(String login) throws UserNotFoundException;
-    
-    /**
-     * Gets Pull Request merge rate metrics.
-     * 
-     * @param login User login
-     * @return PrMergeRateDto
-     * @throws UserNotFoundException if user not found
-     */
-    PrMergeRateDto getPrMergeRate(String login) throws UserNotFoundException;
-    
-    /**
-     * Gets Pull Request size metrics.
-     * 
-     * @param login User login
-     * @return PrSizeDto
-     * @throws UserNotFoundException if user not found
-     */
-    PrSizeDto getPrSize(String login) throws UserNotFoundException;
-    
-    /**
-     * Gets review statistics metrics.
-     * 
-     * @param login User login
-     * @return ReviewStatsDto
-     * @throws UserNotFoundException if user not found
-     */
-    ReviewStatsDto getReviewStats(String login) throws UserNotFoundException;
-    
-    /**
-     * Gets commit time analysis metrics.
-     * 
-     * @param login User login
-     * @return CommitTimeAnalysisDto
-     * @throws UserNotFoundException if user not found
-     */
-    CommitTimeAnalysisDto getCommitTimeAnalysis(String login) throws UserNotFoundException;
-    
-    /**
-     * Gets language diversity metrics.
-     * 
-     * @param login User login
-     * @return LanguageDiversityDto
-     * @throws UserNotFoundException if user not found
-     */
-    LanguageDiversityDto getLanguageDiversity(String login) throws UserNotFoundException;
-    
-    /**
-     * Gets activity trend metrics.
-     * 
-     * @param login User login
-     * @return ActivityTrendDto
-     * @throws UserNotFoundException if user not found
-     */
-    ActivityTrendDto getActivityTrend(String login) throws UserNotFoundException;
-}
 
+    UserMetricsInfo getUserMetrics(String login) throws UserNotFoundException;
+
+    PrMergeRateInfo getPrMergeRate(String login) throws UserNotFoundException;
+
+    PrSizeInfo getPrSize(String login) throws UserNotFoundException;
+
+    ReviewStatsInfo getReviewStats(String login) throws UserNotFoundException;
+
+    CommitTimeAnalysisInfo getCommitTimeAnalysis(String login) throws UserNotFoundException;
+
+    LanguageDiversityInfo getLanguageDiversity(String login) throws UserNotFoundException;
+
+    ActivityTrendInfo getActivityTrend(String login) throws UserNotFoundException;
+}

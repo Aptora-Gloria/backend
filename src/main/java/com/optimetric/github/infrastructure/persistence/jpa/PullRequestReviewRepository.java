@@ -12,35 +12,30 @@ import com.optimetric.github.infrastructure.persistence.entity.PullRequestReview
 
 public interface PullRequestReviewRepository extends JpaRepository<PullRequestReviewEntity, Long> {
 
-    // Find by GitHub review ID for idempotent operations
+    // İdempotent işlemler için GitHub review id ile bul
     Optional<PullRequestReviewEntity> findByGithubReviewId(Long githubReviewId);
 
-    // Find all reviews for a specific pull request
+    // Belirli bir PR için tüm incelemeleri getir
     List<PullRequestReviewEntity> findByPullRequestOrderBySubmittedAtAsc(PullRequestEntity pullRequest);
 
-    // Find reviews by pull request and state
+    // PR ve state ile incelemeleri getir
     List<PullRequestReviewEntity> findByPullRequestAndStateOrderBySubmittedAtAsc(PullRequestEntity pullRequest, String state);
 
-    // Find reviews by reviewer login
+    // İnceleyen login ile incelemeleri getir
     List<PullRequestReviewEntity> findByReviewerLoginOrderBySubmittedAtDesc(String reviewerLogin);
 
-    // Find reviews by pull request and reviewer
+    // PR ve reviewer ile incelemeleri getir
     List<PullRequestReviewEntity> findByPullRequestAndReviewerLoginOrderBySubmittedAtAsc(PullRequestEntity pullRequest, String reviewerLogin);
 
-    // Count reviews by pull request
+    // PR başına inceleme sayısı
     long countByPullRequest(PullRequestEntity pullRequest);
 
-    // Count reviews by pull request and state
+    // PR ve state ile inceleme sayısı
     long countByPullRequestAndState(PullRequestEntity pullRequest, String state);
 
     // Find reviews by reviewer GitHub ID
     List<PullRequestReviewEntity> findByReviewerGithubIdOrderBySubmittedAtDesc(Long reviewerGithubId);
 
-    /**
-     * Checks if any review exists for the given repository ID.
-     * Uses JOIN with pull_requests table since reviews table doesn't have repository_id.
-     * Used for readiness checks (EXISTS with LIMIT 1 for performance).
-     */
     @Query("SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END " +
            "FROM PullRequestReviewEntity r " +
            "JOIN r.pullRequest p " +

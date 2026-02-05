@@ -1,7 +1,6 @@
 package com.optimetric.github.infrastructure.persistence.entity;
 
 import com.optimetric.shared.domain.OwnerType;
-import com.optimetric.auth.infrastructure.persistence.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -38,12 +37,12 @@ public class RepositoryEntity {
     @Column(name = "html_url", length = 500)
     private String htmlUrl;
 
-    // Metrik verileri (PERFORMANCE İÇİN ÖNEMLİ!)
+    // Metrik verileri (performans için önemli)
     @Column(name = "is_private")
     private Boolean isPrivate;
 
     @Column(name = "is_fork")
-    private Boolean isFork;  // Fork'lar metrikte farklı değerlendirilir
+    private Boolean isFork;  // Fork repolar metrikte farklı değerlendirilir
 
     @Column(name = "stargazers_count")
     private Integer stargazersCount;  // Topluluk ilgisi
@@ -85,10 +84,9 @@ public class RepositoryEntity {
     @Enumerated(EnumType.STRING)
     private OwnerType ownerType;  // USER, ORGANIZATION
 
-    // User ile ilişki
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id",referencedColumnName = "id", nullable = false)
-    private User user;
+    // User id (FK to auth module – no cross-module entity reference)
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     // Bizim sistemimiz
     @Column(name = "last_synced_at")

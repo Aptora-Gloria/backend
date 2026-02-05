@@ -2,6 +2,7 @@ package com.optimetric.github.infrastructure.persistence.entity;
 
 import com.optimetric.shared.domain.OwnerType;
 import com.optimetric.auth.infrastructure.persistence.entity.User;
+import com.optimetric.github.domain.enumeration.DataLevel;
 import net.jqwik.api.*;
 
 import java.time.OffsetDateTime;
@@ -11,11 +12,6 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Property-based test for idempotent data processing.
- * **Feature: pull-request-ingestion, Property 2: Idempotent Data Processing**
- * **Validates: Requirements 2.1, 2.2, 2.3, 2.4, 2.5**
- */
 public class IdempotentDataProcessingPropertyTest {
 
     @Property(tries = 100)

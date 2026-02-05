@@ -3,6 +3,7 @@ package com.optimetric.github.api;
 import com.optimetric.shared.domain.OwnerType;
 import com.optimetric.auth.infrastructure.persistence.entity.User;
 import com.optimetric.github.api.response.*;
+import com.optimetric.github.domain.enumeration.DataLevel;
 import com.optimetric.github.infrastructure.persistence.adapter.PullRequestServiceAdapter;
 import com.optimetric.github.infrastructure.persistence.entity.*;
 import net.jqwik.api.*;
@@ -13,11 +14,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Property-based test for API response consistency.
- * **Feature: pull-request-ingestion, Property 6: API Response Consistency**
- * **Validates: Requirements 6.1, 6.2, 6.3, 6.4, 6.5**
- */
 public class ApiResponseConsistencyPropertyTest {
 
     @Property(tries = 100)
@@ -107,10 +103,10 @@ public class ApiResponseConsistencyPropertyTest {
         // When - mapping entity to DTO
         PullRequestDto dto = mapToDto(pullRequest);
         
-        // Then - data_level should be included (Requirement 6.2)
+        // Then - data_level should be included (Requirement 6.2); DTO uses domain enum
         assertThat(dto.dataLevel()).isNotNull();
-        assertThat(dto.dataLevel()).isEqualTo(pullRequest.getDataLevel());
-        assertThat(dto.dataLevel()).isIn(DataLevel.BASIC, DataLevel.FULL);
+        assertThat(dto.dataLevel().name()).isEqualTo(pullRequest.getDataLevel().name());
+        assertThat(dto.dataLevel().name()).isIn("BASIC", "FULL");
         
         // last_synced_at should be included (Requirement 6.2)
         assertThat(dto.lastSyncedAt()).isEqualTo(pullRequest.getLastSyncedAt());
@@ -265,7 +261,7 @@ public class ApiResponseConsistencyPropertyTest {
                 entity.getGithubPrId(),
                 entity.getPrNumber(),
                 entity.getRepository().getFullName(),
-                entity.getDataLevel(),
+                com.optimetric.github.domain.enumeration.DataLevel.valueOf(entity.getDataLevel().name()),
                 entity.getState(),
                 entity.getDraft(),
                 entity.getTitle(),
@@ -332,7 +328,7 @@ public class ApiResponseConsistencyPropertyTest {
     
     public record SyncStatusData(
             String repoFullName,
-            SyncJobStatus overallStatus,
+            com.optimetric.github.domain.enumeration.SyncJobStatus overallStatus,
             List<SyncStatusDto.JobStatusDto> jobDtos,
             OffsetDateTime lastSyncedAt
     ) {}
@@ -519,7 +515,7 @@ public class ApiResponseConsistencyPropertyTest {
     Arbitrary<SyncStatusData> validSyncStatusData() {
         return Combinators.combine(
                 validRepoFullName(),                     // repoFullName
-                Arbitraries.of(SyncJobStatus.class),     // overallStatus
+                Arbitraries.of(com.optimetric.github.domain.enumeration.SyncJobStatus.class),     // overallStatus
                 validJobStatusDtoList(),                 // jobDtos
                 validOffsetDateTime().optional()         // lastSyncedAt
         ).as((repoFullName, overallStatus, jobDtos, lastSyncedAt) ->
@@ -535,8 +531,8 @@ public class ApiResponseConsistencyPropertyTest {
     @Provide
     Arbitrary<SyncStatusDto.JobStatusDto> validJobStatusDto() {
         return Combinators.combine(
-                Arbitraries.of(SyncJobType.class),       // jobType
-                Arbitraries.of(SyncJobStatus.class),     // status
+                Arbitraries.of(com.optimetric.github.domain.enumeration.SyncJobType.class),       // jobType
+                Arbitraries.of(com.optimetric.github.domain.enumeration.SyncJobStatus.class),     // status
                 Arbitraries.integers().between(0, 5),    // attemptCount
                 validErrorMessage().optional(),          // errorMessage
                 validOffsetDateTime().optional(),        // startedAt
@@ -568,7 +564,7 @@ public class ApiResponseConsistencyPropertyTest {
                         .githubRepoId(githubRepoId)
                         .name(name)
                         .fullName(fullName)
-                        .user(user)
+                        .userId(user != null ? user.getId() : null)
                         .ownerLogin(ownerLogin)
                         .ownerType(ownerType)
                         .systemCreatedAt(OffsetDateTime.now(ZoneOffset.UTC))

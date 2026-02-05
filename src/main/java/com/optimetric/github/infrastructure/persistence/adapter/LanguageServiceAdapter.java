@@ -1,10 +1,9 @@
 package com.optimetric.github.infrastructure.persistence.adapter;
 
 import com.optimetric.auth.application.AuthServicePort;
-import com.optimetric.github.api.response.LanguageDto;
-import com.optimetric.github.api.response.LanguageUiDto;
-import com.optimetric.github.application.client.LanguageClientPort;
-import com.optimetric.github.application.port.LanguageServicePort;
+import com.optimetric.github.application.dto.LanguageInfo;
+import com.optimetric.github.application.port.out.LanguageClientPort;
+import com.optimetric.github.application.port.out.LanguageQueryPort;
 import com.optimetric.github.infrastructure.core.mapper.LanguageMapper;
 import com.optimetric.github.infrastructure.persistence.entity.LanguageEntity;
 import com.optimetric.github.infrastructure.persistence.entity.RepositoryEntity;
@@ -20,52 +19,37 @@ import java.math.RoundingMode;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class LanguageServiceAdapter implements LanguageServicePort {
+public class LanguageServiceAdapter implements LanguageQueryPort {
 
     private final LanguageClientPort languageClient;
     private final AuthServicePort authServicePort;
     private final LanguageRepository languageRepository;
     private final RepositoryPersistenceAdapter repositoryPersistenceAdapter;
 
-    /**
-     * Fetches languages from GitHub API and saves them to database.
-     * This method is now idempotent: calling it multiple times for the same repository
-     * will update existing language records instead of creating duplicates.
-     * 
-     * @param login User login
-     * @param repoFullName Repository full name (e.g., "owner/repo")
-     * @return LanguageDto from GitHub API
-     */
     @Override
     @Transactional
-    public LanguageDto initRepoLanguages(String login, String repoFullName)
+    public LanguageInfo initRepoLanguages(String login, String repoFullName)
             throws RepositoryNotFoundException, UserNotFoundException {
         String accessToken = authServicePort.getAccessTokenFromLogin(login);
 
-        // Get repository entity
         RepositoryEntity repository = repositoryPersistenceAdapter.findEntityByFullName(repoFullName)
                 .orElseThrow(() -> new RepositoryNotFoundException("Repository not found with fullName: " + repoFullName));
 
-        // Fetch languages from GitHub API
         String owner = repository.getOwnerLogin();
         String repoName = repository.getName();
-        LanguageDto dto = languageClient.getRepoLanguages(accessToken, owner, repoName);
+        LanguageInfo info = languageClient.getRepoLanguages(accessToken, owner, repoName);
 
-        // Get existing languages from database
         List<LanguageEntity> existingLanguages = languageRepository.findAllByRepository_Id(repository.getId());
 
-        // Calculate total bytes for percentage calculation
-        Map<String, Long> languages = dto.languages();
+        Map<String, Long> languages = info != null ? info.languages() : null;
         if (languages == null || languages.isEmpty()) {
-            // If GitHub returns no languages, delete all existing ones
             languageRepository.deleteByRepository_Id(repository.getId());
-            return dto;
+            return new LanguageInfo(Map.of());
         }
 
         long totalBytes = languages.values().stream()
@@ -82,16 +66,19 @@ public class LanguageServiceAdapter implements LanguageServicePort {
                             .setScale(2, RoundingMode.HALF_UP)
                     : BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
 
-            Optional<LanguageEntity> existing = languageRepository
-                    .findByRepository_IdAndLanguageName(repository.getId(), languageName);
+            List<LanguageEntity> existingList = languageRepository
+                    .findAllByRepository_IdAndLanguageName(repository.getId(), languageName);
 
-            if (existing.isPresent()) {
-                // Update existing language
-                LanguageEntity entity = existing.get();
+            if (!existingList.isEmpty()) {
+                // Update first record; remove duplicates if any (data integrity)
+                LanguageEntity entity = existingList.get(0);
                 entity.setBytes(bytes);
                 entity.setPercentage(percentage);
                 entity.setLastSyncedAt(now);
                 languageRepository.save(entity);
+                for (int i = 1; i < existingList.size(); i++) {
+                    languageRepository.delete(existingList.get(i));
+                }
             } else {
                 // Create new language
                 LanguageEntity entity = LanguageEntity.builder()
@@ -105,7 +92,7 @@ public class LanguageServiceAdapter implements LanguageServicePort {
             }
         }
 
-        // Delete languages that are no longer in GitHub response
+        // GitHub yanıtında artık olmayan dilleri sil
         Set<String> githubLanguageNames = languages.keySet();
         List<LanguageEntity> toDelete = existingLanguages.stream()
                 .filter(lang -> !githubLanguageNames.contains(lang.getLanguageName()))
@@ -114,32 +101,13 @@ public class LanguageServiceAdapter implements LanguageServicePort {
             languageRepository.deleteAll(toDelete);
         }
 
-        return dto;
+        return new LanguageInfo(languages);
     }
 
-    /**
-     * Gets languages from database by repository full name (raw Map format).
-     * 
-     * @param repoFullName Repository full name (e.g., "owner/repo")
-     * @return LanguageDto
-     */
     @Override
     @Transactional(readOnly = true)
-    public LanguageDto getLanguagesFromDb(String repoFullName) {
+    public LanguageInfo getLanguages(String repoFullName) {
         List<LanguageEntity> entities = languageRepository.findAllByRepository_FullName(repoFullName);
-        return LanguageMapper.toDto(entities);
-    }
-
-    /**
-     * Gets languages from database by repository full name (UI format with percentages).
-     * 
-     * @param repoFullName Repository full name (e.g., "owner/repo")
-     * @return LanguageUiDto
-     */
-    @Override
-    @Transactional(readOnly = true)
-    public LanguageUiDto getLanguagesForUi(String repoFullName) {
-        List<LanguageEntity> entities = languageRepository.findAllByRepository_FullName(repoFullName);
-        return LanguageMapper.toUiDto(entities);
+        return LanguageMapper.toLanguageInfo(entities);
     }
 }

@@ -25,10 +25,6 @@ public interface CommitRepository extends JpaRepository<CommitEntity, Long> {
     Optional<CommitEntity> findByShaAndRepository(String sha, RepositoryEntity repository);
     Optional<CommitEntity> findByShaAndBranch(String sha, BranchEntity branch);
 
-    /**
-     * Checks if any commit exists for the given repository ID.
-     * Used for readiness checks (EXISTS with LIMIT 1 for performance).
-     */
     @Query("SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END " +
            "FROM CommitEntity c WHERE c.repository.id = :repositoryId")
     boolean existsByRepositoryId(@Param("repositoryId") Long repositoryId);

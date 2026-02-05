@@ -1,17 +1,19 @@
 package com.optimetric.github.infrastructure.core.mapper;
 
+import com.optimetric.github.application.dto.SyncStatusInfo;
+import com.optimetric.github.api.mapper.PullRequestApiMapper;
 import com.optimetric.github.api.response.PullRequestDto;
-import com.optimetric.github.api.response.SyncStatusDto;
 import com.optimetric.github.infrastructure.core.mapper.GitHubResponseMapper;
+import com.optimetric.github.infrastructure.core.mapper.PullRequestFromApiMapper;
 import com.optimetric.github.infrastructure.core.mapper.PullRequestMapper;
 import com.optimetric.github.infrastructure.core.mapper.SyncJobMapper;
 import com.optimetric.github.infrastructure.http.dto.GitHubPullRequestResponse;
-import com.optimetric.github.infrastructure.persistence.entity.DataLevel;
+import com.optimetric.github.domain.enumeration.DataLevel;
+import com.optimetric.github.domain.enumeration.SyncJobStatus;
+import com.optimetric.github.domain.enumeration.SyncJobType;
 import com.optimetric.github.infrastructure.persistence.entity.PullRequestEntity;
 import com.optimetric.github.infrastructure.persistence.entity.RepositoryEntity;
 import com.optimetric.github.infrastructure.persistence.entity.SyncJobEntity;
-import com.optimetric.github.infrastructure.persistence.entity.SyncJobStatus;
-import com.optimetric.github.infrastructure.persistence.entity.SyncJobType;
 import org.junit.jupiter.api.Test;
 
 import java.time.OffsetDateTime;
@@ -19,9 +21,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Tests for mapper classes to ensure proper conversion between entities and DTOs.
- */
 class MapperTest {
 
     @Test
@@ -42,8 +41,7 @@ class MapperTest {
         entity.setAuthorLogin("testuser");
         entity.setCreatedAt(OffsetDateTime.now());
 
-        // Test mapping to DTO
-        PullRequestDto dto = PullRequestMapper.toDto(entity);
+        PullRequestDto dto = PullRequestApiMapper.toPullRequestDto(PullRequestMapper.toPullRequestInfo(entity));
 
         assertNotNull(dto);
         assertEquals(entity.getId(), dto.id());
@@ -59,13 +57,12 @@ class MapperTest {
     @Test
     void testPullRequestMapperWithNullEntity() {
         assertThrows(IllegalArgumentException.class, () -> {
-            PullRequestMapper.toDto(null);
+            PullRequestMapper.toPullRequestInfo(null);
         });
     }
 
     @Test
     void testSyncJobMapper() {
-        // Create test sync job entity
         SyncJobEntity entity = new SyncJobEntity();
         entity.setJobType(SyncJobType.PR_LIST);
         entity.setStatus(SyncJobStatus.COMPLETED);
@@ -73,20 +70,18 @@ class MapperTest {
         entity.setStartedAt(OffsetDateTime.now().minusMinutes(5));
         entity.setCompletedAt(OffsetDateTime.now());
 
-        // Test mapping to DTO
-        SyncStatusDto.JobStatusDto dto = SyncJobMapper.toJobStatusDto(entity);
+        SyncStatusInfo.JobStatusInfo info = SyncJobMapper.toJobStatusInfo(entity);
 
-        assertNotNull(dto);
-        assertEquals(SyncJobType.PR_LIST, dto.jobType());
-        assertEquals(SyncJobStatus.COMPLETED, dto.status());
-        assertEquals(1, dto.attemptCount());
-        assertNotNull(dto.startedAt());
-        assertNotNull(dto.completedAt());
+        assertNotNull(info);
+        assertEquals(SyncJobType.PR_LIST, info.jobType());
+        assertEquals(SyncJobStatus.COMPLETED, info.status());
+        assertEquals(1, info.attemptCount());
+        assertNotNull(info.startedAt());
+        assertNotNull(info.completedAt());
     }
 
     @Test
     void testSyncJobMapperOverallStatus() {
-        // Test with running job
         SyncJobEntity runningJob = new SyncJobEntity();
         runningJob.setStatus(SyncJobStatus.RUNNING);
 
@@ -96,11 +91,9 @@ class MapperTest {
         SyncJobStatus overallStatus = SyncJobMapper.determineOverallSyncStatus(runningJob, completedJob);
         assertEquals(SyncJobStatus.RUNNING, overallStatus);
 
-        // Test with only completed jobs
         overallStatus = SyncJobMapper.determineOverallSyncStatus(completedJob);
         assertEquals(SyncJobStatus.COMPLETED, overallStatus);
 
-        // Test with failed job
         SyncJobEntity failedJob = new SyncJobEntity();
         failedJob.setStatus(SyncJobStatus.FAILED);
 
@@ -125,8 +118,8 @@ class MapperTest {
             null, null, userInfo
         );
 
-        // Test mapping to entity
-        PullRequestEntity entity = GitHubResponseMapper.toPullRequestEntity(response, repository, null);
+        PullRequestEntity entity = GitHubResponseMapper.toPullRequestEntity(
+                PullRequestFromApiMapper.toPullRequestFromApi(response), repository, null);
 
         assertNotNull(entity);
         assertEquals(123L, entity.getGithubPrId());
@@ -156,19 +149,19 @@ class MapperTest {
         );
 
         assertThrows(IllegalArgumentException.class, () -> {
-            GitHubResponseMapper.toPullRequestEntity(response, null, null);
+            GitHubResponseMapper.toPullRequestEntity(PullRequestFromApiMapper.toPullRequestFromApi(response), null, null);
         });
     }
 
     @Test
     void testSyncJobMapperWithEmptyList() {
-        List<SyncStatusDto.JobStatusDto> dtos = SyncJobMapper.toJobStatusDtos(null);
-        assertNotNull(dtos);
-        assertTrue(dtos.isEmpty());
+        SyncStatusInfo emptyFromNull = SyncJobMapper.toSyncStatusInfoFromJobInfos("owner/repo", SyncJobStatus.PENDING, null, null);
+        assertNotNull(emptyFromNull.jobs());
+        assertTrue(emptyFromNull.jobs().isEmpty());
 
-        dtos = SyncJobMapper.toJobStatusDtos(List.of());
-        assertNotNull(dtos);
-        assertTrue(dtos.isEmpty());
+        SyncStatusInfo emptyFromList = SyncJobMapper.toSyncStatusInfoFromJobInfos("owner/repo", SyncJobStatus.PENDING, List.of(), null);
+        assertNotNull(emptyFromList.jobs());
+        assertTrue(emptyFromList.jobs().isEmpty());
     }
 
     @Test

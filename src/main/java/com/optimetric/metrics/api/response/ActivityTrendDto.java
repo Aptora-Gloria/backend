@@ -4,9 +4,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-/**
- * DTO for activity trend metrics.
- */
 public record ActivityTrendDto(
         List<WeeklyActivityDto> weeklyTrend,  // Last 12 weeks
         List<MonthlyActivityDto> monthlyTrend,  // Last 6 months
@@ -18,7 +15,7 @@ public record ActivityTrendDto(
         ActivityBreakdownDto last30DaysBreakdown
 ) {
     public record WeeklyActivityDto(
-            String week,  // YYYY-WW format
+            String week,  // YYYY-Www formatı
             Long commits,
             Long pullRequests,
             Long reviews,
@@ -26,7 +23,7 @@ public record ActivityTrendDto(
     ) {}
     
     public record MonthlyActivityDto(
-            String month,  // YYYY-MM format
+            String month,  // YYYY-MM formatı
             Long commits,
             Long pullRequests,
             Long reviews,

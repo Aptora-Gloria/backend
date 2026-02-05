@@ -9,36 +9,31 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.optimetric.github.api.presenter.RepoApiPresenter;
 import com.optimetric.github.api.request.GetReposRequest;
 import com.optimetric.github.api.request.RepoInitRequest;
 import com.optimetric.github.api.response.RepoDto;
+import com.optimetric.github.api.mapper.RepoApiMapper;
+import com.optimetric.github.application.port.in.InitializeUserRepositoriesPort;
+import com.optimetric.github.application.port.in.QueryRepositoriesPort;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-/**
- * REST Controller for Repository operations.
- * 
- * Single Responsibility: HTTP boundary only.
- * - Receives HTTP requests
- * - Validates input (@Valid)
- * - Delegates to presenter for business logic and mapping
- * - Returns HTTP responses
- */
+// Repo işlemleri REST controller; port/use case çağırır, ApiMapper ile DTO döner.
 @RestController
 @RequestMapping("/api/github/repos")
 @RequiredArgsConstructor
 public class RepoController {
 
-    private final RepoApiPresenter presenter;
+    private final InitializeUserRepositoriesPort initializeUserRepositoriesPort;
+    private final QueryRepositoriesPort queryRepositoriesPort;
 
     @PostMapping("/init/user")
     public ResponseEntity<List<RepoInitRequest>> initUserRepos(
             @AuthenticationPrincipal String login
     ) {
-        List<RepoInitRequest> repos = presenter.initUserRepos(login);
-        return ResponseEntity.ok(repos);
+        var list = initializeUserRepositoriesPort.execute(login);
+        return ResponseEntity.ok(RepoApiMapper.toRepoInitRequests(list));
     }
 
     @PostMapping("/query")
@@ -46,7 +41,9 @@ public class RepoController {
             @AuthenticationPrincipal String login,
             @RequestBody @Valid GetReposRequest request
     ) {
-        List<RepoDto> repos = presenter.getRepos(login, request);
-        return ResponseEntity.ok(repos);
+        var ownerType = RepoApiMapper.extractOwnerType(request);
+        var ownerLogin = RepoApiMapper.extractOwnerLogin(request);
+        var list = queryRepositoriesPort.execute(login, ownerType, ownerLogin);
+        return ResponseEntity.ok(RepoApiMapper.toRepoDtos(list));
     }
 }

@@ -4,9 +4,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-/**
- * DTO for language diversity metrics.
- */
 public record LanguageDiversityDto(
         Integer totalLanguages,
         Integer uniqueLanguagesAcrossRepos,

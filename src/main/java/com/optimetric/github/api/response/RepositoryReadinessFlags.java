@@ -2,10 +2,6 @@ package com.optimetric.github.api.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-/**
- * Nested DTO for repository readiness flags.
- * Each flag indicates whether a specific data component is available.
- */
 public record RepositoryReadinessFlags(
     @JsonProperty("branchesReady")
     boolean branchesReady,

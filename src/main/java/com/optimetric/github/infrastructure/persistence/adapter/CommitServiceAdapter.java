@@ -1,9 +1,9 @@
 package com.optimetric.github.infrastructure.persistence.adapter;
 
 import com.optimetric.auth.application.AuthServicePort;
-import com.optimetric.github.api.response.CommitDto;
-import com.optimetric.github.application.client.CommitClientPort;
-import com.optimetric.github.application.port.CommitServicePort;
+import com.optimetric.github.application.dto.CommitInfo;
+import com.optimetric.github.application.port.out.CommitClientPort;
+import com.optimetric.github.application.port.out.CommitQueryPort;
 import com.optimetric.github.application.usecase.GetRepositoryForCurrentUserUseCase;
 import com.optimetric.github.infrastructure.core.mapper.CommitMapper;
 import com.optimetric.shared.exception.BranchNotFoundException;
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class CommitServiceAdapter implements CommitServicePort {
+public class CommitServiceAdapter implements CommitQueryPort {
 
     private final CommitClientPort commitClient;
     private final AuthServicePort authServicePort;
@@ -37,7 +37,7 @@ public class CommitServiceAdapter implements CommitServicePort {
 
     @Override
     @Transactional
-    public List<CommitDto> initCommits(String login, String fullName, String branchName, String since) 
+    public List<CommitInfo> initCommits(String login, String fullName, String branchName, String since)
             throws RepositoryNotFoundException, BranchNotFoundException, UserNotFoundException {
         String accessToken = authServicePort.getAccessTokenFromLogin(login);
         com.optimetric.github.application.dto.RepositoryInfo repoInfo = getRepositoryForCurrentUserUseCase.executeOrThrow(login, fullName);
@@ -47,7 +47,7 @@ public class CommitServiceAdapter implements CommitServicePort {
 
         String owner = repository.getOwnerLogin();
         String repoName = repository.getName();
-        List<CommitDto> commits = commitClient.getCommits(accessToken, owner, repoName, branchName, since);
+        List<CommitInfo> commits = commitClient.getCommits(accessToken, owner, repoName, branchName, since);
 
         saveCommits(commits, repository, branch);
 
@@ -56,7 +56,7 @@ public class CommitServiceAdapter implements CommitServicePort {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CommitDto> getCommits(String login, String fullName, String branchName) 
+    public List<CommitInfo> getCommits(String login, String fullName, String branchName)
             throws RepositoryNotFoundException, BranchNotFoundException, UserNotFoundException {
         com.optimetric.github.application.dto.RepositoryInfo repoInfo = getRepositoryForCurrentUserUseCase.executeOrThrow(login, fullName);
         RepositoryEntity repository = repositoryPersistenceAdapter.findEntityById(repoInfo.id())
@@ -64,15 +64,15 @@ public class CommitServiceAdapter implements CommitServicePort {
 
         if (branchName == null || branchName.isBlank()) {
             List<CommitEntity> commits = commitRepository.findByRepository(repository);
-            return CommitMapper.toDtos(commits);
+            return CommitMapper.toCommitInfos(commits);
         }
 
         BranchEntity branch = findBranchOrThrow(repository, branchName, fullName);
         List<CommitEntity> commits = commitRepository.findByRepositoryAndBranch(repository, branch);
-        return CommitMapper.toDtos(commits);
+        return CommitMapper.toCommitInfos(commits);
     }
 
-    private void saveCommits(List<CommitDto> commits, RepositoryEntity repository, BranchEntity branch) {
+    private void saveCommits(List<CommitInfo> commits, RepositoryEntity repository, BranchEntity branch) {
         if (commits == null || commits.isEmpty()) {
             return;
         }
@@ -83,16 +83,16 @@ public class CommitServiceAdapter implements CommitServicePort {
                 .collect(Collectors.toSet());
 
         List<CommitEntity> toSave = new ArrayList<>();
-        for (CommitDto dto : commits) {
-            if (dto.sha() == null || dto.sha().isBlank()) {
+        for (CommitInfo info : commits) {
+            if (info.sha() == null || info.sha().isBlank()) {
                 continue;
             }
 
-            if (existingShasInBranch.contains(dto.sha())) {
+            if (existingShasInBranch.contains(info.sha())) {
                 continue;
             }
 
-            CommitEntity entity = CommitMapper.toEntity(dto, repository, branch);
+            CommitEntity entity = CommitMapper.toEntity(info, repository, branch);
             toSave.add(entity);
         }
 

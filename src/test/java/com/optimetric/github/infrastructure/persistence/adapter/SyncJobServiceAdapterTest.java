@@ -1,8 +1,10 @@
 package com.optimetric.github.infrastructure.persistence.adapter;
 
+import com.optimetric.github.application.dto.SyncJobInfo;
+import com.optimetric.github.domain.enumeration.SyncJobStatus;
+import com.optimetric.github.domain.enumeration.SyncJobType;
+import com.optimetric.github.infrastructure.core.mapper.SyncJobMapper;
 import com.optimetric.github.infrastructure.persistence.entity.SyncJobEntity;
-import com.optimetric.github.infrastructure.persistence.entity.SyncJobStatus;
-import com.optimetric.github.infrastructure.persistence.entity.SyncJobType;
 import com.optimetric.github.infrastructure.persistence.jpa.SyncJobRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,19 +51,15 @@ class SyncJobServiceAdapterTest {
 
     @Test
     void createJob_ShouldCreateNewJobWithCorrectProperties() {
-        // Given
         when(syncJobRepository.save(any(SyncJobEntity.class))).thenReturn(testJob);
 
-        // When
-        SyncJobEntity result = syncJobServiceAdapter.createJob(SyncJobType.PR_LIST, testRepoFullName);
+        SyncJobInfo result = syncJobServiceAdapter.createJob(SyncJobType.PR_LIST, testRepoFullName);
 
-        // Then
         assertThat(result).isNotNull();
-        assertThat(result.getJobType()).isEqualTo(SyncJobType.PR_LIST);
-        assertThat(result.getRepoFullName()).isEqualTo(testRepoFullName);
-        assertThat(result.getStatus()).isEqualTo(SyncJobStatus.PENDING);
-        assertThat(result.getAttemptCount()).isEqualTo(0);
-        assertThat(result.getCurrentPage()).isEqualTo(1);
+        assertThat(result.jobType()).isEqualTo(SyncJobType.PR_LIST);
+        assertThat(result.repoFullName()).isEqualTo(testRepoFullName);
+        assertThat(result.status()).isEqualTo(SyncJobStatus.PENDING);
+        assertThat(result.attemptCount()).isEqualTo(0);
 
         verify(syncJobRepository).save(any(SyncJobEntity.class));
     }
@@ -126,39 +124,34 @@ class SyncJobServiceAdapterTest {
 
     @Test
     void getPendingJobs_ShouldReturnJobsReadyToRun() {
-        // Given
         List<SyncJobEntity> pendingJobs = List.of(testJob);
         when(syncJobRepository.findPendingJobsReadyToRun(eq(SyncJobStatus.PENDING), any(OffsetDateTime.class)))
                 .thenReturn(pendingJobs);
 
-        // When
-        List<SyncJobEntity> result = syncJobServiceAdapter.getPendingJobs();
+        List<SyncJobInfo> result = syncJobServiceAdapter.getPendingJobs();
 
-        // Then
         assertThat(result).hasSize(1);
-        assertThat(result.get(0)).isEqualTo(testJob);
+        assertThat(result.get(0).jobType()).isEqualTo(testJob.getJobType());
+        assertThat(result.get(0).repoFullName()).isEqualTo(testJob.getRepoFullName());
         verify(syncJobRepository).findPendingJobsReadyToRun(eq(SyncJobStatus.PENDING), any(OffsetDateTime.class));
     }
 
     @Test
     void getJobsForRepository_ShouldReturnJobsForSpecificRepo() {
-        // Given
         List<SyncJobEntity> repoJobs = List.of(testJob);
         when(syncJobRepository.findByRepoFullNameOrderBySystemCreatedAtDesc(testRepoFullName))
                 .thenReturn(repoJobs);
 
-        // When
-        List<SyncJobEntity> result = syncJobServiceAdapter.getJobsForRepository(testRepoFullName);
+        List<SyncJobInfo> result = syncJobServiceAdapter.getJobsForRepository(testRepoFullName);
 
-        // Then
         assertThat(result).hasSize(1);
-        assertThat(result.get(0)).isEqualTo(testJob);
+        assertThat(result.get(0).jobType()).isEqualTo(testJob.getJobType());
+        assertThat(result.get(0).repoFullName()).isEqualTo(testJob.getRepoFullName());
         verify(syncJobRepository).findByRepoFullNameOrderBySystemCreatedAtDesc(testRepoFullName);
     }
 
     @Test
     void getLatestJobForRepository_WhenJobExists_ShouldReturnLatestCompletedJob() {
-        // Given
         SyncJobEntity completedJob = SyncJobEntity.builder()
                 .id(2L)
                 .jobType(SyncJobType.PR_LIST)
@@ -171,26 +164,21 @@ class SyncJobServiceAdapterTest {
                 testRepoFullName, SyncJobType.PR_LIST, SyncJobStatus.COMPLETED))
                 .thenReturn(Optional.of(completedJob));
 
-        // When
-        SyncJobEntity result = syncJobServiceAdapter.getLatestJobForRepository(testRepoFullName, SyncJobType.PR_LIST);
+        SyncJobInfo result = syncJobServiceAdapter.getLatestJobForRepository(testRepoFullName, SyncJobType.PR_LIST);
 
-        // Then
         assertThat(result).isNotNull();
-        assertThat(result.getId()).isEqualTo(2L);
-        assertThat(result.getStatus()).isEqualTo(SyncJobStatus.COMPLETED);
+        assertThat(result.id()).isEqualTo(2L);
+        assertThat(result.status()).isEqualTo(SyncJobStatus.COMPLETED);
     }
 
     @Test
     void getLatestJobForRepository_WhenNoJobExists_ShouldReturnNull() {
-        // Given
         when(syncJobRepository.findFirstByRepoFullNameAndJobTypeAndStatusOrderByCompletedAtDesc(
                 testRepoFullName, SyncJobType.PR_LIST, SyncJobStatus.COMPLETED))
                 .thenReturn(Optional.empty());
 
-        // When
-        SyncJobEntity result = syncJobServiceAdapter.getLatestJobForRepository(testRepoFullName, SyncJobType.PR_LIST);
+        SyncJobInfo result = syncJobServiceAdapter.getLatestJobForRepository(testRepoFullName, SyncJobType.PR_LIST);
 
-        // Then
         assertThat(result).isNull();
     }
 

@@ -4,9 +4,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-/**
- * DTO for repository contributor metrics.
- */
 public record RepositoryContributorMetricsDto(
         Long totalContributors,
         Long activeContributorsLast30Days,
@@ -24,8 +21,8 @@ public record RepositoryContributorMetricsDto(
         
         // Activity distribution (Pareto analysis)
         BigDecimal top10ContributorsPercentage,  // Top 10 contributors' activity %
-        Long singleCommitContributors,  // Contributors with only 1 commit
-        Long regularContributors  // Contributors with 5+ commits
+        Long singleCommitContributors,  // Yalnızca 1 commit'i olan katkıda bulunanlar
+        Long regularContributors  // 5+ commit'i olan düzenli katkıda bulunanlar
 ) {
     public record ContributorStatsDto(
             String contributorLogin,

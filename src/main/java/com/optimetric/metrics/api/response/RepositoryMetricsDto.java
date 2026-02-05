@@ -1,8 +1,5 @@
 package com.optimetric.metrics.api.response;
 
-/**
- * Comprehensive DTO containing all repository metrics.
- */
 public record RepositoryMetricsDto(
         RepositoryOverviewDto overview,
         RepositoryPrMetricsDto pullRequests,

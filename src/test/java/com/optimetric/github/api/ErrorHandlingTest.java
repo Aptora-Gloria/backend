@@ -15,9 +15,6 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Tests for error handling and validation improvements in the Pull Request system.
- */
 @SpringBootTest
 class ErrorHandlingTest {
 
@@ -26,27 +23,27 @@ class ErrorHandlingTest {
 
     @Test
     void testGetPullRequestsRequestValidation() {
-        // Test valid request
+        // Geçerli istek
         GetPullRequestsRequest validRequest = new GetPullRequestsRequest("owner/repo");
         Set<ConstraintViolation<GetPullRequestsRequest>> violations = validator.validate(validRequest);
         assertTrue(violations.isEmpty(), "Valid request should have no violations");
 
-        // Test null repository name
+        // Null repo adı
         GetPullRequestsRequest nullRequest = new GetPullRequestsRequest(null);
         violations = validator.validate(nullRequest);
         assertFalse(violations.isEmpty(), "Null repository name should cause validation error");
 
-        // Test empty repository name
+        // Boş repo adı
         GetPullRequestsRequest emptyRequest = new GetPullRequestsRequest("");
         violations = validator.validate(emptyRequest);
         assertFalse(violations.isEmpty(), "Empty repository name should cause validation error");
 
-        // Test invalid repository format
+        // Geçersiz repo formatı
         GetPullRequestsRequest invalidFormatRequest = new GetPullRequestsRequest("invalid-format");
         violations = validator.validate(invalidFormatRequest);
         assertFalse(violations.isEmpty(), "Invalid repository format should cause validation error");
 
-        // Test repository name with special characters
+        // Özel karakterli repo adı
         GetPullRequestsRequest specialCharsRequest = new GetPullRequestsRequest("owner@/repo!");
         violations = validator.validate(specialCharsRequest);
         assertFalse(violations.isEmpty(), "Repository name with invalid characters should cause validation error");
@@ -54,22 +51,22 @@ class ErrorHandlingTest {
 
     @Test
     void testGetPullRequestRequestValidation() {
-        // Test valid request
+        // Geçerli istek
         GetPullRequestRequest validRequest = new GetPullRequestRequest("owner/repo", 123);
         Set<ConstraintViolation<GetPullRequestRequest>> violations = validator.validate(validRequest);
         assertTrue(violations.isEmpty(), "Valid request should have no violations");
 
-        // Test invalid PR number
+        // Geçersiz PR numarası
         GetPullRequestRequest invalidPrRequest = new GetPullRequestRequest("owner/repo", -1);
         violations = validator.validate(invalidPrRequest);
         assertFalse(violations.isEmpty(), "Negative PR number should cause validation error");
 
-        // Test null PR number
+        // Null PR numarası
         GetPullRequestRequest nullPrRequest = new GetPullRequestRequest("owner/repo", null);
         violations = validator.validate(nullPrRequest);
         assertFalse(violations.isEmpty(), "Null PR number should cause validation error");
 
-        // Test zero PR number
+        // Sıfır PR numarası
         GetPullRequestRequest zeroPrRequest = new GetPullRequestRequest("owner/repo", 0);
         violations = validator.validate(zeroPrRequest);
         assertFalse(violations.isEmpty(), "Zero PR number should cause validation error");
@@ -77,12 +74,12 @@ class ErrorHandlingTest {
 
     @Test
     void testInitiatePullRequestSyncRequestValidation() {
-        // Test valid request
+        // Geçerli istek
         InitiatePullRequestSyncRequest validRequest = new InitiatePullRequestSyncRequest("owner/repo");
         Set<ConstraintViolation<InitiatePullRequestSyncRequest>> violations = validator.validate(validRequest);
         assertTrue(violations.isEmpty(), "Valid request should have no violations");
 
-        // Test invalid repository format
+        // Geçersiz repo formatı
         InitiatePullRequestSyncRequest invalidRequest = new InitiatePullRequestSyncRequest("owner");
         violations = validator.validate(invalidRequest);
         assertFalse(violations.isEmpty(), "Invalid repository format should cause validation error");
@@ -90,15 +87,15 @@ class ErrorHandlingTest {
 
     @Test
     void testExceptionCreation() {
-        // Test PullRequestNotFoundException
+        // PullRequestNotFoundException
         PullRequestNotFoundException prException = new PullRequestNotFoundException("PR not found");
         assertEquals("PR not found", prException.getMessage());
 
-        // Test InvalidRepositoryFormatException
+        // InvalidRepositoryFormatException
         InvalidRepositoryFormatException formatException = new InvalidRepositoryFormatException("Invalid format");
         assertEquals("Invalid format", formatException.getMessage());
 
-        // Test exception with cause
+        // Nedeni ile istisna
         RuntimeException cause = new RuntimeException("Root cause");
         PullRequestNotFoundException exceptionWithCause = new PullRequestNotFoundException("PR not found", cause);
         assertEquals("PR not found", exceptionWithCause.getMessage());
@@ -107,13 +104,13 @@ class ErrorHandlingTest {
 
     @Test
     void testRepositoryFormatValidation() {
-        // Valid formats
+        // Geçerli formatlar
         assertTrue("owner/repo".matches("^[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+$"));
         assertTrue("my-org/my-repo".matches("^[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+$"));
         assertTrue("user123/project.name".matches("^[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+$"));
         assertTrue("org_name/repo_name".matches("^[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+$"));
 
-        // Invalid formats
+        // Geçersiz formatlar
         assertFalse("owner".matches("^[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+$"));
         assertFalse("owner/".matches("^[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+$"));
         assertFalse("/repo".matches("^[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+$"));
